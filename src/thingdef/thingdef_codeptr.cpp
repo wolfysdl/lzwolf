@@ -506,6 +506,16 @@ ACTION_FUNCTION(A_JumpIfInventory)
 	return false;
 }
 
+ACTION_FUNCTION(A_MirrorPosition)
+{
+	ACTION_PARAM_DOUBLE(mirx, 0);
+
+	fixed_t mirxfixed = FLOAT2FIXED(mirx);
+	self->x = mirxfixed + (mirxfixed - players[0].camera->x);
+
+	return false;
+}
+
 ACTION_FUNCTION(A_Light)
 {
 	ACTION_PARAM_INT(level, 0);
