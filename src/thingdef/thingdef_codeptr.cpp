@@ -517,6 +517,29 @@ ACTION_FUNCTION(A_MirrorPosition)
 	return false;
 }
 
+ACTION_FUNCTION(A_RadiusWake)
+{
+	ACTION_PARAM_INT(radius, 0);
+
+	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+	{
+		AActor * const target = iter;
+
+		// Calculate distance from origin to outer bound of target actor
+		const fixed dist = MAX(0, MAX(abs(target->x - self->x), abs(target->y - self->y)) - target->radius) >> (FRACBITS - 6);
+
+		// First check if the target is in range (also don't mess with ourself)
+		if(dist >= radius || target == self || !(target->flags & FL_SHOOTABLE))
+			continue;
+
+		const Frame *wakestate = self->FindState(NAME_RadiusWake);
+		if(wakestate)
+			self->SetState(wakestate);
+	}
+
+	return true;
+}
+
 ACTION_FUNCTION(A_Light)
 {
 	ACTION_PARAM_INT(level, 0);

@@ -205,7 +205,7 @@ class AActor : public Thinker,
 		uint16_t	painchance;
 		FNameNoInit	activesound, attacksound, deathsound, painsound, seesound;
 
-		const Frame *SpawnState, *SeeState, *PathState, *PainState, *MeleeState, *MissileState;
+		const Frame *SpawnState, *SeeState, *PathState, *PainState, *MeleeState, *MissileState, *RadiusWakeState;
 		short       temp1,hidden;
 		fixed		killerx,killery; // For deathcam
 		DamageType::e killerdamagetype;

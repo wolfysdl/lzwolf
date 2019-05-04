@@ -618,6 +618,7 @@ AActor *ClassDef::CreateInstance() const
 		((AActor*)defaultInstance)->PathState = FindState(NAME_Path);
 		((AActor*)defaultInstance)->SpawnState = FindState(NAME_Spawn);
 		((AActor*)defaultInstance)->SeeState = FindState(NAME_See);
+		((AActor*)defaultInstance)->RadiusWakeState = FindState(NAME_RadiusWake);
 	}
 
 	AActor *newactor = (AActor *) M_Malloc(size);
