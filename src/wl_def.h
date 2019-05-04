@@ -369,6 +369,7 @@ namespace DamageType
     extern enum e strto(std::string s);
     extern void serialize(lwlib::Stream &stream, enum e &x);
     extern void loadCustom(void);
+    std::ostream &operator<<(std::ostream &os, enum e x);
 }
 
 #define dmg_normal DamageType::normal

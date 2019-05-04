@@ -1337,4 +1337,9 @@ namespace DamageType
         for (int i = 0; i < count(); i++)
             strToMap[strsVec[i]] = (enum e)i;
     }
+
+    std::ostream &operator<<(std::ostream &os, enum e x)
+    {
+        return os << strof(x);
+    }
 }

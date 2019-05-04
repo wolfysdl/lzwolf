@@ -208,6 +208,7 @@ class AActor : public Thinker,
 		const Frame *SpawnState, *SeeState, *PathState, *PainState, *MeleeState, *MissileState;
 		short       temp1,hidden;
 		fixed		killerx,killery; // For deathcam
+		DamageType::e killerdamagetype;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn

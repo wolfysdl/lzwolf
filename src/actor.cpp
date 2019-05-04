@@ -291,10 +291,24 @@ void AActor::Die()
 
 	bool isExtremelyDead = health < -GetClass()->Meta.GetMetaInt(AMETA_GibHealth, (GetDefault()->health*gameinfo.GibFactor)>>FRACBITS);
 	const Frame *deathstate = NULL;
-	if(isExtremelyDead)
+	if (!deathstate && isExtremelyDead)
+	{
+		std::stringstream ss;
+		ss << "XDeath_" << killerdamagetype;
+		deathstate = FindState(ss.str().c_str());
+	}
+	if(!deathstate && isExtremelyDead)
 		deathstate = FindState(NAME_XDeath);
+
+	if (!deathstate)
+	{
+		std::stringstream ss;
+		ss << "Death_" << killerdamagetype;
+		deathstate = FindState(ss.str().c_str());
+	}
 	if(!deathstate)
 		deathstate = FindState(NAME_Death);
+
 	if(deathstate)
 		SetState(deathstate);
 	else

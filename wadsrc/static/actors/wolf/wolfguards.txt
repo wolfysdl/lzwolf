@@ -9,7 +9,9 @@ actor WolfensteinMonster
 	radius 42
 	painchance 256
 	meleerange 42
-	damageresistance "normal", 88
+	// new damagetypes can be specified in meta/damagetype.xml
+	// the integer parameter is resistance as a percentage
+	//damageresistance "normal", 88
 	MONSTER
 	+ALWAYSFAST
 	+RANDOMIZE
@@ -63,6 +65,13 @@ actor Guard : WolfensteinMonster 11
 			GARD M 7.5
 			GARD N -1
 			stop
+		// add your damage specific death states like this
+		//Death_normal:
+		//	GARD K 7.5 A_Fall
+		//	GARD L 7.5 A_Scream
+		//	GARD M 7.5
+		//	GARD N -1
+		//	stop
 	}
 }
 actor GreenGuard : Guard 93

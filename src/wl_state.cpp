@@ -811,6 +811,7 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, DamageType::e d
 		{
 			ob->killerx = attacker->x;
 			ob->killery = attacker->y;
+			ob->killerdamagetype = damagetype;
 		}
 		ob->Die();
 	}
