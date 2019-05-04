@@ -319,6 +319,7 @@ ACTION_FUNCTION(A_Explode)
 	ACTION_PARAM_INT(flags, 2);
 	ACTION_PARAM_BOOL(alert, 3);
 	ACTION_PARAM_INT(fulldamageradius, 4);
+	ACTION_PARAM_STRING(damagetype, 5);
 
 	if(alert)
 		madenoise = true;
@@ -345,7 +346,7 @@ ACTION_FUNCTION(A_Explode)
 		if(output <= 0.0)
 			continue;
 
-		DamageActor(target, self->target, static_cast<unsigned int>(output));
+		DamageActor(target, self->target, static_cast<unsigned int>(output), DamageType::strto(damagetype.GetChars()));
 	}
 	return true;
 }

@@ -1138,7 +1138,7 @@ ACTION_FUNCTION(A_CustomPunch)
 	// hit something
 	if(!(flags & CPF_ALWAYSPLAYSOUND))
 		SD_PlaySound(player->ReadyWeapon->attacksound, SD_WEAPONS);
-	DamageActor(closest, self, damage);
+	DamageActor(closest, self, damage, player->ReadyWeapon->damagetype);
 
 	// Ammo is only used when hit
 	if(flags & CPF_USEAMMO)
@@ -1218,7 +1218,7 @@ ACTION_FUNCTION(A_GunAttack)
 		if ( (pr_cwbullet() % maxrange) < dist)           // missed
 			return false;
 	}
-	DamageActor (closest, self, damage);
+	DamageActor (closest, self, damage, player->ReadyWeapon->damagetype);
 	return true;
 }
 
@@ -1255,4 +1255,86 @@ ACTION_FUNCTION(A_FireCustomMissile)
 	newobj->velx = FixedMul(newobj->speed,finecosine[iangle>>ANGLETOFINESHIFT]);
 	newobj->vely = -FixedMul(newobj->speed,finesine[iangle>>ANGLETOFINESHIFT]);
 	return true;
+}
+
+
+/*
+=============================================================================
+
+                                 DAMAGE TYPE
+
+=============================================================================
+*/
+
+namespace DamageType
+{
+    const char *strs[] =
+    {
+        "normal",
+    };
+
+    static std::vector<const char *> strsVec;
+    static std::vector<std::string> customStrs;
+
+    typedef std::map<std::string, enum e> StrToMap;
+    static StrToMap strToMap;
+
+    int count(void)
+    {
+        return strsVec.size();
+    }
+
+    std::string strof(enum e x)
+    {
+        return strsVec[x];
+    }
+
+    bool strfound(std::string s)
+    {
+        StrToMap::const_iterator it = strToMap.find(s);
+        return (it != strToMap.end());
+    }
+
+    enum e strto(std::string s)
+    {
+        StrToMap::const_iterator it = strToMap.find(s);
+        if (it != strToMap.end())
+        {
+            return it->second;
+        }
+
+        throw lwlib::StreamExceptionFactory().cannotParse(s);
+    }
+
+    void serialize(lwlib::Stream &stream, enum e &x)
+    {
+        std::string s = strof(x);
+        stream & s;
+        x = strto(s);
+    }
+
+    void loadCustom(void)
+    {
+        std::stringstream ss;
+        ss << "meta/damagetype.xml";
+
+        typedef std::vector<std::string> Vec;
+        Vec &v = customStrs;
+
+        lwlib::Stream stream(ss.str().c_str(), lwlib::StreamDirection::in,
+            lwlib::StreamFormat::text);
+        if (stream.fp != NULL)
+        {
+            stream & v;
+        }
+
+        {
+            strsVec = std::vector<const char *>(&strs[0], &strs[max]);
+            for (Vec::size_type i = 0; i < v.size(); i++)
+                strsVec.push_back(v[i].c_str());
+        }
+
+        for (int i = 0; i < count(); i++)
+            strToMap[strsVec[i]] = (enum e)i;
+    }
 }

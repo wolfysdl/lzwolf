@@ -61,7 +61,8 @@ enum
 	AMETA_DefaultHealth7,
 	AMETA_DefaultHealth8,
 	AMETA_DefaultHealth9,
-	AMETA_ConversationID
+	AMETA_ConversationID,
+	AMETA_DamageResistances,
 };
 
 enum
@@ -95,6 +96,14 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<DropItem> DropList;
 
+		struct DamageResistance
+		{
+			public:
+				DamageType::e   damagetype;
+				unsigned int	percent;
+		};
+		typedef LinkedList<DamageResistance> DamageResistanceList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -108,6 +117,7 @@ class AActor : public Thinker,
 		int				GetDamage();
 		const AActor	*GetDefault() const;
 		DropList		*GetDropList() const;
+		DamageResistanceList		*GetDamageResistanceList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -128,6 +138,7 @@ class AActor : public Thinker,
 
 		static PointerIndexTable<ExpressionNode> damageExpressions;
 		static PointerIndexTable<DropList> dropItems;
+		static PointerIndexTable<DamageResistanceList> damageResistances;
 
 		// Basic properties from objtype
 		ActorFlags flags;

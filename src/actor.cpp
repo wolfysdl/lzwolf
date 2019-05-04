@@ -146,6 +146,7 @@ FArchive &operator<< (FArchive &arc, const Frame *&frame)
 EmbeddedList<AActor>::List AActor::actors;
 PointerIndexTable<ExpressionNode> AActor::damageExpressions;
 PointerIndexTable<AActor::DropList> AActor::dropItems;
+PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -340,6 +341,14 @@ AActor::DropList *AActor::GetDropList() const
 	if(dropitemsIndex == -1)
 		return NULL;
 	return dropItems[dropitemsIndex];
+}
+
+AActor::DamageResistanceList *AActor::GetDamageResistanceList() const
+{
+	int damageresistancesIndex = GetClass()->Meta.GetMetaInt(AMETA_DamageResistances, -1);
+	if(damageresistancesIndex == -1)
+		return NULL;
+	return damageResistances[damageresistancesIndex];
 }
 
 const AActor *AActor::GetDefault() const

@@ -763,7 +763,7 @@ bool MoveObj (AActor *ob, int32_t move)
 */
 
 static FRandom pr_damagemobj("ActorTakeDamage");
-void DamageActor (AActor *ob, AActor *attacker, unsigned damage)
+void DamageActor (AActor *ob, AActor *attacker, unsigned damage, DamageType::e damagetype)
 {
 	if (ob->player)
 	{
@@ -778,6 +778,26 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage)
 	//
 	if ( !(ob->flags & FL_ATTACKMODE) )
 		damage <<= 1;
+
+
+	{
+		typedef AActor::DamageResistanceList Li;
+		Li *li = ob->GetDamageResistanceList();
+		if (li)
+		{
+			Li::Iterator item = li->Head();
+			do
+			{
+				Li::Iterator damageResistance = item;
+				if (damagetype == damageResistance->damagetype)
+				{
+					damage = (damage * (100 - damageResistance->percent) / 100);
+					break;
+				}
+			}
+			while(item.Next());
+		}
+	}
 
 	NetDPrintf("%s %d points\n", __FUNCTION__, FixedMul(damage, gamestate.difficulty->PlayerDamageFactor));
 	ob->health -= FixedMul(damage, gamestate.difficulty->PlayerDamageFactor);
