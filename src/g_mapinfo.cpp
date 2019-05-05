@@ -554,6 +554,18 @@ protected:
 		}
 		else if(key.CompareNoCase("Translator") == 0)
 			ParseStringAssignment(mapInfo.Translator);
+		else if(key.CompareNoCase("ParallaxSky") == 0)
+		{
+			TArray<FString> textureNames;
+			ParseStringArrayAssignment(textureNames);
+
+			int i;
+			for (i = 0; i < textureNames.Size(); i++)
+			{
+				FTextureID skyTex = TexMan.GetTexture(textureNames[i], FTexture::TEX_Flat);
+				mapInfo.ParallaxSky.Push(skyTex);
+			}
+		}
 		else
 			return false;
 		return true;

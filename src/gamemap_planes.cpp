@@ -283,9 +283,14 @@ public:
 
 	FTextureID TranslateFlat(unsigned int index, bool ceiling, FTextureID def)
 	{
-		if(flatTable[index][ceiling].isValid())
-			return flatTable[index][ceiling];
-		return def;
+		if (def.isValid())
+		{
+			if(flatTable[index][ceiling].isValid())
+				return flatTable[index][ceiling];
+			return def;
+		}
+
+		return flatTable[index][ceiling];
 	}
 
 	bool TranslateTileTrigger(unsigned short tile, MapTrigger &trigger)
@@ -1300,6 +1305,9 @@ void GameMap::ReadPlanesData()
 						flatMap[oldplane[i]] = type++;
 				}
 
+				// Check for parallax sky
+				bool lvlHasParallax = levelInfo->ParallaxSky.Size() > 0;
+
 				// Build the palette.
 				sectorPalette.Resize(type);
 				TMap<WORD, WORD>::ConstIterator iter(flatMap);
@@ -1308,7 +1316,9 @@ void GameMap::ReadPlanesData()
 				{
 					Sector &sect = sectorPalette[pair->Value];
 					sect.texture[Sector::Floor] = xlat.TranslateFlat(pair->Key&0xFF, Sector::Floor, defaultFloor);
-					sect.texture[Sector::Ceiling] = xlat.TranslateFlat(pair->Key>>8, Sector::Ceiling, defaultCeiling);
+
+					FTextureID ceilid = lvlHasParallax ? FNullTextureID() : defaultCeiling;
+					sect.texture[Sector::Ceiling] = xlat.TranslateFlat(pair->Key>>8, Sector::Ceiling, ceilid);
 				}
 
 				// Now link the sector data to map points!

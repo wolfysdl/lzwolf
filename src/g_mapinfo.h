@@ -183,6 +183,7 @@ public:
 	int				LevelBonus;
 	unsigned int	LevelNumber;
 	bool			NoIntermission;
+	TArray<FTextureID>	ParallaxSky;
 
 	bool			DeathCam;
 	bool			SecretDeathSounds;
