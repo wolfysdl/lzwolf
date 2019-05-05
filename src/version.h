@@ -1,6 +1,9 @@
 #ifndef _VERSION_H_
 #define _VERSION_H_
 
+//#define USE_FEATUREFLAGS
+//#define USE_PARALLAX 16
+
 const char *GetVersionDescription();
 const char *GetVersionHash();
 const char *GetVersionTime();
