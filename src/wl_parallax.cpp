@@ -1,12 +1,12 @@
 #include "version.h"
 
-#ifdef USE_PARALLAX
-
 #include "wl_def.h"
 #include "wl_agent.h"
 #include "wl_play.h"
 #include "wl_main.h"
 #include "wl_draw.h"
+#include "id_ca.h"
+#include "g_mapinfo.h"
 
 #ifdef USE_FEATUREFLAGS
 
@@ -41,27 +41,22 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	int skyheight = viewheight >> 1;
 	int curtex = -1;
 	const byte *skytex;
+	const int numParallax = levelInfo->ParallaxSky.Size();
 
-	startpage += USE_PARALLAX - 1;
+	startpage += numParallax - 1;
 
 	for(int x = 0; x < viewwidth; x++)
 	{
 		int curang = pixelangle[x] + midangle;
 		if(curang < 0) curang += FINEANGLES;
 		else if(curang >= FINEANGLES) curang -= FINEANGLES;
-		int xtex = curang * USE_PARALLAX * TEXTURESIZE / FINEANGLES;
+		int xtex = curang * numParallax * TEXTURESIZE / FINEANGLES;
 		int newtex = xtex >> TEXTURESHIFT;
 		if(newtex != curtex)
 		{
 			curtex = newtex;
-			{
-				FTexture *source = NULL;
-				char name[16];
-
-				snprintf(name, sizeof(name), "GSTONEA1");
-				source = TexMan(TexMan.CheckForTexture(name, FTexture::TEX_Wall));
-				skytex = source->GetPixels();
-			}
+			FTexture *source = TexMan(levelInfo->ParallaxSky[startpage-curtex]);
+			skytex = source->GetPixels();
 			//skytex = PM_GetTexture(startpage - curtex);
 		}
 		int texoffs = TEXTUREMASK - ((xtex & (TEXTURESIZE - 1)) << TEXTURESHIFT);
@@ -72,5 +67,3 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			vbuf[offs] = skytex[texoffs + (y * TEXTURESIZE) / skyheight];
 	}
 }
-
-#endif

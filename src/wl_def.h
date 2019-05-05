@@ -481,9 +481,7 @@ static inline longword READLONGWORD(byte *&ptr)
 
 #endif
 
-#ifdef USE_PARALLAX
 	void DrawParallax(byte *vbuf, unsigned vbufPitch);
-#endif
 
 #ifdef USE_DIR3DSPR
 	void Scale3DShape(byte *vbuf, unsigned vbufPitch, statobj_t *ob);

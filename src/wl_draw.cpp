@@ -1181,10 +1181,8 @@ void R_RenderView()
 
 	WallRefresh ();
 
-#if defined(USE_FEATUREFLAGS) && defined(USE_PARALLAX)
-	if(GetFeatureFlags() & FF_PARALLAXSKY)
+	if (levelInfo->ParallaxSky.Size() > 0)
 		DrawParallax(vbuf, vbufPitch);
-#endif
 #if defined(USE_FEATUREFLAGS) && defined(USE_CLOUDSKY)
 	if(GetFeatureFlags() & FF_CLOUDSKY)
 		DrawClouds(vbuf, vbufPitch, min_wallheight);
