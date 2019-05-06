@@ -8,6 +8,8 @@
 #include "id_ca.h"
 #include "g_mapinfo.h"
 
+extern fixed viewz;
+
 #ifdef USE_FEATUREFLAGS
 
 // The lower left tile of every map determines the start texture of the parallax sky.
@@ -43,6 +45,9 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	const byte *skytex;
 	const int numParallax = levelInfo->ParallaxSky.Size();
 
+	fixed planeheight = viewz+(map->GetPlane(0).depth<<FRACBITS);
+	const fixed heightFactor = abs(planeheight)>>8;
+
 	startpage += numParallax - 1;
 
 	for(int x = 0; x < viewwidth; x++)
@@ -60,7 +65,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			//skytex = PM_GetTexture(startpage - curtex);
 		}
 		int texoffs = TEXTUREMASK - ((xtex & (TEXTURESIZE - 1)) << TEXTURESHIFT);
-		int yend = skyheight - (wallheight[x] >> 3);
+		int yend = skyheight - ((wallheight[x]*heightFactor)>>FRACBITS);
 		if(yend <= 0) continue;
 
 		for(int y = 0, offs = x; y < yend; y++, offs += vbufPitch)
