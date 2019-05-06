@@ -99,10 +99,10 @@ HANDLE_PROPERTY(ammouse2)
 HANDLE_PROPERTY(damagetype)
 {
 	STRING_PARAM(type, 0);
-	if(stricmp(type, "none") == 0 || *type == '\0' || !DamageType::strfound(type))
-		((AWeapon *)defaults)->damagetype = DamageType::normal;
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		((AWeapon *)defaults)->damagetype = NULL;
 	else
-		((AWeapon *)defaults)->damagetype = DamageType::strto(type);
+		((AWeapon *)defaults)->damagetype = ClassDef::FindClassTentative(type, NATIVE_CLASS(Damage));
 }
 
 HANDLE_PROPERTY(amount)
@@ -215,7 +215,7 @@ HANDLE_PROPERTY(damageresistance)
 		cls->Meta.SetMetaInt(AMETA_DamageResistances, AActor::damageResistances.Push(new AActor::DamageResistanceList()));
 
 	AActor::DamageResistance damageResistance;
-	damageResistance.damagetype = DamageType::strto(damagetype);
+	damageResistance.damagetype = ClassDef::FindClassTentative(damagetype, NATIVE_CLASS(Damage));
 	damageResistance.percent = (unsigned int)percent;
 
 	AActor::damageResistances[cls->Meta.GetMetaInt(AMETA_DamageResistances)]->Push(damageResistance);

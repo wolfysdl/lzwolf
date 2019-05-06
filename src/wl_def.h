@@ -355,24 +355,6 @@ typedef enum
 	ex_victorious
 } exit_t;
 
-namespace DamageType
-{
-    enum e
-    {
-        normal,
-        max,
-    };
-
-    extern int count(void);
-    extern std::string strof(enum e x);
-    bool strfound(std::string s);
-    extern enum e strto(std::string s);
-    extern void serialize(lwlib::Stream &stream, enum e &x);
-    extern void loadCustom(void);
-    std::ostream &operator<<(std::ostream &os, enum e x);
-}
-
-#define dmg_normal DamageType::normal
 
 /*
 =============================================================================

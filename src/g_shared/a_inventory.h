@@ -109,6 +109,17 @@ class ACustomInventory : public AInventory
 		bool	ExecuteState(AActor *context, const Frame *frame);
 };
 
+class ADamage : public AInventory
+{
+	DECLARE_NATIVE_CLASS(Damage, Inventory)
+
+	public:
+		const ClassDef	*GetDamageType() const;
+
+	protected:
+		AInventory		*CreateCopy(AActor *holder);
+};
+
 class AHealth : public AInventory
 {
 	DECLARE_NATIVE_CLASS(Health, Inventory)
@@ -173,7 +184,7 @@ class AWeapon : public AInventory
 		unsigned int	ammouse[2];
 		fixed			yadjust;
 		float			fovscale;
-		DamageType::e   damagetype;
+		const ClassDef  *damagetype;
 
 		// Inventory instance variables
 		FireMode		mode;

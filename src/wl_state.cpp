@@ -763,7 +763,7 @@ bool MoveObj (AActor *ob, int32_t move)
 */
 
 static FRandom pr_damagemobj("ActorTakeDamage");
-void DamageActor (AActor *ob, AActor *attacker, unsigned damage, DamageType::e damagetype)
+void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef  *damagetype)
 {
 	if (ob->player)
 	{

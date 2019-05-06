@@ -130,6 +130,10 @@ actor CustomInventory : Inventory native
 	action native A_WeaponGrin();
 }
 
+actor Damage : Inventory native
+{
+}
+
 actor ExtraLifeItem : Inventory native
 {
 	inventory.amount 1

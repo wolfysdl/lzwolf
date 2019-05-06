@@ -452,6 +452,34 @@ bool ACustomInventory::ExecuteState(AActor *context, const Frame *frame)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+IMPLEMENT_CLASS(Damage)
+
+AInventory *ADamage::CreateCopy(AActor *holder)
+{
+	const ClassDef *damageClass = GetDamageType();
+
+	if(damageClass == GetClass())
+		return Super::CreateCopy(holder);
+
+	GoAwayAndDie();
+
+	AInventory *copy = reinterpret_cast<AInventory *>(damageClass->CreateInstance());
+	copy->RemoveFromWorld();
+	copy->amount = amount;
+	copy->maxamount = maxamount;
+	return copy;
+}
+
+const ClassDef *ADamage::GetDamageType() const
+{
+	const ClassDef *cls = GetClass();
+	while(cls->GetParent() != NATIVE_CLASS(Damage))
+		cls = cls->GetParent();
+	return cls;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 // Opens a dialog when picked up, but otherwise behaves like a CustomInventory.
 class AQuizItem : public ACustomInventory
 {

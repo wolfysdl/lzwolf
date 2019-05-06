@@ -346,7 +346,8 @@ ACTION_FUNCTION(A_Explode)
 		if(output <= 0.0)
 			continue;
 
-		DamageActor(target, self->target, static_cast<unsigned int>(output), DamageType::strto(damagetype.GetChars()));
+		const ClassDef  *damageClass = ClassDef::FindClassTentative(damagetype, NATIVE_CLASS(Damage));
+		DamageActor(target, self->target, static_cast<unsigned int>(output), damageClass);
 	}
 	return true;
 }

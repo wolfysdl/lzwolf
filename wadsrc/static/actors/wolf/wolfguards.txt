@@ -65,6 +65,11 @@ actor Guard : WolfensteinMonster 11
 			GARD M 7.5
 			GARD N -1
 			stop
+		//Death_FireDamage:
+		//	GARD K 7.5 A_Fall
+		//	GARD M 7.5
+		//	GARD N -1
+		//	stop
 	}
 }
 actor GreenGuard : Guard 93

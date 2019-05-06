@@ -436,11 +436,6 @@ static void InitGame()
 	VW_UpdateScreen();
 
 //
-// Load meta data
-//
-	DamageType::loadCustom();
-
-//
 // Load Actors
 //
 

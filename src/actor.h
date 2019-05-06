@@ -99,7 +99,7 @@ class AActor : public Thinker,
 		struct DamageResistance
 		{
 			public:
-				DamageType::e   damagetype;
+				const ClassDef  *damagetype;
 				unsigned int	percent;
 		};
 		typedef LinkedList<DamageResistance> DamageResistanceList;
@@ -208,7 +208,7 @@ class AActor : public Thinker,
 		const Frame *SpawnState, *SeeState, *PathState, *PainState, *MeleeState, *MissileState, *RadiusWakeState;
 		short       temp1,hidden;
 		fixed		killerx,killery; // For deathcam
-		DamageType::e killerdamagetype;
+		const ClassDef  *killerdamagetype;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
