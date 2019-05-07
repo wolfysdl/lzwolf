@@ -44,6 +44,25 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	int curtex = -1;
 	const byte *skytex;
 	const int numParallax = levelInfo->ParallaxSky.Size();
+	int i;
+	int wbits = 0, hbits = 0;
+
+	// make sure all tiles are equal width and height
+	for (i = 0; i < numParallax; i++)
+	{
+		FTexture *source = TexMan(levelInfo->ParallaxSky[i]);
+		wbits = (wbits == 0 ? source->WidthBits : wbits);
+		if (source->WidthBits != wbits)
+			return;
+		hbits = (hbits == 0 ? source->HeightBits : hbits);
+		if (source->HeightBits != hbits)
+			return;
+	}
+
+	const int w = (1 << wbits);
+	const int h = (1 << hbits);
+
+	const int wmask = w*(w-1);
 
 	fixed planeheight = viewz+(map->GetPlane(0).depth<<FRACBITS);
 	const fixed heightFactor = abs(planeheight)>>8;
@@ -55,8 +74,8 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 		int curang = pixelangle[x] + midangle;
 		if(curang < 0) curang += FINEANGLES;
 		else if(curang >= FINEANGLES) curang -= FINEANGLES;
-		int xtex = curang * numParallax * TEXTURESIZE / FINEANGLES;
-		int newtex = xtex >> TEXTURESHIFT;
+		int xtex = curang * numParallax * w / FINEANGLES;
+		int newtex = xtex >> wbits;
 		if(newtex != curtex)
 		{
 			curtex = newtex;
@@ -64,11 +83,11 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			skytex = source->GetPixels();
 			//skytex = PM_GetTexture(startpage - curtex);
 		}
-		int texoffs = TEXTUREMASK - ((xtex & (TEXTURESIZE - 1)) << TEXTURESHIFT);
+		int texoffs = wmask - ((xtex & (w - 1)) << wbits);
 		int yend = skyheight - ((wallheight[x]*heightFactor)>>FRACBITS);
 		if(yend <= 0) continue;
 
 		for(int y = 0, offs = x; y < yend; y++, offs += vbufPitch)
-			vbuf[offs] = skytex[texoffs + (y * TEXTURESIZE) / skyheight];
+			vbuf[offs] = skytex[texoffs + (y * h) / skyheight];
 	}
 }
