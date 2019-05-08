@@ -62,7 +62,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	const int w = (1 << wbits);
 	const int h = (1 << hbits);
 
-	const int wmask = w*(w-1);
+	const int tmask = h*(w-1);
 
 	fixed planeheight = viewz+(map->GetPlane(0).depth<<FRACBITS);
 	const fixed heightFactor = abs(planeheight)>>8;
@@ -83,7 +83,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			skytex = source->GetPixels();
 			//skytex = PM_GetTexture(startpage - curtex);
 		}
-		int texoffs = wmask - ((xtex & (w - 1)) << wbits);
+		int texoffs = tmask - ((xtex & (w - 1)) << hbits);
 		int yend = skyheight - ((wallheight[x]*heightFactor)>>FRACBITS);
 		if(yend <= 0) continue;
 
