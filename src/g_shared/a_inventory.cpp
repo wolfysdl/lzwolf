@@ -665,7 +665,7 @@ void AWeapon::Serialize(FArchive &arc)
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374729160)
 		arc << ammotype[1] << ammogive[1] << ammouse[1] << ammo[1]
-			<< fovscale << damagetype;
+			<< fovscale;
 
 	Super::Serialize(arc);
 }
