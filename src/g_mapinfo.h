@@ -150,6 +150,7 @@ public:
 		int WallColor;
 		int YourColor;
 	} automap;
+	int parallaxskyceilcolor;
 } gameinfo;
 
 class LevelInfo

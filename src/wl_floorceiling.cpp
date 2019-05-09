@@ -7,13 +7,19 @@
 #include "wl_main.h"
 #include "wl_shade.h"
 #include "r_data/colormaps.h"
+#include "g_mapinfo.h"
 
 #include <climits>
 
 extern fixed viewshift;
 extern fixed viewz;
 
-static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int halfheight, fixed planeheight)
+static inline bool R_PixIsTrans(byte col, const std::pair<bool, byte> &trans)
+{
+	return trans.first && col == trans.second;
+}
+
+static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
 {
 	fixed dist;                                // distance to row projection
 	fixed tex_step;                            // global step per one screen pixel
@@ -120,14 +126,16 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 						const int u = (gu>>18) & 63;
 						const int v = (-gv>>18) & 63;
 						const unsigned texoffs = (u * 64) + v;
-						*tex_offset = curshades[tex[texoffs]];
+						if (!R_PixIsTrans(tex[texoffs], trans))
+							*tex_offset = curshades[tex[texoffs]];
 					}
 					else
 					{
 						const int u = (FixedMul((gu>>8)-512, texxscale)) & (texwidth-1);
 						const int v = (FixedMul((gv>>8)+512, texyscale)) & (texheight-1);
 						const unsigned texoffs = (u * texheight) + v;
-						*tex_offset = curshades[tex[texoffs]];
+						if (!R_PixIsTrans(tex[texoffs], trans))
+							*tex_offset = curshades[tex[texoffs]];
 					}
 				}
 			}
@@ -144,6 +152,12 @@ void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
 {
 	const int halfheight = (viewheight >> 1) - viewshift;
 
+	const byte skyceilcol = (gameinfo.parallaxskyceilcolor > 256 ?
+		(byte)(gameinfo.parallaxskyceilcolor&0xff) : 0xff);
+
+	const int numParallax = levelInfo->ParallaxSky.Size();
+	std::pair<bool, byte> ceiltrans(numParallax > 0, skyceilcol);
+
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz);
-	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz+(map->GetPlane(0).depth<<FRACBITS));
+	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz+(map->GetPlane(0).depth<<FRACBITS), ceiltrans);
 }

@@ -559,7 +559,7 @@ protected:
 			TArray<FString> textureNames;
 			ParseStringArrayAssignment(textureNames);
 
-			int i;
+			unsigned int i;
 			for (i = 0; i < textureNames.Size(); i++)
 			{
 				FTextureID skyTex = TexMan.GetTexture(textureNames[i], FTexture::TEX_Flat);
@@ -765,6 +765,8 @@ protected:
 		}
 		else if(key.CompareNoCase("quitmessages") == 0)
 			ParseStringArrayAssignment(gameinfo.QuitMessages);
+		else if(key.CompareNoCase("parallaxskyceilcolor") == 0)
+			ParseColorAssignment(gameinfo.parallaxskyceilcolor);
 		else
 			return false;
 		return true;
