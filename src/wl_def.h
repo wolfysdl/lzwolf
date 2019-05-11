@@ -17,7 +17,6 @@
 #	include <stdint.h>
 #endif
 #include <SDL.h>
-#include "lw_stream.h"
 
 #if !defined O_BINARY
 #	define O_BINARY 0

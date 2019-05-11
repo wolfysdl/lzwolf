@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "textures/textures.h"
 #include "c_cvars.h"
 #include "id_ca.h"

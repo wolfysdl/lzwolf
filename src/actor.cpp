@@ -32,6 +32,7 @@
 **
 */
 
+#include <sstream>
 #include "actor.h"
 #include "a_inventory.h"
 #include "farchive.h"

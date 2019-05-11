@@ -289,8 +289,6 @@ set(SOURCE_FILES
 	wl_text.cpp
 	zstrformat.cpp
 	zstring.cpp
-	lw_stream.cpp
-	pak.c
 )
 
 if(NOT ANDROID)
