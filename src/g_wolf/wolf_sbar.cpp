@@ -534,6 +534,8 @@ void WolfStatusBar::DrawStatusBar()
 	DrawWeapon ();
 	DrawScore ();
 	DrawItems ();
+
+	DrawActors ();
 }
 
 //===========================================================================

@@ -398,6 +398,27 @@ void DBaseStatusBar::RefreshBackground (bool noborder)
 /*
 ===================
 =
+= DrawActors
+=
+===================
+*/
+
+void DBaseStatusBar::DrawActors ()
+{
+	if(viewsize == 21 && ingame)
+		return;
+
+	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+	{
+		AActor *obj = iter;
+		R_DrawSpriteAsGraphic (obj);
+	}
+}
+
+
+/*
+===================
+=
 = DrawPlayScreen
 =
 ===================

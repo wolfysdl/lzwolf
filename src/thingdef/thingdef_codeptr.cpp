@@ -34,6 +34,8 @@
 **
 */
 
+#include <map>
+#include <string>
 #include "actor.h"
 #include "id_ca.h"
 #include "id_sd.h"
@@ -508,39 +510,6 @@ ACTION_FUNCTION(A_JumpIfInventory)
 	return false;
 }
 
-ACTION_FUNCTION(A_MirrorPosition)
-{
-	ACTION_PARAM_DOUBLE(mirx, 0);
-
-	fixed_t mirxfixed = FLOAT2FIXED(mirx);
-	self->x = mirxfixed + (mirxfixed - players[0].camera->x);
-
-	return false;
-}
-
-ACTION_FUNCTION(A_RadiusWake)
-{
-	ACTION_PARAM_INT(radius, 0);
-
-	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
-	{
-		AActor * const target = iter;
-
-		// Calculate distance from origin to outer bound of target actor
-		const fixed dist = MAX(0, MAX(abs(target->x - self->x), abs(target->y - self->y)) - target->radius) >> (FRACBITS - 6);
-
-		// First check if the target is in range (also don't mess with ourself)
-		if(dist >= radius || target == self || !(target->flags & FL_SHOOTABLE))
-			continue;
-
-		const Frame *wakestate = self->FindState(NAME_RadiusWake);
-		if(wakestate)
-			self->SetState(wakestate);
-	}
-
-	return true;
-}
-
 ACTION_FUNCTION(A_Light)
 {
 	ACTION_PARAM_INT(level, 0);
@@ -578,6 +547,16 @@ ACTION_FUNCTION(A_MeleeAttack)
 	}
 	if(!misssound.IsEmpty())
 		PlaySoundLocActor(misssound, self);
+	return false;
+}
+
+ACTION_FUNCTION(A_MirrorPosition)
+{
+	ACTION_PARAM_DOUBLE(mirx, 0);
+
+	fixed_t mirxfixed = FLOAT2FIXED(mirx);
+	self->x = mirxfixed + (mirxfixed - players[0].camera->x);
+
 	return false;
 }
 
@@ -619,12 +598,46 @@ ACTION_FUNCTION(A_PlaySound)
 	return true;
 }
 
+ACTION_FUNCTION(A_RadiusWake)
+{
+	ACTION_PARAM_INT(radius, 0);
+
+	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+	{
+		AActor * const target = iter;
+
+		// Calculate distance from origin to outer bound of target actor
+		const fixed dist = MAX(0, MAX(abs(target->x - self->x), abs(target->y - self->y)) - target->radius) >> (FRACBITS - 6);
+
+		// First check if the target is in range (also don't mess with ourself)
+		if(dist >= radius || target == self || !(target->flags & FL_SHOOTABLE))
+			continue;
+
+		const Frame *wakestate = self->FindState(NAME_RadiusWake);
+		if(wakestate)
+			self->SetState(wakestate);
+	}
+
+	return true;
+}
+
 ACTION_FUNCTION(A_ScaleVelocity)
 {
 	ACTION_PARAM_DOUBLE(scale, 0);
 
 	self->velx = FLOAT2FIXED(self->velx*scale);
 	self->vely = FLOAT2FIXED(self->vely*scale);
+	return true;
+}
+
+ACTION_FUNCTION(A_SetPicXY)
+{
+	ACTION_PARAM_INT(picX, 0);
+	ACTION_PARAM_INT(picY, 1);
+
+	self->picX = picX;
+	self->picY = picY;
+
 	return true;
 }
 

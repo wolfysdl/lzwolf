@@ -81,5 +81,6 @@ public:
 };
 
 void R_DrawZoomer(FTextureID texID);
+void R_DrawSpriteAsGraphic (AActor *actor);
 
 #endif

@@ -575,7 +575,7 @@ void DrawScaleds (void)
 	{
 		AActor *obj = iter;
 
-		if (obj->sprite == SPR_NONE)
+		if (obj->sprite == SPR_NONE || (obj->flags & FL_STATUSBAR))
 			continue;
 
 		MapSpot spot = map->GetSpot(obj->tilex, obj->tiley, 0);

@@ -30,6 +30,7 @@ public:
 	virtual void NewGame() {}
 	virtual void Tick() {}
 	virtual void RefreshBackground(bool noborder=false);
+	virtual void DrawActors();
 	virtual void UpdateFace (int damage=0) {}
 	virtual void WeaponGrin () {}
 };

@@ -777,3 +777,19 @@ void R_DrawZoomer(FTextureID texID)
 	}
 	while(true);
 }
+
+void R_DrawSpriteAsGraphic (AActor *actor)
+{
+	if(!(actor->flags & FL_STATUSBAR) || actor->sprite == SPR_NONE || loadedSprites[actor->sprite].numFrames == 0)
+		return;
+
+	const Frame *frame = actor->state;
+
+	const Sprite &spr = spriteFrames[loadedSprites[actor->sprite].frames+frame->frame];
+	FTexture *tex;
+	tex = TexMan[spr.texture[0]];
+	if(tex == NULL)
+		return;
+
+	VWB_DrawGraphic(tex, actor->picX, actor->picY);
+}

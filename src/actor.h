@@ -209,6 +209,7 @@ class AActor : public Thinker,
 		short       temp1,hidden;
 		fixed		killerx,killery; // For deathcam
 		const ClassDef  *killerdamagetype;
+		int         picX, picY;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
