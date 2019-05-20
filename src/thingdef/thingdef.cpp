@@ -93,8 +93,8 @@ const struct FlagDef
 	DEFINE_FLAG(FL, PICKUP, Actor, flags),
 	DEFINE_FLAG(FL, PLOTONAUTOMAP, Actor, flags),
 	DEFINE_FLAG(FL, RANDOMIZE, Actor, flags),
-	DEFINE_FLAG(FL, RIPPER, Actor, flags),
 	DEFINE_FLAG(FL, REQUIREKEYS, Actor, flags),
+	DEFINE_FLAG(FL, RIPPER, Actor, flags),
 	DEFINE_FLAG(FL, SHOOTABLE, Actor, flags),
 	DEFINE_FLAG(FL, SOLID, Actor, flags),
 	DEFINE_FLAG(FL, STATUSBAR, Actor, flags)
