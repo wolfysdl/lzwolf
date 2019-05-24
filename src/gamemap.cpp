@@ -675,7 +675,7 @@ FArchive &operator<< (FArchive &arc, GameMap *&gm)
 		MapPlane &plane = gm->planes[p];
 
 		arc << plane.depth;
-		assert(plane.depth == 64);
+		assert(plane.depth >= 64);
 		if(!arc.IsStoring())
 			plane.gm = gm;
 
