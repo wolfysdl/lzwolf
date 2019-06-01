@@ -1,3 +1,4 @@
+#include <vector>
 #include <algorithm>
 #include "textures/textures.h"
 #include "c_cvars.h"
@@ -14,6 +15,63 @@
 
 extern fixed viewshift;
 extern fixed viewz;
+
+namespace Shading
+{
+	class Span
+	{
+	public:
+		int len;
+		int light;
+		const byte *shades;
+
+		explicit Span(int len_, int light_) : len(len_), light(light_), shades(0)
+		{
+		}
+	};
+
+	int halfheight;
+	fixed planeheight;
+	int tz;
+	std::vector<Span> spans;
+	Span *curspan;
+
+	void PrepareConstants (int halfheight_, fixed planeheight_)
+	{
+		halfheight = halfheight_;
+		planeheight = planeheight_;
+	}
+
+	void HitSpans (fixed gu, fixed gv, fixed du, fixed dv)
+	{
+		spans.clear();
+		spans.push_back(Span(viewwidth, 0));
+	}
+
+	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
+	{
+		// Depth fog
+		tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
+
+		for (std::vector<Span>::size_type i = 0; i < spans.size(); i++)
+		{
+			Span &span = spans[i];
+			const int shade = LIGHT2SHADE(gLevelLight + r_extralight + span.light);
+			span.shades = &NormalLight.Maps[GETPALOOKUP(tz, shade)<<8];
+		}
+
+		curspan = &spans[0];
+	}
+
+	const byte *ShadeForPix ()
+	{
+		const byte *curshades = curspan->shades;
+		curspan->len--;
+		if (!curspan->len)
+			curspan++;
+		return curshades;
+	}
+}
 
 static inline bool R_PixIsTrans(byte col, const std::pair<bool, byte> &trans)
 {
@@ -34,6 +92,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 	if(planeheight == 0) // Eye level
 		return;
+	
+	Shading::PrepareConstants (halfheight, planeheight);
 
 	const fixed heightFactor = abs(planeheight)>>8;
 	int y0 = ((min_wallheight*heightFactor)>>FRACBITS) - abs(viewshift);
@@ -82,13 +142,13 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		gu -= (viewwidth >> 1) * du;
 		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
 
-		// Depth fog
-		const int shade = LIGHT2SHADE(gLevelLight + r_extralight);
-		const int tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
-		curshades = &NormalLight.Maps[GETPALOOKUP(tz, shade)<<8];
+		curshades = NormalLight.Maps;
+		Shading::NextY (y, gu, gv, du, dv);
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
+			curshades = Shading::ShadeForPix ();
+
 			if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
 			{
 				unsigned int curx = (gu >> (TILESHIFT+8));
