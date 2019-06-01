@@ -30,11 +30,18 @@ namespace Shading
 		}
 	};
 
+	class YLine
+	{
+	public:
+		fixed gu,gv,du,dv;
+		int tz;
+	};
+
 	int halfheight;
 	fixed planeheight;
-	int tz;
 	std::vector<Span> spans;
 	Span *curspan;
+	YLine yline;
 
 	void PrepareConstants (int halfheight_, fixed planeheight_)
 	{
@@ -42,22 +49,44 @@ namespace Shading
 		planeheight = planeheight_;
 	}
 
-	void HitSpans (fixed gu, fixed gv, fixed du, fixed dv)
+	void HitSpans (int curx, int cury)
 	{
 		spans.clear();
 		spans.push_back(Span(viewwidth, 0));
+
+		// ray
+		// x = S + Vt
+		// where V = E-S
+
+		// halos
+		// H(i): ||x - C(i)|| <= R(i)
+
+		// f(t) = ||S + Vt - C||
+		// need (f(t))^2 <= R^2
+		// f(t) = ||Vt + (S-C)||
+		// (f(t))^2 = V.Vt^2 +2V.(S-C)t + (S-C).(S-C)
 	}
 
 	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
 	{
 		// Depth fog
-		tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
+		yline.tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
+
+		yline.gu = gu;
+		yline.gv = gv;
+		yline.du = du;
+		yline.dv = dv;
+	}
+
+	void HitTile (int curx, int cury)
+	{
+		HitSpans (curx, cury);
 
 		for (std::vector<Span>::size_type i = 0; i < spans.size(); i++)
 		{
 			Span &span = spans[i];
 			const int shade = LIGHT2SHADE(gLevelLight + r_extralight + span.light);
-			span.shades = &NormalLight.Maps[GETPALOOKUP(tz, shade)<<8];
+			span.shades = &NormalLight.Maps[GETPALOOKUP(yline.tz, shade)<<8];
 		}
 
 		curspan = &spans[0];
@@ -147,8 +176,6 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
-			curshades = Shading::ShadeForPix ();
-
 			if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
 			{
 				unsigned int curx = (gu >> (TILESHIFT+8));
@@ -156,6 +183,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 				if(curx != oldmapx || cury != oldmapy)
 				{
+					Shading::HitTile (curx, cury);
+
 					oldmapx = curx;
 					oldmapy = cury;
 					const MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, 0);
@@ -180,6 +209,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 						tex = NULL;
 				}
 
+				curshades = Shading::ShadeForPix ();
+
 				if(tex)
 				{
 					if(useOptimized)
@@ -199,6 +230,10 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 							*tex_offset = curshades[tex[texoffs]];
 					}
 				}
+			}
+			else
+			{
+				Shading::ShadeForPix ();
 			}
 			gu += du;
 			gv += dv;
