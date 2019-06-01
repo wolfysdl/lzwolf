@@ -205,6 +205,7 @@ class GameMap
 		// Sound functions
 		bool			CheckLink(const Zone *zone1, const Zone *zone2, bool recurse);
 		void			LinkZones(const Zone *zone1, const Zone *zone2, bool open);
+		void			ChangeMusic(int selection);
 
 		// Save lookups
 		const Tile		*GetTile(unsigned int index) const;

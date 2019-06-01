@@ -1453,6 +1453,12 @@ void GameMap::ReadPlanesData()
 	}
 }
 
+void GameMap::ChangeMusic(int selection)
+{
+	FString music = xlat.GetMusic(selection);
+	header.music = music;
+}
+
 static int FindAdjacentDoor(MapSpot spot, MapTrigger *&trigger)
 {
 	const MapSpot adjacent[4] = {

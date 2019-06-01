@@ -1185,3 +1185,10 @@ FUNC(Teleport_Relative)
 	activator->Teleport(x, y, angle, !!(args[2] & TELEPORT_NoFog));
 	return 1;
 }
+
+FUNC(Change_Music)
+{
+	map->ChangeMusic (args[0]);
+	StartMusic ();
+	return 1;
+}
