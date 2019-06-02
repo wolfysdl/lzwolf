@@ -1,5 +1,7 @@
 #include <vector>
 #include <algorithm>
+#include <map>
+#include <set>
 #include "textures/textures.h"
 #include "c_cvars.h"
 #include "id_ca.h"
@@ -30,15 +32,36 @@ namespace Shading
 		}
 	};
 
+	class Halo
+	{
+	public:
+		typedef std::vector<Halo>::size_type Id;
+
+		TVector2<double> C;
+		double R;
+		int light;
+	};
+
+	class Tile
+	{
+	public:
+		typedef std::pair<int, int> Pos;
+		std::vector<Halo::Id> haloIds;
+	};
+
 	int halfheight;
 	fixed planeheight;
+	fixed heightFactor;
 	std::vector<Span> spans;
 	Span *curspan;
+	std::vector<Halo> halos;
+	std::map<Tile::Pos, Tile> tiles;
 
 	void PrepareConstants (int halfheight_, fixed planeheight_)
 	{
 		halfheight = halfheight_;
 		planeheight = planeheight_;
+		heightFactor = abs(planeheight)>>8;
 	}
 
 	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
@@ -47,23 +70,12 @@ namespace Shading
 		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 
 		spans.clear();
-		spans.push_back(Span(viewwidth, 0));
 
-		// ray
-		// x = S + Vt
-		// where V = E-S
+		const unsigned int mapwidth = map->GetHeader().width;
+		const unsigned int mapheight = map->GetHeader().height;
 
-		// halos
-		// H(i): ||x - C(i)|| <= R(i)
-
-		// f(t) = ||S + Vt - C||
-		// need (f(t))^2 <= R^2
-		// f(t) = ||Vt + (S-C)||
-		// (f(t))^2 = V.Vt^2 + 2V.(S-C)t + (S-C).(S-C)
-
-		// t = (-b +- sqrt(b^2 - 4ac)) / 2a
-
-		std::set<Halo::Id> haloIds;
+		typedef std::set<Halo::Id> HaloIds;
+		HaloIds haloIds;
 		{
 			const fixed gu0 = gu;
 			const fixed gv0 = gv;
@@ -81,8 +93,8 @@ namespace Shading
 						oldmapy = cury;
 
 						const std::vector<Halo::Id> &ids =
-							tiles[oldmapx%mapwidth][oldmapy%mapheight].haloIds;
-						std::copy(ids.begin(), ids.end(), std::back_inserter(haloIds));
+							tiles[Tile::Pos(oldmapx%mapwidth,oldmapy%mapheight)].haloIds;
+						std::copy(ids.begin(), ids.end(), std::inserter(haloIds, haloIds.end()));
 					}
 				}
 
@@ -92,6 +104,54 @@ namespace Shading
 			gu = gu0;
 			gv = gv0;
 		}
+
+		// ray
+		// x = S + Vt
+		// where V = E-S
+
+		// halos
+		// H(i): ||x - C(i)|| <= R(i)
+
+		// f(t) = ||S + Vt - C||
+		// need (f(t))^2 <= R^2
+		// f(t) = ||Vt + (S-C)||
+		// (f(t))^2 = V.Vt^2 + 2V.(S-C)t + (S-C).(S-C)
+
+		// t = (-b +- sqrt(b^2 - 4ac)) / 2a
+
+		typedef TVector2<double> Vec2;
+		const Vec2 S = Vec2(FIXED2FLOAT(gu), FIXED2FLOAT(gv));
+		const Vec2 dV = Vec2(FIXED2FLOAT(du), FIXED2FLOAT(dv));
+		const Vec2 E = S + dV * (double)viewwidth;
+		const Vec2 V = E-S;
+
+		const double a = V|V;
+
+		for (HaloIds::const_iterator it = haloIds.begin(); it != haloIds.end(); ++it)
+		{
+			const Halo &halo = halos[*it];
+			const Vec2 C = halo.C;
+			const double R = halo.R;
+
+			const double b = 2*(V|(S-C));
+			const double c = (S-C)|(S-C);
+
+			const double desc = b*b-4*a*c;
+			if (desc > 0)
+			{
+				const double sqdesc = sqrt(desc);
+				const double t1 = std::max((-b - sqdesc)/(2*a),0.0);
+				const double t2 = std::min((-b + sqdesc)/(2*a),1.0);
+
+				if (t1<t2)
+				{
+					spans.push_back(Span(0, halo.light));
+				}
+			}
+		}
+
+		if (spans.empty())
+			spans.push_back(Span(viewwidth, 0));
 
 		for (std::vector<Span>::size_type i = 0; i < spans.size(); i++)
 		{
