@@ -630,6 +630,18 @@ ACTION_FUNCTION(A_ScaleVelocity)
 	return true;
 }
 
+ACTION_FUNCTION(A_SetHaloMask)
+{
+	ACTION_PARAM_INT(id, 0);
+	ACTION_PARAM_BOOL(enabled, 1);
+
+	if (enabled)
+		self->haloMask |= (1 << id);
+	else
+		self->haloMask &= ~(1 << id);
+	return true;
+}
+
 ACTION_FUNCTION(A_SetPicXY)
 {
 	ACTION_PARAM_INT(picX, 0);

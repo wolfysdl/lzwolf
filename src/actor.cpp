@@ -148,6 +148,7 @@ EmbeddedList<AActor>::List AActor::actors;
 PointerIndexTable<ExpressionNode> AActor::damageExpressions;
 PointerIndexTable<AActor::DropList> AActor::dropItems;
 PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
+PointerIndexTable<AActor::HaloLightList> AActor::haloLights;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -366,6 +367,14 @@ AActor::DamageResistanceList *AActor::GetDamageResistanceList() const
 	return damageResistances[damageresistancesIndex];
 }
 
+AActor::HaloLightList *AActor::GetHaloLightList() const
+{
+	int halolightsIndex = GetClass()->Meta.GetMetaInt(AMETA_HaloLights, -1);
+	if(halolightsIndex == -1)
+		return NULL;
+	return haloLights[halolightsIndex];
+}
+
 const AActor *AActor::GetDefault() const
 {
 	return GetClass()->GetDefault();
@@ -510,6 +519,7 @@ void AActor::Serialize(FArchive &arc)
 		arc << proxy;
 	}
 	arc << hasActorRef;
+	arc << haloMask;
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;

@@ -221,6 +221,23 @@ HANDLE_PROPERTY(damageresistance)
 	AActor::damageResistances[cls->Meta.GetMetaInt(AMETA_DamageResistances)]->Push(damageResistance);
 }
 
+HANDLE_PROPERTY(halolight)
+{
+	INT_PARAM(id, 0);
+	FLOAT_PARAM(radius, 1);
+	INT_PARAM(light, 2);
+
+	if(cls->Meta.GetMetaInt(AMETA_HaloLights, -1) == -1 || cls->Meta.IsInherited(AMETA_HaloLights))
+		cls->Meta.SetMetaInt(AMETA_HaloLights, AActor::haloLights.Push(new AActor::HaloLightList()));
+
+	AActor::HaloLight haloLight;
+	haloLight.id = id;
+	haloLight.radius = radius;
+	haloLight.light = light;
+
+	AActor::haloLights[cls->Meta.GetMetaInt(AMETA_HaloLights)]->Push(haloLight);
+}
+
 HANDLE_PROPERTY(damagescreencolor)
 {
     STRING_PARAM(dmgcolor, 0);
@@ -626,6 +643,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
+	DEFINE_PROP(halolight, Actor, IFI),
 	DEFINE_PROP(health, Actor, I_IIIIIIII),
 	DEFINE_PROP(height, Actor, I),
 	DEFINE_PROP(icon, Inventory, S),

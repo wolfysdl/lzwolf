@@ -67,8 +67,30 @@ namespace Shading
 	void PopulateHalos (void)
 	{
 		halos.clear();
-		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
-		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 1.0, 5<<3));
+		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
+		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 1.0, 5<<3));
+
+		for(AActor::Iterator check = AActor::GetIterator();check.Next();)
+		{
+			typedef AActor::HaloLightList Li;
+
+			Li *li = check->GetHaloLightList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator haloLight = item;
+					if ((check->haloMask & (1 << haloLight->id)) != 0)
+					{
+						const double x = FIXED2FLOAT(check->x);
+						const double y = FIXED2FLOAT(check->y);
+						halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+					}
+				}
+				while(item.Next());
+			}
+		}
 
 		tiles.clear();
 		{
