@@ -283,6 +283,13 @@ struct TVector2
 	{
 		return TVector2(-Y, X);
 	}
+
+	template <class vec_r>
+	void Convert(TVector2<vec_r> &other) const
+	{
+		other.X = static_cast<vec_r>(X);
+		other.Y = static_cast<vec_r>(Y);
+	}
 };
 
 template<class vec_t>

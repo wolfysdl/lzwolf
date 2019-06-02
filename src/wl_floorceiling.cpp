@@ -64,18 +64,40 @@ namespace Shading
 	std::vector<Halo> halos;
 	std::map<Tile::Pos, Tile> tiles;
 
+	void PopulateHalos (void)
+	{
+		halos.clear();
+		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
+		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 1.0, 5<<3));
+
+		tiles.clear();
+		{
+			typedef std::vector<Halo> HaloVec;
+			const HaloVec &v = halos;
+			for (HaloVec::const_iterator it = v.begin(); it != v.end(); ++it)
+			{
+				const Halo &h = *it;
+				TVector2<int> low, high;
+				(h.C - h.R).Convert(low);
+				(h.C + h.R).Convert(high);
+
+				int x;
+				for (x = low.X; x <= high.X; x++)
+				{
+					int y;
+					for (y = low.Y; y <= high.Y; y++)
+						tiles[Tile::Pos(x, y)].haloIds.push_back(it - v.begin());
+				}
+			}
+		}
+	}
+
 	void PrepareConstants (int halfheight_, fixed planeheight_, fixed planenumerator_)
 	{
 		halfheight = halfheight_;
 		planeheight = planeheight_;
 		planenumerator = planenumerator_;
 		heightFactor = abs(planeheight)>>8;
-
-		tiles.clear();
-		tiles[Tile::Pos(49, 146)].haloIds.push_back(0);
-
-		halos.clear();
-		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
 	}
 
 	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
@@ -400,6 +422,8 @@ void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
 
 	const int numParallax = levelInfo->ParallaxSky.Size();
 	std::pair<bool, byte> ceiltrans(numParallax > 0, skyceilcol);
+
+	Shading::PopulateHalos ();
 
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz);
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz+(map->GetPlane(0).depth<<FRACBITS), ceiltrans);
