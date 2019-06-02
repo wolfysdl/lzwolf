@@ -243,8 +243,8 @@ int DebugKeys (void)
 	{
 		FString position;
 		position.Format("X: %d\nY: %d\nA: %d",
-			players[0].mo->x >> 10,
-			players[0].mo->y >> 10,
+			players[0].mo->x >> 16,
+			players[0].mo->y >> 16,
 			players[0].mo->angle/ANGLE_1
 		);
 		US_CenterWindow (14,6);

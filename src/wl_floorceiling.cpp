@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <iostream>
 #include "textures/textures.h"
 #include "c_cvars.h"
 #include "id_ca.h"
@@ -40,6 +41,11 @@ namespace Shading
 		TVector2<double> C;
 		double R;
 		int light;
+
+		Halo(TVector2<double> C_, double R_, int light_) :
+			C(C_), R(R_), light(light_)
+		{
+		}
 	};
 
 	class Tile
@@ -62,6 +68,12 @@ namespace Shading
 		halfheight = halfheight_;
 		planeheight = planeheight_;
 		heightFactor = abs(planeheight)>>8;
+
+		tiles.clear();
+		tiles[Tile::Pos(49, 87)].haloIds.push_back(0);
+
+		halos.clear();
+		halos.push_back(Halo(TVector2<double>(49.5, 87.5), 0.5, 10));
 	}
 
 	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
@@ -140,10 +152,15 @@ namespace Shading
 					{
 						oldmapx = curx;
 						oldmapy = cury;
+						//std::cerr << oldmapx%mapwidth << " " << oldmapy%mapheight << std::endl;
 
 						const std::vector<Halo::Id> &ids =
 							tiles[Tile::Pos(oldmapx%mapwidth,oldmapy%mapheight)].haloIds;
-						std::copy(ids.begin(), ids.end(), std::inserter(haloIds, haloIds.end()));
+						if (ids.size() > 0)
+						{
+							std::copy(ids.begin(), ids.end(),
+								std::inserter(haloIds, haloIds.end()));
+						}
 					}
 				}
 
@@ -169,8 +186,8 @@ namespace Shading
 		// t = (-b +- sqrt(b^2 - 4ac)) / 2a
 
 		typedef TVector2<double> Vec2;
-		const Vec2 S = Vec2(FIXED2FLOAT(gu), FIXED2FLOAT(gv));
-		const Vec2 dV = Vec2(FIXED2FLOAT(du), FIXED2FLOAT(dv));
+		const Vec2 S = Vec2(FIXED2FLOAT(gu)/256.0, FIXED2FLOAT(gv)/256.0);
+		const Vec2 dV = Vec2(FIXED2FLOAT(du)/256.0, FIXED2FLOAT(dv)/256.0);
 		const Vec2 E = S + dV * (double)viewwidth;
 		const Vec2 V = E-S;
 
