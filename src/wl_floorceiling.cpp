@@ -64,12 +64,61 @@ namespace Shading
 		heightFactor = abs(planeheight)>>8;
 	}
 
+	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
+	{
+		typedef std::vector<Span> Vec;
+
+		while (1)
+		{
+			int sx = 0;
+			Vec::size_type i;
+			for (i = 0; i < v.size(); i++)
+			{
+				const Span &s = v[i];
+				sx += s.len;
+				if (x1 < sx)
+				{
+					assert(i > 0);
+					sx -= s.len;
+					break;
+				}
+			}
+			if (i == v.size())
+				break;
+
+			if (x1 == sx)
+			{
+				if (x2 >= sx+v[i].len)
+				{
+					v[i].light += light;
+					x1 = sx+v[i].len;
+					if (x1 < x2)
+						continue;
+				}
+				else // x2 < sx+v[i].len
+				{
+					v.insert(v.begin()+i+1, Span(x2-(sx+v[i].len),v[i].light));
+					v[i].light += light;
+				}
+			}
+			else // x1 > sx
+			{
+				v.insert(v.begin()+i, Span(x1-sx,v[i].light));
+				sx = x1;
+				if (x1 < x2)
+					continue;
+			}
+			break;
+		}
+	}
+
 	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
 	{
 		// Depth fog
 		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 
 		spans.clear();
+		spans.push_back(Span(viewwidth, 0));
 
 		const unsigned int mapwidth = map->GetHeader().width;
 		const unsigned int mapheight = map->GetHeader().height;
@@ -134,7 +183,7 @@ namespace Shading
 			const double R = halo.R;
 
 			const double b = 2*(V|(S-C));
-			const double c = (S-C)|(S-C);
+			const double c = ((S-C)|(S-C))-R*R;
 
 			const double desc = b*b-4*a*c;
 			if (desc > 0)
@@ -143,15 +192,13 @@ namespace Shading
 				const double t1 = std::max((-b - sqdesc)/(2*a),0.0);
 				const double t2 = std::min((-b + sqdesc)/(2*a),1.0);
 
-				if (t1<t2)
-				{
-					spans.push_back(Span(0, halo.light));
-				}
+				const int x1 = t1*viewwidth;
+				const int x2 = t2*viewwidth;
+
+				if (x1<x2)
+					InsertSpan (x1, x2, spans, halo.light);
 			}
 		}
-
-		if (spans.empty())
-			spans.push_back(Span(viewwidth, 0));
 
 		for (std::vector<Span>::size_type i = 0; i < spans.size(); i++)
 		{
