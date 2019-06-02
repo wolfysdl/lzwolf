@@ -30,18 +30,10 @@ namespace Shading
 		}
 	};
 
-	class YLine
-	{
-	public:
-		fixed gu,gv,du,dv;
-		int tz;
-	};
-
 	int halfheight;
 	fixed planeheight;
 	std::vector<Span> spans;
 	Span *curspan;
-	YLine yline;
 
 	void PrepareConstants (int halfheight_, fixed planeheight_)
 	{
@@ -49,8 +41,11 @@ namespace Shading
 		planeheight = planeheight_;
 	}
 
-	void HitSpans (int curx, int cury)
+	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
 	{
+		// Depth fog
+		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
+
 		spans.clear();
 		spans.push_back(Span(viewwidth, 0));
 
@@ -64,29 +59,45 @@ namespace Shading
 		// f(t) = ||S + Vt - C||
 		// need (f(t))^2 <= R^2
 		// f(t) = ||Vt + (S-C)||
-		// (f(t))^2 = V.Vt^2 +2V.(S-C)t + (S-C).(S-C)
-	}
+		// (f(t))^2 = V.Vt^2 + 2V.(S-C)t + (S-C).(S-C)
 
-	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
-	{
-		// Depth fog
-		yline.tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
+		// t = (-b +- sqrt(b^2 - 4ac)) / 2a
 
-		yline.gu = gu;
-		yline.gv = gv;
-		yline.du = du;
-		yline.dv = dv;
-	}
+		std::set<Halo::Id> haloIds;
+		{
+			const fixed gu0 = gu;
+			const fixed gv0 = gv;
+			unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
+			for (int x = 0; x < viewwidth; x++)
+			{
+				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
+				{
+					unsigned int curx = (gu >> (TILESHIFT+8));
+					unsigned int cury = (-(gv >> (TILESHIFT+8)) - 1);
 
-	void HitTile (int curx, int cury)
-	{
-		HitSpans (curx, cury);
+					if(curx != oldmapx || cury != oldmapy)
+					{
+						oldmapx = curx;
+						oldmapy = cury;
+
+						const std::vector<Halo::Id> &ids =
+							tiles[oldmapx%mapwidth][oldmapy%mapheight].haloIds;
+						std::copy(ids.begin(), ids.end(), std::back_inserter(haloIds));
+					}
+				}
+
+				gu += du;
+				gv += dv;
+			}
+			gu = gu0;
+			gv = gv0;
+		}
 
 		for (std::vector<Span>::size_type i = 0; i < spans.size(); i++)
 		{
 			Span &span = spans[i];
 			const int shade = LIGHT2SHADE(gLevelLight + r_extralight + span.light);
-			span.shades = &NormalLight.Maps[GETPALOOKUP(yline.tz, shade)<<8];
+			span.shades = &NormalLight.Maps[GETPALOOKUP(tz, shade)<<8];
 		}
 
 		curspan = &spans[0];
@@ -183,8 +194,6 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 				if(curx != oldmapx || cury != oldmapy)
 				{
-					Shading::HitTile (curx, cury);
-
 					oldmapx = curx;
 					oldmapy = cury;
 					const MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, 0);
