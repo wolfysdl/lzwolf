@@ -58,22 +58,24 @@ namespace Shading
 	int halfheight;
 	fixed planeheight;
 	fixed heightFactor;
+	fixed planenumerator;
 	std::vector<Span> spans;
 	Span *curspan;
 	std::vector<Halo> halos;
 	std::map<Tile::Pos, Tile> tiles;
 
-	void PrepareConstants (int halfheight_, fixed planeheight_)
+	void PrepareConstants (int halfheight_, fixed planeheight_, fixed planenumerator_)
 	{
 		halfheight = halfheight_;
 		planeheight = planeheight_;
+		planenumerator = planenumerator_;
 		heightFactor = abs(planeheight)>>8;
 
 		tiles.clear();
-		tiles[Tile::Pos(49, 87)].haloIds.push_back(0);
+		tiles[Tile::Pos(49, 146)].haloIds.push_back(0);
 
 		halos.clear();
-		halos.push_back(Halo(TVector2<double>(49.5, 87.5), 0.5, 10));
+		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 20));
 	}
 
 	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
@@ -90,7 +92,6 @@ namespace Shading
 				sx += s.len;
 				if (x1 < sx)
 				{
-					assert(i > 0);
 					sx -= s.len;
 					break;
 				}
@@ -124,8 +125,21 @@ namespace Shading
 		}
 	}
 
-	void NextY (int y, fixed gu, fixed gv, fixed du, fixed dv)
+	void NextY (int y/*, fixed gu, fixed gv, fixed du, fixed dv*/)
 	{
+		fixed dist;
+		fixed gu, gv, du, dv;
+		fixed tex_step;
+
+		dist = (planenumerator / (y + 1));
+		gu = viewx + FixedMul(dist, viewcos);
+		gv = viewy - FixedMul(dist, viewsin);
+		tex_step = dist / scale;
+		du = FixedMul(tex_step, viewsin);
+		dv = FixedMul(tex_step, viewcos);
+		gu -= (viewwidth >> 1) * du;
+		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
+
 		// Depth fog
 		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 
@@ -145,14 +159,14 @@ namespace Shading
 			{
 				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
 				{
-					unsigned int curx = (gu >> (TILESHIFT+8));
-					unsigned int cury = (-(gv >> (TILESHIFT+8)) - 1);
+					unsigned int curx = (gu >> TILESHIFT);
+					unsigned int cury = (gv >> TILESHIFT);
 
 					if(curx != oldmapx || cury != oldmapy)
 					{
 						oldmapx = curx;
 						oldmapy = cury;
-						//std::cerr << oldmapx%mapwidth << " " << oldmapy%mapheight << std::endl;
+						std::cerr << oldmapx%mapwidth << " " << oldmapy%mapheight << std::endl;
 
 						const std::vector<Halo::Id> &ids =
 							tiles[Tile::Pos(oldmapx%mapwidth,oldmapy%mapheight)].haloIds;
@@ -186,8 +200,8 @@ namespace Shading
 		// t = (-b +- sqrt(b^2 - 4ac)) / 2a
 
 		typedef TVector2<double> Vec2;
-		const Vec2 S = Vec2(FIXED2FLOAT(gu)/256.0, FIXED2FLOAT(gv)/256.0);
-		const Vec2 dV = Vec2(FIXED2FLOAT(du)/256.0, FIXED2FLOAT(dv)/256.0);
+		const Vec2 S = Vec2(FIXED2FLOAT(gu), FIXED2FLOAT(gv));
+		const Vec2 dV = Vec2(FIXED2FLOAT(du), FIXED2FLOAT(dv));
 		const Vec2 E = S + dV * (double)viewwidth;
 		const Vec2 V = E-S;
 
@@ -257,8 +271,6 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	if(planeheight == 0) // Eye level
 		return;
 	
-	Shading::PrepareConstants (halfheight, planeheight);
-
 	const fixed heightFactor = abs(planeheight)>>8;
 	int y0 = ((min_wallheight*heightFactor)>>FRACBITS) - abs(viewshift);
 	if(y0 > halfheight)
@@ -285,6 +297,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		tex_offsetPitch = -viewwidth-vbufPitch;
 	}
 
+	Shading::PrepareConstants (halfheight, planeheight, planenumerator);
+
 	unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
 	const byte* curshades = NormalLight.Maps;
 	// draw horizontal lines
@@ -307,7 +321,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
 
 		curshades = NormalLight.Maps;
-		Shading::NextY (y, gu, gv, du, dv);
+		Shading::NextY (y/*, gu, gv, du, dv*/);
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
