@@ -75,7 +75,7 @@ namespace Shading
 		tiles[Tile::Pos(49, 146)].haloIds.push_back(0);
 
 		halos.clear();
-		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 20));
+		halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
 	}
 
 	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
@@ -110,16 +110,16 @@ namespace Shading
 				}
 				else // x2 < sx+v[i].len
 				{
-					v.insert(v.begin()+i+1, Span(x2-(sx+v[i].len),v[i].light));
+					v.insert(v.begin()+i+1, Span((sx+v[i].len)-x2,v[i].light));
+					v[i].len = x2-x1;
 					v[i].light += light;
 				}
 			}
 			else // x1 > sx
 			{
-				v.insert(v.begin()+i, Span(x1-sx,v[i].light));
-				sx = x1;
-				if (x1 < x2)
-					continue;
+				v.insert(v.begin()+i+1, Span(v[i].len-(x1-sx),v[i].light));
+				v[i].len = x1-sx;
+				continue;
 			}
 			break;
 		}
@@ -166,7 +166,7 @@ namespace Shading
 					{
 						oldmapx = curx;
 						oldmapy = cury;
-						std::cerr << oldmapx%mapwidth << " " << oldmapy%mapheight << std::endl;
+						//std::cerr << oldmapx%mapwidth << " " << oldmapy%mapheight << std::endl;
 
 						const std::vector<Halo::Id> &ids =
 							tiles[Tile::Pos(oldmapx%mapwidth,oldmapy%mapheight)].haloIds;
