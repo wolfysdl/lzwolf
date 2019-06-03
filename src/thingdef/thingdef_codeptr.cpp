@@ -309,6 +309,18 @@ ACTION_FUNCTION(A_ChangeVelocity)
 	return true;
 }
 
+ACTION_FUNCTION(A_EnableHalo)
+{
+	ACTION_PARAM_INT(id, 0);
+	ACTION_PARAM_BOOL(enabled, 1);
+
+	if (enabled)
+		self->haloMask |= (1 << id);
+	else
+		self->haloMask &= ~(1 << id);
+	return true;
+}
+
 ACTION_FUNCTION(A_Explode)
 {
 	enum
@@ -627,18 +639,6 @@ ACTION_FUNCTION(A_ScaleVelocity)
 
 	self->velx = FLOAT2FIXED(self->velx*scale);
 	self->vely = FLOAT2FIXED(self->vely*scale);
-	return true;
-}
-
-ACTION_FUNCTION(A_SetHaloMask)
-{
-	ACTION_PARAM_INT(id, 0);
-	ACTION_PARAM_BOOL(enabled, 1);
-
-	if (enabled)
-		self->haloMask |= (1 << id);
-	else
-		self->haloMask &= ~(1 << id);
 	return true;
 }
 

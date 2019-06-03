@@ -65,6 +65,7 @@ actor Actor native
 	action native A_Chase(state melee="*", state ranged="*", int flags = 0);
 	action native A_CustomMissile(string missiletype, float spawnheight = 32, int spawnoffset = 0, float angle = 0, int aimflags = 0);
 	action native A_Dormant(state frame = "See", int flags = 0);
+	action native A_EnableHalo(int id, bool enabled);
 	action native A_Explode(int damage = 128, int radius = 128, int flags = XF_HURTSOURCE, bool alert = false, int fulldamageradius = 0, string damagetype = "");
 	action native A_FaceTarget(float max_turn = 0, float max_pitch = 270);
 	action native A_Fall();
@@ -84,7 +85,6 @@ actor Actor native
 	action native A_RadiusWake(int radius = 128);
 	action native A_ScaleVelocity(float scale);
 	action native A_Scream();
-	action native A_SetHaloMask(int id, bool enabled);
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetTics(float duration);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
