@@ -257,6 +257,7 @@ int CalcHeight()
 const byte *postsource;
 int postx;
 
+// from wl_floorceiling.cpp
 namespace Shading
 {
 	int LightForIntercept (fixed xintercept, fixed yintercept);

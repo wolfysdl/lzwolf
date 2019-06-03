@@ -379,6 +379,12 @@ extern unsigned vbufPitch;
 extern fixed viewshift;
 extern fixed viewz;
 
+// from wl_floorceiling.cpp
+namespace Shading
+{
+	int LightForIntercept (fixed xintercept, fixed yintercept);
+}
+
 void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height)
 {
 	// height is a 13.3 fixed point number indicating the number of screen
@@ -430,7 +436,7 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		colormap = NormalLight.Maps;
 	else
 	{
-		const int shade = LIGHT2SHADE(gLevelLight + r_extralight);
+		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (actor->x, actor->y));
 		const int tz = FixedMul(r_depthvisibility<<8, height);
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
@@ -485,7 +491,7 @@ void Scale3DSpriter(AActor *actor, int x1, int x2, FTexture *tex, bool flip, con
 		colormap = NormalLight.Maps;
 	else
 	{
-		const int shade = LIGHT2SHADE(gLevelLight + r_extralight);
+		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (actor->x, actor->y));
 		const int tz = FixedMul(r_depthvisibility<<8, height);
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
