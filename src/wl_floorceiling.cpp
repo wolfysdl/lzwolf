@@ -169,7 +169,7 @@ namespace Shading
 		}
 	}
 
-	void NextY (int y/*, fixed gu, fixed gv, fixed du, fixed dv*/)
+	void NextY (int y)
 	{
 		fixed dist;
 		fixed gu, gv, du, dv;
@@ -293,6 +293,42 @@ namespace Shading
 			curspan++;
 		return curshades;
 	}
+
+	int LightForIntercept (fixed xintercept, fixed yintercept)
+	{
+		unsigned int curx,cury;
+
+		curx = xintercept>>TILESHIFT;
+		cury = yintercept>>TILESHIFT;
+
+		const unsigned int mapwidth = map->GetHeader().width;
+		const unsigned int mapheight = map->GetHeader().height;
+
+		int light = 0;
+		typedef std::vector<Halo::Id> Vec;
+		const Vec &v = tiles[Tile::Pos(curx%mapwidth,cury%mapheight)].haloIds;
+		if (v.size() > 0)
+		{
+			const double x = FIXED2FLOAT(xintercept);
+			const double y = FIXED2FLOAT(yintercept);
+
+			typedef TVector2<double> Vec2;
+			const Vec2 P(x,y);
+
+			for (Vec::const_iterator it = v.begin(); it != v.end(); ++it)
+			{
+				const Halo &halo = halos[*it];
+
+				const Vec2 C = halo.C;
+				const double R = halo.R;
+
+				if (((P-C)|(P-C)) <= R*R)
+					light += halo.light;
+			}
+		}
+
+		return light;
+	}
 }
 
 static inline bool R_PixIsTrans(byte col, const std::pair<bool, byte> &trans)
@@ -365,7 +401,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
 
 		curshades = NormalLight.Maps;
-		Shading::NextY (y/*, gu, gv, du, dv*/);
+		Shading::NextY (y);
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
@@ -444,8 +480,6 @@ void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
 
 	const int numParallax = levelInfo->ParallaxSky.Size();
 	std::pair<bool, byte> ceiltrans(numParallax > 0, skyceilcol);
-
-	Shading::PopulateHalos ();
 
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz);
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz+(map->GetPlane(0).depth<<FRACBITS), ceiltrans);

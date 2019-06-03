@@ -49,6 +49,11 @@
 =============================================================================
 */
 
+namespace Shading
+{
+	void PopulateHalos (void);
+}
+
 void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight);
 
 const RatioInformation AspectCorrection[] =
@@ -252,6 +257,11 @@ int CalcHeight()
 const byte *postsource;
 int postx;
 
+namespace Shading
+{
+	int LightForIntercept (fixed xintercept, fixed yintercept);
+}
+
 void ScalePost()
 {
 	if(postsource == NULL)
@@ -260,7 +270,7 @@ void ScalePost()
 	int ywcount, yoffs, yw, yd, yendoffs;
 	byte col;
 
-	const int shade = LIGHT2SHADE(gLevelLight + r_extralight);
+	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (xintercept, yintercept));
 	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx]);
 	BYTE *curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
@@ -1178,6 +1188,8 @@ void R_RenderView()
 	if(GetFeatureFlags() & FF_STARSKY)
 		DrawStarSky(vbuf, vbufPitch);
 #endif
+
+	Shading::PopulateHalos ();
 
 	WallRefresh ();
 

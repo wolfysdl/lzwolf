@@ -258,12 +258,14 @@ actor MetalTable : BareTable 117
 
 actor CeilingLight 47
 {
-	//halolight 0, 1.0, 10
+	//halolight 0, 1.0, 6
+	//halolight 1, 0.8, 10
 
 	states
 	{
 		Spawn:
 			//GLMP A 1 A_EnableHalo(0, true)
+			//GLMP A 1 A_EnableHalo(1, true)
 			GLMP A -1 bright
 			stop
 	}
