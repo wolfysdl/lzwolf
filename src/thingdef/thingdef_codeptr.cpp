@@ -630,6 +630,17 @@ ACTION_FUNCTION(A_ScaleVelocity)
 	return true;
 }
 
+ACTION_FUNCTION(A_SelectWeapon)
+{
+	ACTION_PARAM_INT(slot, 0);
+
+	AWeapon *newWeapon = self->player->weapons.Slots[slot].PickWeapon(self->player);
+	if (newWeapon && newWeapon != self->player->ReadyWeapon)
+		self->player->PendingWeapon = newWeapon;
+
+	return true;
+}
+
 ACTION_FUNCTION(A_SetPicXY)
 {
 	ACTION_PARAM_INT(picX, 0);

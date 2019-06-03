@@ -84,6 +84,7 @@ actor Actor native
 	action native A_RadiusWake(int radius = 128);
 	action native A_ScaleVelocity(float scale);
 	action native A_Scream();
+	action native A_SelectWeapon(int slot);
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetTics(float duration);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
