@@ -256,6 +256,7 @@ int CalcHeight()
 
 const byte *postsource;
 int postx;
+int32_t postshadex, postshadey;
 
 // from wl_floorceiling.cpp
 namespace Shading
@@ -271,7 +272,7 @@ void ScalePost()
 	int ywcount, yoffs, yw, yd, yendoffs;
 	byte col;
 
-	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (xintercept, yintercept));
+	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
 	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx]);
 	BYTE *curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
@@ -399,6 +400,10 @@ void HitVertWall (void)
 		xintercept += TILEGLOBAL;
 	}
 
+	// nudge for zone lighting
+	postshadex = xintercept-(int32_t)xtilestep;
+	postshadey = yintercept;
+
 	if(lastside==1 && lastintercept==xtile && lasttilehit==tilehit && !(lasttilehit->tile->offsetVertical))
 	{
 		texture -= texture%texxscale;
@@ -472,6 +477,10 @@ void HitHorizWall (void)
 		else
 			texture = (FRACUNIT - texture)&(FRACUNIT-1);
 	}
+
+	// nudge for zone lighting
+	postshadex = xintercept;
+	postshadey = yintercept-(int32_t)ytilestep;
 
 	if(lastside==0 && lastintercept==ytile && lasttilehit==tilehit && !(lasttilehit->tile->offsetHorizontal))
 	{
