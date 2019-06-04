@@ -360,6 +360,10 @@ namespace Shading
 			}
 		}
 
+		MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
+		if (spot->zone != NULL && zoneLight.find(spot->zone->index) != zoneLight.end())
+			light += zoneLight.find(spot->zone->index)->second;
+
 		return light;
 	}
 }
