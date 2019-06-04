@@ -104,7 +104,7 @@ namespace Shading
 							unsigned int cury = check->y>>TILESHIFT;
 							MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
 							if (spot->zone != NULL)
-								zoneLight[spot->zone->index] += haloLight->zoneLight;
+								zoneLight[spot->zone->index] += haloLight->zoneLight<<3;
 						}
 					}
 				}
@@ -219,7 +219,9 @@ namespace Shading
 			const fixed gu0 = gu;
 			const fixed gv0 = gv;
 			unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
-			std::pair<int, MapZone*> zoneScan = std::make_pair(-1, NULL);
+			unsigned int oldzone = INT_MAX;
+			int zonex = -1;
+			unsigned int curzone = INT_MAX;
 			for (int x = 0; x < viewwidth; x++)
 			{
 				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
@@ -242,22 +244,36 @@ namespace Shading
 						}
 
 						MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, 0);
-						if (spot->zone != zoneScan.second)
-						{
-							if (zoneScan.first > -1 && zoneScan.second != NULL &&
-								zoneLight.find(zoneScan.second->index) != zoneLight.end())
-							{
-								InsertSpan (zoneScan.first, x, spans, zoneLight.find(zoneScan.second->index)->second);
-							}
-							zoneScan.first = x;
-							zoneScan.second = spot->zone;
-						}
+						if (spot->zone != NULL)
+							curzone = spot->zone->index;
 					}
+				}
+				else
+				{
+					curzone = INT_MAX;
+				}
+
+				if (curzone != oldzone)
+				{
+					if (zonex > -1 && oldzone != INT_MAX &&
+						zoneLight.find((ZoneId)oldzone) != zoneLight.end())
+					{
+						InsertSpan (zonex, x, spans, zoneLight.find((ZoneId)oldzone)->second);
+					}
+					oldzone = curzone;
+					zonex = x;
 				}
 
 				gu += du;
 				gv += dv;
 			}
+
+			if (zonex > -1 && INT_MAX != oldzone &&
+				zoneLight.find((ZoneId)oldzone) != zoneLight.end())
+			{
+				InsertSpan (zonex, viewwidth, spans, zoneLight.find((ZoneId)oldzone)->second);
+			}
+
 			gu = gu0;
 			gv = gv0;
 		}
