@@ -64,6 +64,7 @@ enum
 	AMETA_ConversationID,
 	AMETA_DamageResistances,
 	AMETA_HaloLights,
+	AMETA_ZoneLights,
 };
 
 enum
@@ -111,9 +112,16 @@ class AActor : public Thinker,
 				int             id;
 				int             light;
 				double          radius;
-				int             zoneLight;
 		};
 		typedef LinkedList<HaloLight> HaloLightList;
+
+		struct ZoneLight
+		{
+			public:
+				int             id;
+				int             light;
+		};
+		typedef LinkedList<ZoneLight> ZoneLightList;
 
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
@@ -130,6 +138,7 @@ class AActor : public Thinker,
 		DropList		*GetDropList() const;
 		DamageResistanceList		*GetDamageResistanceList() const;
 		HaloLightList		*GetHaloLightList() const;
+		ZoneLightList		*GetZoneLightList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -152,6 +161,7 @@ class AActor : public Thinker,
 		static PointerIndexTable<DropList> dropItems;
 		static PointerIndexTable<DamageResistanceList> damageResistances;
 		static PointerIndexTable<HaloLightList> haloLights;
+		static PointerIndexTable<ZoneLightList> zoneLights;
 
 		// Basic properties from objtype
 		ActorFlags flags;
@@ -223,7 +233,8 @@ class AActor : public Thinker,
 		fixed		killerx,killery; // For deathcam
 		const ClassDef  *killerdamagetype;
 		int         picX, picY;
-		int         haloMask;
+		int         haloLightMask;
+		int         zoneLightMask;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn

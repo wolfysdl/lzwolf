@@ -309,15 +309,27 @@ ACTION_FUNCTION(A_ChangeVelocity)
 	return true;
 }
 
-ACTION_FUNCTION(A_EnableHalo)
+ACTION_FUNCTION(A_EnableHaloLight)
 {
 	ACTION_PARAM_INT(id, 0);
 	ACTION_PARAM_BOOL(enabled, 1);
 
 	if (enabled)
-		self->haloMask |= (1 << id);
+		self->haloLightMask |= (1 << id);
 	else
-		self->haloMask &= ~(1 << id);
+		self->haloLightMask &= ~(1 << id);
+	return true;
+}
+
+ACTION_FUNCTION(A_EnableZoneLight)
+{
+	ACTION_PARAM_INT(id, 0);
+	ACTION_PARAM_BOOL(enabled, 1);
+
+	if (enabled)
+		self->zoneLightMask |= (1 << id);
+	else
+		self->zoneLightMask &= ~(1 << id);
 	return true;
 }
 

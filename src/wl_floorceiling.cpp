@@ -64,12 +64,12 @@ namespace Shading
 	std::vector<Halo> halos;
 	std::map<Tile::Pos, Tile> tiles;
 	typedef unsigned short ZoneId;
-	std::map<ZoneId, int> zoneLight;
+	std::map<ZoneId, int> zoneLightMap;
 
 	void PopulateHalos (void)
 	{
 		halos.clear();
-		zoneLight.clear();
+		zoneLightMap.clear();
 		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
 		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 1.0, 5<<3));
 
@@ -78,37 +78,54 @@ namespace Shading
 
 		for(AActor::Iterator check = AActor::GetIterator();check.Next();)
 		{
-			typedef AActor::HaloLightList Li;
-
-			Li *li = check->GetHaloLightList();
-			if (li)
 			{
-				Li::Iterator item = li->Head();
-				do
-				{
-					Li::Iterator haloLight = item;
-					if ((check->haloMask & (1 << haloLight->id)) != 0)
-					{
-						// halo light
-						if (haloLight->light != 0 && haloLight->radius > 0.0)
-						{
-							const double x = FIXED2FLOAT(check->x);
-							const double y = FIXED2FLOAT(check->y);
-							halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
-						}
+				typedef AActor::HaloLightList Li;
 
-						// zone light
-						if (haloLight->zoneLight != 0)
+				Li *li = check->GetHaloLightList();
+				if (li)
+				{
+					Li::Iterator item = li->Head();
+					do
+					{
+						Li::Iterator haloLight = item;
+						if ((check->haloLightMask & (1 << haloLight->id)) != 0)
 						{
-							unsigned int curx = check->x>>TILESHIFT;
-							unsigned int cury = check->y>>TILESHIFT;
-							MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
-							if (spot->zone != NULL)
-								zoneLight[spot->zone->index] += haloLight->zoneLight<<3;
+							if (haloLight->light != 0 && haloLight->radius > 0.0)
+							{
+								const double x = FIXED2FLOAT(check->x);
+								const double y = FIXED2FLOAT(check->y);
+								halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+							}
 						}
 					}
+					while(item.Next());
 				}
-				while(item.Next());
+			}
+
+			{
+				typedef AActor::ZoneLightList Li;
+
+				Li *li = check->GetZoneLightList();
+				if (li)
+				{
+					Li::Iterator item = li->Head();
+					do
+					{
+						Li::Iterator zoneLight = item;
+						if ((check->zoneLightMask & (1 << zoneLight->id)) != 0)
+						{
+							if (zoneLight->light != 0)
+							{
+								unsigned int curx = check->x>>TILESHIFT;
+								unsigned int cury = check->y>>TILESHIFT;
+								MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
+								if (spot->zone != NULL)
+									zoneLightMap[spot->zone->index] += zoneLight->light<<3;
+							}
+						}
+					}
+					while(item.Next());
+				}
 			}
 		}
 
@@ -256,9 +273,9 @@ namespace Shading
 				if (curzone != oldzone)
 				{
 					if (zonex > -1 && oldzone != INT_MAX &&
-						zoneLight.find((ZoneId)oldzone) != zoneLight.end())
+						zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 					{
-						InsertSpan (zonex, x, spans, zoneLight.find((ZoneId)oldzone)->second);
+						InsertSpan (zonex, x, spans, zoneLightMap.find((ZoneId)oldzone)->second);
 					}
 					oldzone = curzone;
 					zonex = x;
@@ -269,9 +286,9 @@ namespace Shading
 			}
 
 			if (zonex > -1 && INT_MAX != oldzone &&
-				zoneLight.find((ZoneId)oldzone) != zoneLight.end())
+				zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 			{
-				InsertSpan (zonex, viewwidth, spans, zoneLight.find((ZoneId)oldzone)->second);
+				InsertSpan (zonex, viewwidth, spans, zoneLightMap.find((ZoneId)oldzone)->second);
 			}
 
 			gu = gu0;
@@ -377,8 +394,8 @@ namespace Shading
 		}
 
 		MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
-		if (spot->zone != NULL && zoneLight.find(spot->zone->index) != zoneLight.end())
-			light += zoneLight.find(spot->zone->index)->second;
+		if (spot->zone != NULL && zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
+			light += zoneLightMap.find(spot->zone->index)->second;
 
 		return light;
 	}
