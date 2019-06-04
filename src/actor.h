@@ -111,6 +111,7 @@ class AActor : public Thinker,
 				int             id;
 				int             light;
 				double          radius;
+				int             zoneLight;
 		};
 		typedef LinkedList<HaloLight> HaloLightList;
 

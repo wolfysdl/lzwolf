@@ -73,6 +73,9 @@ namespace Shading
 		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
 		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 1.0, 5<<3));
 
+		const unsigned int mapwidth = map->GetHeader().width;
+		const unsigned int mapheight = map->GetHeader().height;
+
 		for(AActor::Iterator check = AActor::GetIterator();check.Next();)
 		{
 			typedef AActor::HaloLightList Li;
@@ -86,11 +89,23 @@ namespace Shading
 					Li::Iterator haloLight = item;
 					if ((check->haloMask & (1 << haloLight->id)) != 0)
 					{
-						const double x = FIXED2FLOAT(check->x);
-						const double y = FIXED2FLOAT(check->y);
-						halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+						// halo light
+						if (haloLight->light != 0 && haloLight->radius > 0.0)
+						{
+							const double x = FIXED2FLOAT(check->x);
+							const double y = FIXED2FLOAT(check->y);
+							halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+						}
 
-						// TODO: accumulate into zoneLight for correct zone
+						// zone light
+						if (haloLight->zoneLight != 0)
+						{
+							unsigned int curx = check->x>>TILESHIFT;
+							unsigned int cury = check->y>>TILESHIFT;
+							MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
+							if (spot->zone != NULL)
+								zoneLight[spot->zone->index] += haloLight->zoneLight;
+						}
 					}
 				}
 				while(item.Next());

@@ -226,6 +226,7 @@ HANDLE_PROPERTY(halolight)
 	INT_PARAM(id, 0);
 	FLOAT_PARAM(radius, 1);
 	INT_PARAM(light, 2);
+	INT_PARAM(zoneLight, 3);
 
 	if(cls->Meta.GetMetaInt(AMETA_HaloLights, -1) == -1 || cls->Meta.IsInherited(AMETA_HaloLights))
 		cls->Meta.SetMetaInt(AMETA_HaloLights, AActor::haloLights.Push(new AActor::HaloLightList()));
@@ -234,6 +235,7 @@ HANDLE_PROPERTY(halolight)
 	haloLight.id = id;
 	haloLight.radius = radius;
 	haloLight.light = light;
+	haloLight.zoneLight = zoneLight;
 
 	AActor::haloLights[cls->Meta.GetMetaInt(AMETA_HaloLights)]->Push(haloLight);
 }
@@ -643,7 +645,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
-	DEFINE_PROP(halolight, Actor, IFI),
+	DEFINE_PROP(halolight, Actor, IFI_I),
 	DEFINE_PROP(health, Actor, I_IIIIIIII),
 	DEFINE_PROP(height, Actor, I),
 	DEFINE_PROP(icon, Inventory, S),
