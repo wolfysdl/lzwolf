@@ -63,10 +63,13 @@ namespace Shading
 	Span *curspan;
 	std::vector<Halo> halos;
 	std::map<Tile::Pos, Tile> tiles;
+	typedef unsigned short ZoneId;
+	std::map<ZoneId, int> zoneLight;
 
 	void PopulateHalos (void)
 	{
 		halos.clear();
+		zoneLight.clear();
 		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 0.5, 10<<3));
 		//halos.push_back(Halo(TVector2<double>(49.5, 146.5), 1.0, 5<<3));
 
@@ -86,6 +89,8 @@ namespace Shading
 						const double x = FIXED2FLOAT(check->x);
 						const double y = FIXED2FLOAT(check->y);
 						halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+
+						// TODO: accumulate into zoneLight for correct zone
 					}
 				}
 				while(item.Next());
@@ -199,6 +204,7 @@ namespace Shading
 			const fixed gu0 = gu;
 			const fixed gv0 = gv;
 			unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
+			std::pair<int, MapZone*> zoneScan = std::make_pair(-1, NULL);
 			for (int x = 0; x < viewwidth; x++)
 			{
 				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
@@ -218,6 +224,18 @@ namespace Shading
 						{
 							std::copy(ids.begin(), ids.end(),
 								std::inserter(haloIds, haloIds.end()));
+						}
+
+						MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, 0);
+						if (spot->zone != zoneScan.second)
+						{
+							if (zoneScan.first > -1 && zoneScan.second != NULL &&
+								zoneLight.find(zoneScan.second->index) != zoneLight.end())
+							{
+								InsertSpan (zoneScan.first, x, spans, zoneLight.find(zoneScan.second->index)->second);
+							}
+							zoneScan.first = x;
+							zoneScan.second = spot->zone;
 						}
 					}
 				}
