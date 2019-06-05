@@ -216,6 +216,7 @@ class AActor : public Thinker,
 		short       viewx;
 		word        viewheight;
 		fixed       transx,transy;      // in global coord
+		fixed       absx,absy;          // in global coord
 
 		FTextureID	overheadIcon;
 

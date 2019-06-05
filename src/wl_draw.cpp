@@ -221,6 +221,21 @@ void TransformActor (AActor *ob)
 // calculate height (heightnumerator/(nx>>8))
 //
 	ob->viewheight = (word)((heightnumerator<<8)/nx);
+
+//
+// reverse translate point to view centered coordinates
+//
+	if (rel)
+	{
+		nx += 0x2000;
+		ob->absx = viewx + FixedMul(nx,viewcos) - FixedMul(nx,viewsin);
+		ob->absy = viewy + FixedMul(ny,viewsin) + FixedMul(ny,viewcos);
+	}
+	else
+	{
+		ob->absx = ob->x;
+		ob->absy = ob->y;
+	}
 }
 
 //==========================================================================
