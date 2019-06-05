@@ -178,18 +178,19 @@ fixed	texyscale = FRACUNIT;
 void TransformActor (AActor *ob)
 {
 	fixed gx,gy,gxt,gyt,nx,ny;
+	const bool rel = (ob->flags & FL_DRAWRELATIVE) != 0;
 
 //
 // translate point to view centered coordinates
 //
-	gx = ob->x-viewx;
-	gy = ob->y-viewy;
+	gx = ob->x-(rel?0:viewx);
+	gy = ob->y-(rel?0:viewy);
 
 //
 // calculate newx
 //
-	gxt = FixedMul(gx,viewcos);
-	gyt = FixedMul(gy,viewsin);
+	gxt = FixedMul(gx,(rel?TILEGLOBAL:viewcos));
+	gyt = FixedMul(gy,(rel?0:viewsin));
 	// Wolf4SDL used 0x2000 for statics and 0x4000 for moving actors, but since
 	// we no longer tell the difference, use the smaller fudging value since
 	// the larger one will just look ugly in general.
@@ -198,8 +199,8 @@ void TransformActor (AActor *ob)
 //
 // calculate newy
 //
-	gxt = FixedMul(gx,viewsin);
-	gyt = FixedMul(gy,viewcos);
+	gxt = FixedMul(gx,(rel?0:viewsin));
+	gyt = FixedMul(gy,(rel?TILEGLOBAL:viewcos));
 	ny = gyt+gxt;
 
 //
@@ -597,6 +598,22 @@ void DrawScaleds (void)
 
 		if (obj->sprite == SPR_NONE || (obj->flags & FL_STATUSBAR))
 			continue;
+
+		if (obj->flags & FL_DRAWRELATIVE)
+		{
+			TransformActor (obj);
+			if (!obj->viewheight)
+				continue;                                               // too close or far away
+
+			visptr->actor = obj;
+			visptr->viewheight = obj->viewheight;
+
+			if (visptr < &vislist[MAXVISABLE-1])    // don't let it overflow
+				visptr++;
+
+			obj->flags |= FL_VISABLE;
+			continue;
+		}
 
 		MapSpot spot = map->GetSpot(obj->tilex, obj->tiley, 0);
 		MapSpot spots[8];
