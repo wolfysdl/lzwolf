@@ -260,6 +260,20 @@ actor DustLit : Lit
 {
 }
 
+actor Dust
+{
+	+DRAWRELATIVE
+	states
+	{
+		Spawn:
+			SMOK A 0 A_ResetPosition(0.5, 0.0)
+			goto Puff
+		Puff:
+			SMOK A 1.5 A_InertMove(0.01, DIR_EAST)
+			loop
+	}
+}
+
 actor CeilingLight 47
 {
 	halolight 0, 1.0, 4, "DustLit"
