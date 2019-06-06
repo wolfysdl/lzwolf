@@ -450,7 +450,8 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 	{
 		const fixed planeheight = viewz;
 		const int halfheight = (viewheight >> 1) - viewshift;
-		const fixed planenumerator = FixedMul(heightnumerator, planeheight);
+		fixed planenumerator = FixedMul(heightnumerator, planeheight);
+		planenumerator *= -1; // floor
 		Shading::PrepareConstants (halfheight, planeheight, planenumerator);
 
 		const fixed heightFactor = abs(planeheight)>>8;
