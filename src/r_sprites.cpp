@@ -458,7 +458,14 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 
 		const fixed heightFactor = abs(planeheight)>>8;
 		int y = ((height*heightFactor)>>FRACBITS) - abs(viewshift);
-		Shading::NextY (y, actx+startX, MIN(xcenter+(xcenter-actx),viewwidth));
+
+		int pixcnt = 0;
+		unsigned int i;
+		fixed x;
+		for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i)
+			pixcnt++;
+
+		Shading::NextY (y, actx+startX, MIN((actx+startX)+pixcnt,(unsigned)viewwidth));
 	}
 
 	const BYTE *src;
