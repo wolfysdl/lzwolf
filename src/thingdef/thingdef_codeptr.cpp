@@ -461,6 +461,51 @@ static void DoStateJump(const Frame *frame, AActor *self, const Frame * const ca
 	self->SetState(frame);
 }
 
+ACTION_FUNCTION(A_InertMove)
+{
+	ACTION_PARAM_DOUBLE(moveflt, 0);
+	ACTION_PARAM_INT(dir, 1);
+
+	const fixed move = FLOAT2FIXED(moveflt);
+
+	switch (dir)
+	{
+		case north:
+			self->y -= move;
+			break;
+		case northeast:
+			self->x += move;
+			self->y -= move;
+			break;
+		case east:
+			self->x += move;
+			break;
+		case southeast:
+			self->x += move;
+			self->y += move;
+			break;
+		case south:
+			self->y += move;
+			break;
+		case southwest:
+			self->x -= move;
+			self->y += move;
+			break;
+		case west:
+			self->x -= move;
+			break;
+		case northwest:
+			self->x -= move;
+			self->y -= move;
+			break;
+
+		case nodir:
+			break;
+	}
+
+	return true;
+}
+
 static FRandom pr_cajump("CustomJump");
 ACTION_FUNCTION(A_Jump)
 {
@@ -641,6 +686,17 @@ ACTION_FUNCTION(A_RadiusWake)
 		if(wakestate)
 			self->SetState(wakestate);
 	}
+
+	return true;
+}
+
+ACTION_FUNCTION(A_ResetPosition)
+{
+	ACTION_PARAM_DOUBLE(x, 0);
+	ACTION_PARAM_DOUBLE(y, 1);
+
+	self->x = FLOAT2FIXED(x);
+	self->y = FLOAT2FIXED(y);
 
 	return true;
 }

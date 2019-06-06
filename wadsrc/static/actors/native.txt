@@ -38,6 +38,16 @@ const int ZOOM_NOSCALETURNING = 2;
 
 const int DF_REVIVE = 1;
 
+const int DIR_EAST      = 1;
+const int DIR_NORTHEAST = 2;
+const int DIR_NORTH     = 3;
+const int DIR_NORTHWEST = 4;
+const int DIR_WEST      = 5;
+const int DIR_SOUTHWEST = 6;
+const int DIR_SOUTH     = 7;
+const int DIR_SOUTHEAST = 8;
+const int DIR_NODIR     = 9;
+
 actor Actor native
 {
 	damage 0
@@ -72,6 +82,7 @@ actor Actor native
 	action native A_Fall();
 	action native A_GiveExtraMan(int amount = 1);
 	action native A_GiveInventory(string type, int amount = 0);
+	action native A_InertMove(float move = 0, int dir = DIR_EAST);
 	action native A_Jump(int chance, state frame, ...);
 	action native A_JumpIf(bool expression, state frame);
 	action native A_JumpIfCloser(float distance, state frame);
@@ -84,6 +95,7 @@ actor Actor native
 	action native A_Pain();
 	action native A_PlaySound(string soundname);
 	action native A_RadiusWake(int radius = 128);
+	action native A_ResetPosition(float x, float y);
 	action native A_ScaleVelocity(float scale);
 	action native A_Scream();
 	action native A_SetPicXY(int picX, int picY);
