@@ -206,11 +206,13 @@ namespace Shading
 		}
 	}
 
-	void NextY (int y)
+	void NextY (int y, int lx, int rx)
 	{
 		fixed dist;
 		fixed gu, gv, du, dv;
 		fixed tex_step;
+
+		const int vw = rx-lx;
 
 		dist = (planenumerator / (y + 1));
 		gu = viewx + FixedMul(dist, viewcos);
@@ -218,14 +220,14 @@ namespace Shading
 		tex_step = dist / scale;
 		du = FixedMul(tex_step, viewsin);
 		dv = FixedMul(tex_step, viewcos);
-		gu -= (viewwidth >> 1) * du;
-		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
+		gu -= ((viewwidth >> 1) - lx) * du;
+		gv -= ((viewwidth >> 1) - lx) * dv; // starting point (leftmost)
 
 		// Depth fog
 		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 
 		spans.clear();
-		spans.push_back(Span(viewwidth, 0));
+		spans.push_back(Span(vw, 0));
 
 		const unsigned int mapwidth = map->GetHeader().width;
 		const unsigned int mapheight = map->GetHeader().height;
@@ -239,7 +241,7 @@ namespace Shading
 			unsigned int oldzone = INT_MAX;
 			int zonex = -1;
 			unsigned int curzone = INT_MAX;
-			for (int x = 0; x < viewwidth; x++)
+			for (int x = lx; x < rx; x++)
 			{
 				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
 				{
@@ -275,7 +277,7 @@ namespace Shading
 					if (zonex > -1 && oldzone != INT_MAX &&
 						zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 					{
-						InsertSpan (zonex, x, spans, zoneLightMap.find((ZoneId)oldzone)->second);
+						InsertSpan (zonex-lx, x-lx, spans, zoneLightMap.find((ZoneId)oldzone)->second);
 					}
 					oldzone = curzone;
 					zonex = x;
@@ -285,10 +287,10 @@ namespace Shading
 				gv += dv;
 			}
 
-			if (zonex > -1 && INT_MAX != oldzone &&
+			if (zonex > -1 && INT_MAX != oldzone && zonex<rx &&
 				zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 			{
-				InsertSpan (zonex, viewwidth, spans, zoneLightMap.find((ZoneId)oldzone)->second);
+				InsertSpan (zonex, rx, spans, zoneLightMap.find((ZoneId)oldzone)->second);
 			}
 
 			gu = gu0;
@@ -312,7 +314,7 @@ namespace Shading
 		typedef TVector2<double> Vec2;
 		const Vec2 S = Vec2(FIXED2FLOAT(gu), FIXED2FLOAT(gv));
 		const Vec2 dV = Vec2(FIXED2FLOAT(du), FIXED2FLOAT(dv));
-		const Vec2 E = S + dV * (double)viewwidth;
+		const Vec2 E = S + dV * (double)vw;
 		const Vec2 V = E-S;
 
 		const double a = V|V;
@@ -333,8 +335,8 @@ namespace Shading
 				const double t1 = std::max((-b - sqdesc)/(2*a),0.0);
 				const double t2 = std::min((-b + sqdesc)/(2*a),1.0);
 
-				const int x1 = t1*viewwidth;
-				const int x2 = t2*viewwidth;
+				const int x1 = t1*vw;
+				const int x2 = t2*vw;
 
 				if (x1<x2)
 					InsertSpan (x1, x2, spans, halo.light);
@@ -358,6 +360,15 @@ namespace Shading
 		if (!curspan->len)
 			curspan++;
 		return curshades;
+	}
+
+	int LightForPix ()
+	{
+		const int curlight = curspan->light;
+		curspan->len--;
+		if (!curspan->len)
+			curspan++;
+		return curlight;
 	}
 
 	int LightForIntercept (fixed xintercept, fixed yintercept)
@@ -471,7 +482,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
 
 		curshades = NormalLight.Maps;
-		Shading::NextY (y);
+		Shading::NextY (y, 0, viewwidth);
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{

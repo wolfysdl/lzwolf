@@ -383,6 +383,12 @@ extern fixed viewz;
 namespace Shading
 {
 	int LightForIntercept (fixed xintercept, fixed yintercept);
+
+	void PrepareConstants (int halfheight, fixed planeheight, fixed planenumerator);
+
+	void NextY (int y, int lx, int rx);
+
+	int LightForPix ();
 }
 
 void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height)
@@ -440,6 +446,18 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		const int tz = FixedMul(r_depthvisibility<<8, height);
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
+
+	{
+		const fixed planeheight = viewz;
+		const int halfheight = (viewheight >> 1) - viewshift;
+		const fixed planenumerator = FixedMul(heightnumerator, planeheight);
+		Shading::PrepareConstants (halfheight, planeheight, planenumerator);
+
+		const fixed heightFactor = abs(planeheight)>>8;
+		int y = ((height*heightFactor)>>FRACBITS) - abs(viewshift);
+		Shading::NextY (y, actx+startX, MIN(xcenter+(xcenter-actx),viewwidth));
+	}
+
 	const BYTE *src;
 	byte *destBase = vbuf + actx + startX + ((upperedge>>3) > 0 ? vbufPitch*(upperedge>>3) : 0);
 	byte *dest = destBase;
@@ -447,6 +465,8 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 	fixed x, y;
 	for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i, dest = ++destBase)
 	{
+		if(Shading::LightForPix () <= 0)
+			continue;
 		if(wallheight[i] > (signed)height)
 			continue;
 
