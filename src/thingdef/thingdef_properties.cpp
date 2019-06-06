@@ -221,23 +221,6 @@ HANDLE_PROPERTY(damageresistance)
 	AActor::damageResistances[cls->Meta.GetMetaInt(AMETA_DamageResistances)]->Push(damageResistance);
 }
 
-HANDLE_PROPERTY(halolight)
-{
-	INT_PARAM(id, 0);
-	FLOAT_PARAM(radius, 1);
-	INT_PARAM(light, 2);
-
-	if(cls->Meta.GetMetaInt(AMETA_HaloLights, -1) == -1 || cls->Meta.IsInherited(AMETA_HaloLights))
-		cls->Meta.SetMetaInt(AMETA_HaloLights, AActor::haloLights.Push(new AActor::HaloLightList()));
-
-	AActor::HaloLight haloLight;
-	haloLight.id = id;
-	haloLight.radius = radius;
-	haloLight.light = light;
-
-	AActor::haloLights[cls->Meta.GetMetaInt(AMETA_HaloLights)]->Push(haloLight);
-}
-
 HANDLE_PROPERTY(damagescreencolor)
 {
     STRING_PARAM(dmgcolor, 0);
@@ -308,6 +291,25 @@ HANDLE_PROPERTY(gibhealth)
 	cls->Meta.SetMetaInt(AMETA_GibHealth, health);
 }
 
+HANDLE_PROPERTY(halolight)
+{
+	INT_PARAM(id, 0);
+	FLOAT_PARAM(radius, 1);
+	INT_PARAM(light, 2);
+	STRING_PARAM(littype, 3);
+
+	if(cls->Meta.GetMetaInt(AMETA_HaloLights, -1) == -1 || cls->Meta.IsInherited(AMETA_HaloLights))
+		cls->Meta.SetMetaInt(AMETA_HaloLights, AActor::haloLights.Push(new AActor::HaloLightList()));
+
+	AActor::HaloLight haloLight;
+	haloLight.id = id;
+	haloLight.radius = radius;
+	haloLight.light = light;
+	haloLight.littype = ClassDef::FindClassTentative(littype, NATIVE_CLASS(Lit));
+
+	AActor::haloLights[cls->Meta.GetMetaInt(AMETA_HaloLights)]->Push(haloLight);
+}
+
 HANDLE_PROPERTY(health)
 {
 	INT_PARAM(health, 0);
@@ -351,6 +353,15 @@ HANDLE_PROPERTY(interhubamount)
 {
 	INT_PARAM(amt, 0);
 	((AInventory *)defaults)->interhubamount = amt;
+}
+
+HANDLE_PROPERTY(litfilter)
+{
+	STRING_PARAM(type, 0);
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		defaults->litfilter = NULL;
+	else
+		defaults->litfilter = ClassDef::FindClassTentative(type, NATIVE_CLASS(Lit));
 }
 
 HANDLE_PROPERTY(maxamount)
@@ -658,11 +669,12 @@ extern const PropDef properties[] =
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
-	DEFINE_PROP(halolight, Actor, IFI),
+	DEFINE_PROP(halolight, Actor, IFI_S),
 	DEFINE_PROP(health, Actor, I_IIIIIIII),
 	DEFINE_PROP(height, Actor, I),
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(interhubamount, Inventory, I),
+	DEFINE_PROP(litfilter, Actor, S),
 	DEFINE_PROP(maxamount, Inventory, I),
 	DEFINE_PROP_PREFIX(maxhealth, PlayerPawn, Player, I),
 	DEFINE_PROP(meleerange, Actor, I),

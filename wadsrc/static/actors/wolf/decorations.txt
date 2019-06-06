@@ -256,9 +256,13 @@ actor MetalTable : BareTable 117
 	}
 }
 
+actor DustLit : Lit
+{
+}
+
 actor CeilingLight 47
 {
-	halolight 0, 1.0, 4
+	halolight 0, 1.0, 4, "DustLit"
 	//halolight 1, 0.8, 6
 	//zonelight 0, 2
 

@@ -388,7 +388,7 @@ namespace Shading
 
 	void NextY (int y, int lx, int rx);
 
-	int LightForPix ();
+	const ClassDef *LitForPix ();
 }
 
 void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height)
@@ -447,6 +447,8 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
 
+	const ClassDef * const litfilter = actor->litfilter;
+	if (litfilter != NULL)
 	{
 		const fixed planeheight = viewz;
 		const int halfheight = (viewheight >> 1) - viewshift;
@@ -466,7 +468,7 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 	fixed x, y;
 	for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i, dest = ++destBase)
 	{
-		if(Shading::LightForPix () <= 0)
+		if(litfilter != NULL && Shading::LitForPix () != litfilter)
 			continue;
 		if(wallheight[i] > (signed)height)
 			continue;

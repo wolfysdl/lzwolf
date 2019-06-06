@@ -26,9 +26,10 @@ namespace Shading
 	public:
 		int len;
 		int light;
+		const ClassDef *littype;
 		const byte *shades;
 
-		explicit Span(int len_, int light_) : len(len_), light(light_), shades(0)
+		explicit Span(int len_, int light_, const ClassDef *littype_) : len(len_), light(light_), littype(littype_), shades(0)
 		{
 		}
 	};
@@ -41,9 +42,10 @@ namespace Shading
 		TVector2<double> C;
 		double R;
 		int light;
+		const ClassDef *littype;
 
-		Halo(TVector2<double> C_, double R_, int light_) :
-			C(C_), R(R_), light(light_)
+		Halo(TVector2<double> C_, double R_, int light_, const ClassDef *littype_) :
+			C(C_), R(R_), light(light_), littype(littype_)
 		{
 		}
 	};
@@ -94,7 +96,7 @@ namespace Shading
 							{
 								const double x = FIXED2FLOAT(check->x);
 								const double y = FIXED2FLOAT(check->y);
-								halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+								halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3, haloLight->littype));
 							}
 						}
 					}
@@ -159,7 +161,7 @@ namespace Shading
 		heightFactor = abs(planeheight)>>8;
 	}
 
-	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
+	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light, const ClassDef *littype)
 	{
 		typedef std::vector<Span> Vec;
 
@@ -185,20 +187,22 @@ namespace Shading
 				if (x2 >= sx+v[i].len)
 				{
 					v[i].light += light;
+					v[i].littype = littype;
 					x1 = sx+v[i].len;
 					if (x1 < x2)
 						continue;
 				}
 				else // x2 < sx+v[i].len
 				{
-					v.insert(v.begin()+i+1, Span((sx+v[i].len)-x2,v[i].light));
+					v.insert(v.begin()+i+1, Span((sx+v[i].len)-x2,v[i].light,v[i].littype));
 					v[i].len = x2-x1;
 					v[i].light += light;
+					v[i].littype = littype;
 				}
 			}
 			else // x1 > sx
 			{
-				v.insert(v.begin()+i+1, Span(v[i].len-(x1-sx),v[i].light));
+				v.insert(v.begin()+i+1, Span(v[i].len-(x1-sx),v[i].light,v[i].littype));
 				v[i].len = x1-sx;
 				continue;
 			}
@@ -227,7 +231,7 @@ namespace Shading
 		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 
 		spans.clear();
-		spans.push_back(Span(vw, 0));
+		spans.push_back(Span(vw, 0, NULL));
 
 		const unsigned int mapwidth = map->GetHeader().width;
 		const unsigned int mapheight = map->GetHeader().height;
@@ -277,7 +281,7 @@ namespace Shading
 					if (zonex > -1 && oldzone != INT_MAX &&
 						zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 					{
-						InsertSpan (zonex-lx, x-lx, spans, zoneLightMap.find((ZoneId)oldzone)->second);
+						InsertSpan (zonex-lx, x-lx, spans, zoneLightMap.find((ZoneId)oldzone)->second, NULL);
 					}
 					oldzone = curzone;
 					zonex = x;
@@ -290,7 +294,7 @@ namespace Shading
 			if (zonex > -1 && INT_MAX != oldzone && zonex<rx &&
 				zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 			{
-				InsertSpan (zonex, rx, spans, zoneLightMap.find((ZoneId)oldzone)->second);
+				InsertSpan (zonex, rx, spans, zoneLightMap.find((ZoneId)oldzone)->second, NULL);
 			}
 
 			gu = gu0;
@@ -339,7 +343,7 @@ namespace Shading
 				const int x2 = t2*vw;
 
 				if (x1<x2)
-					InsertSpan (x1, x2, spans, halo.light);
+					InsertSpan (x1, x2, spans, halo.light, halo.littype);
 			}
 		}
 
@@ -362,13 +366,13 @@ namespace Shading
 		return curshades;
 	}
 
-	int LightForPix ()
+	const ClassDef *LitForPix ()
 	{
-		const int curlight = curspan->light;
+		const ClassDef *curlit = curspan->littype;
 		curspan->len--;
 		if (!curspan->len)
 			curspan++;
-		return curlight;
+		return curlit;
 	}
 
 	int LightForIntercept (fixed xintercept, fixed yintercept)

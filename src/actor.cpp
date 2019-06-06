@@ -530,6 +530,7 @@ void AActor::Serialize(FArchive &arc)
 	arc << hasActorRef;
 	arc << haloLightMask;
 	arc << zoneLightMask;
+	arc << litfilter;
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;
@@ -833,4 +834,16 @@ void FinishTravel ()
 		}
 	}
 	while(node.Next());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_CLASS(Lit)
+
+const ClassDef *ALit::GetLitType() const
+{
+	const ClassDef *cls = GetClass();
+	while(cls->GetParent() != NATIVE_CLASS(Lit))
+		cls = cls->GetParent();
+	return cls;
 }

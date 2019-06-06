@@ -112,6 +112,7 @@ class AActor : public Thinker,
 				int             id;
 				int             light;
 				double          radius;
+				const ClassDef  *littype;
 		};
 		typedef LinkedList<HaloLight> HaloLightList;
 
@@ -236,6 +237,7 @@ class AActor : public Thinker,
 		int         picX, picY;
 		int         haloLightMask;
 		int         zoneLightMask;
+		const ClassDef  *litfilter;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
@@ -265,6 +267,14 @@ public:
 	void Serialize(FArchive &arc);
 
 	TObjPtr<AActor> actualObject;
+};
+
+class ALit : public AActor
+{
+	DECLARE_NATIVE_CLASS(Lit, Actor)
+
+	public:
+		const ClassDef	*GetLitType() const;
 };
 
 #endif
