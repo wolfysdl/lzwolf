@@ -43,7 +43,7 @@ actor Guard : WolfensteinMonster 11
 			loop
 		See:
 			GARD B 5 NOP A_Chase
-			GARD B 1.5 A_SpawnItem("Dust")
+			GARD B 1.5
 			GARD C 4 NOP A_Chase
 			GARD D 5 NOP A_Chase
 			GARD D 1.5

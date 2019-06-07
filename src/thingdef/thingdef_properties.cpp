@@ -271,6 +271,25 @@ HANDLE_PROPERTY(dropitem)
 	AActor::dropItems[cls->Meta.GetMetaInt(AMETA_DropItems)]->Push(drop);
 }
 
+HANDLE_PROPERTY(filterposwrap)
+{
+	INT_PARAM(id, 0);
+	FLOAT_PARAM(x1, 1);
+	FLOAT_PARAM(x2, 2);
+	INT_PARAM(axis, 3);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposWraps, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWraps))
+		cls->Meta.SetMetaInt(AMETA_FilterposWraps, AActor::filterposWraps.Push(new AActor::FilterposWrapList()));
+
+	AActor::FilterposWrap filterposWrap;
+	filterposWrap.id = id;
+	filterposWrap.x1 = x1;
+	filterposWrap.x2 = x2;
+	filterposWrap.axis = axis;
+
+	AActor::filterposWraps[cls->Meta.GetMetaInt(AMETA_FilterposWraps)]->Push(filterposWrap);
+}
+
 HANDLE_PROPERTY(forwardmove)
 {
 	FIXED_PARAM(forwardmove1, 0);
@@ -667,6 +686,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(deathsound, Actor, S),
 	DEFINE_PROP_PREFIX(displayname, PlayerPawn, Player, S),
 	DEFINE_PROP(dropitem, Actor, S_II),
+	DEFINE_PROP(filterposwrap, Actor, IFFI),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(halolight, Actor, IFI_S),

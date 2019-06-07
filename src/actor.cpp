@@ -32,6 +32,7 @@
 **
 */
 
+#include <map>
 #include <sstream>
 #include "actor.h"
 #include "a_inventory.h"
@@ -150,6 +151,7 @@ PointerIndexTable<AActor::DropList> AActor::dropItems;
 PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
 PointerIndexTable<AActor::HaloLightList> AActor::haloLights;
 PointerIndexTable<AActor::ZoneLightList> AActor::zoneLights;
+PointerIndexTable<AActor::FilterposWrapList> AActor::filterposWraps;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -384,6 +386,14 @@ AActor::ZoneLightList *AActor::GetZoneLightList() const
 	return zoneLights[zonelightsIndex];
 }
 
+AActor::FilterposWrapList *AActor::GetFilterposWrapList() const
+{
+	int filterposwrapsIndex = GetClass()->Meta.GetMetaInt(AMETA_FilterposWraps, -1);
+	if(filterposwrapsIndex == -1)
+		return NULL;
+	return filterposWraps[filterposwrapsIndex];
+}
+
 const AActor *AActor::GetDefault() const
 {
 	return GetClass()->GetDefault();
@@ -609,6 +619,92 @@ bool AActor::Teleport(fixed x, fixed y, angle_t angle, bool nofog)
 	return true;
 }
 
+void AActor::ApplyFilterpos (FilterposWrap wrap)
+{
+	const double delta = wrap.x2 - wrap.x1;
+	if (wrap.axis >= 3 || delta <= 0)
+		Quit ("FilterposWrap has invalid parameters!");
+
+	double v[3];
+	v[0] = FIXED2FLOAT(x);
+	v[1] = FIXED2FLOAT(y);
+	v[2] = FIXED2FLOAT(z);
+
+	double &val = v[wrap.axis];
+	if (val < wrap.x1)
+		val += delta;
+	if (val > wrap.x2)
+		val -= delta;
+
+	x = FLOAT2FIXED(v[0]);
+	y = FLOAT2FIXED(v[1]);
+	z = FLOAT2FIXED(v[2]);
+}
+
+namespace FilterposApplier
+{
+	class Base
+	{
+	public:
+		virtual ~Base() { }
+
+		virtual void Execute (AActor *actor) = 0;
+	};
+
+	template <typename T>
+	class Filter : public Base
+	{
+		T v;
+
+	public:
+		explicit Filter(T v_) : v(v_)
+		{
+		}
+
+		virtual void Execute (AActor *actor)
+		{
+			actor->ApplyFilterpos (v);
+		}
+	};
+
+	template <typename T>
+	TSharedPtr<Base> MakeFilter (T v)
+	{
+		return new Filter<T>(v);
+	}
+	
+	typedef std::map<int, TSharedPtr<Base> > ExecMap;
+
+	void InitExecMap (AActor *actor, ExecMap &m)
+	{
+		{
+			typedef AActor::FilterposWrapList Li;
+
+			Li *li = actor->GetFilterposWrapList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator filterposWrap = item;
+					m[filterposWrap->id] = MakeFilter (*filterposWrap);
+				}
+				while(item.Next());
+			}
+		}
+	}
+
+	void Execute (AActor *actor)
+	{
+		ExecMap m;
+		InitExecMap (actor, m);
+
+		int id;
+		for (id = 0; m.find(id) != m.end(); ++id)
+			m.find(id)->second->Execute (actor);
+	}
+}
+
 void AActor::Tick()
 {
 	// If we just spawned we're not ready to be ticked yet
@@ -640,6 +736,8 @@ void AActor::Tick()
 
 	if(flags & FL_MISSILE)
 		T_Projectile(this);
+	
+	FilterposApplier::Execute (this);
 }
 
 // Remove an actor from the game world without destroying it.  This will allow

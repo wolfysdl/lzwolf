@@ -262,6 +262,7 @@ actor DustLit : Lit
 
 actor Dust
 {
+	filterposwrap 0, 0.0, 3.0, 0
 	litfilter "DustLit"
 	+DRAWRELATIVE
 	states
@@ -270,7 +271,7 @@ actor Dust
 			SMOK A 0 A_ResetPosition(0.5, 0.0)
 			goto Puff
 		Puff:
-			SMOK A 1.5// A_InertMove(0.01, DIR_EAST)
+			SMOK A 1.5 A_InertMove(0.01, DIR_EAST)
 			loop
 	}
 }
