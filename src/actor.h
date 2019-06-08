@@ -67,6 +67,7 @@ enum
 	AMETA_ZoneLights,
 	AMETA_FilterposWraps,
 	AMETA_FilterposThrusts,
+	AMETA_FilterposWaves,
 };
 
 enum
@@ -144,6 +145,16 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<FilterposThrust> FilterposThrustList;
 
+		struct FilterposWave
+		{
+			public:
+				int             id;
+				unsigned int    axis;
+				double          amplitude;
+				double          period;
+		};
+		typedef LinkedList<FilterposWave> FilterposWaveList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -162,6 +173,7 @@ class AActor : public Thinker,
 		ZoneLightList		*GetZoneLightList() const;
 		FilterposWrapList		*GetFilterposWrapList() const;
 		FilterposThrustList		*GetFilterposThrustList() const;
+		FilterposWaveList		*GetFilterposWaveList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -179,8 +191,10 @@ class AActor : public Thinker,
 		virtual void	Touch(AActor *toucher) {}
 		void            ApplyFilterpos (FilterposWrap wrap);
 		void            ApplyFilterpos (FilterposThrust thrust);
+		void            ApplyFilterpos (FilterposWave wave);
 
 		fixed           &GetCoordRef (unsigned int axis);
+		fixed           &GetFilterposWaveOldDelta (int id);
 
 		void PrintInventory();
 
@@ -191,6 +205,7 @@ class AActor : public Thinker,
 		static PointerIndexTable<ZoneLightList> zoneLights;
 		static PointerIndexTable<FilterposWrapList> filterposWraps;
 		static PointerIndexTable<FilterposThrustList> filterposThrusts;
+		static PointerIndexTable<FilterposWaveList> filterposWaves;
 
 		// Basic properties from objtype
 		ActorFlags flags;
@@ -267,6 +282,13 @@ class AActor : public Thinker,
 		int         zoneLightMask;
 		const ClassDef  *litfilter;
 		int         singlespawn;
+
+		struct FilterposWaveLastMove
+		{
+			int id;
+			fixed delta;
+		};
+		TArray<FilterposWaveLastMove> filterposwaveLastMoves;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn

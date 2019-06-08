@@ -288,6 +288,24 @@ HANDLE_PROPERTY(filterposthrust)
 	AActor::filterposThrusts[cls->Meta.GetMetaInt(AMETA_FilterposThrusts)]->Push(filterposThrust);
 }
 
+HANDLE_PROPERTY(filterposwave)
+{
+	INT_PARAM(axis, 0);
+	FLOAT_PARAM(amplitude, 1);
+	FLOAT_PARAM(period, 2);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposWaves, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWaves))
+		cls->Meta.SetMetaInt(AMETA_FilterposWaves, AActor::filterposWaves.Push(new AActor::FilterposWaveList()));
+
+	AActor::FilterposWave filterposWave;
+	filterposWave.id = cls->GetNextFilterposId();
+	filterposWave.axis = axis;
+	filterposWave.amplitude = amplitude;
+	filterposWave.period = period;
+
+	AActor::filterposWaves[cls->Meta.GetMetaInt(AMETA_FilterposWaves)]->Push(filterposWave);
+}
+
 HANDLE_PROPERTY(filterposwrap)
 {
 	FLOAT_PARAM(x1, 0);
@@ -709,6 +727,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP_PREFIX(displayname, PlayerPawn, Player, S),
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP(filterposthrust, Actor, II),
+	DEFINE_PROP(filterposwave, Actor, IFF),
 	DEFINE_PROP(filterposwrap, Actor, FFI),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),

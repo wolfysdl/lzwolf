@@ -49,6 +49,7 @@
 #include "wl_game.h"
 #include "wl_loadsave.h"
 #include "wl_state.h"
+#include "wl_draw.h"
 #include "id_us.h"
 #include "m_random.h"
 
@@ -154,6 +155,7 @@ PointerIndexTable<AActor::HaloLightList> AActor::haloLights;
 PointerIndexTable<AActor::ZoneLightList> AActor::zoneLights;
 PointerIndexTable<AActor::FilterposWrapList> AActor::filterposWraps;
 PointerIndexTable<AActor::FilterposThrustList> AActor::filterposThrusts;
+PointerIndexTable<AActor::FilterposWaveList> AActor::filterposWaves;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -404,6 +406,14 @@ AActor::FilterposThrustList *AActor::GetFilterposThrustList() const
 	return filterposThrusts[filterposthrustsIndex];
 }
 
+AActor::FilterposWaveList *AActor::GetFilterposWaveList() const
+{
+	int filterposwavesIndex = GetClass()->Meta.GetMetaInt(AMETA_FilterposWaves, -1);
+	if(filterposwavesIndex == -1)
+		return NULL;
+	return filterposWaves[filterposwavesIndex];
+}
+
 const AActor *AActor::GetDefault() const
 {
 	return GetClass()->GetDefault();
@@ -487,6 +497,12 @@ void AActor::PrintInventory()
 	}
 }
 
+FArchive &operator<< (FArchive &arc, AActor::FilterposWaveLastMove &lastMove)
+{
+	arc << lastMove.id << lastMove.delta;
+	return arc;
+}
+
 void AActor::Serialize(FArchive &arc)
 {
 	bool hasActorRef = actors.IsLinked(this);
@@ -551,6 +567,8 @@ void AActor::Serialize(FArchive &arc)
 	arc << haloLightMask;
 	arc << zoneLightMask;
 	arc << litfilter;
+	arc << singlespawn;
+	arc << filterposwaveLastMoves;
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;
@@ -664,6 +682,36 @@ void AActor::ApplyFilterpos (FilterposThrust thrust)
 		players[0].mo->forwardthrust : players[0].mo->sidethrust);
 }
 
+fixed &AActor::GetFilterposWaveOldDelta (int id)
+{
+	unsigned int i;
+	for (i = 0; i < filterposwaveLastMoves.Size(); i++)
+	{
+		FilterposWaveLastMove &lm = filterposwaveLastMoves[i];
+		if (lm.id == id)
+			return lm.delta;
+	}
+
+	FilterposWaveLastMove lm;
+	lm.id = id;
+	lm.delta = 0;
+	return filterposwaveLastMoves[filterposwaveLastMoves.Push(lm)].delta;
+}
+
+void AActor::ApplyFilterpos (FilterposWave wave)
+{
+	const uint32_t durTicks = (uint32_t)(wave.period * 1000);
+	if (durTicks <= 0)
+		Quit ("Invalid duration!");
+	const uint32_t currentTick = (SDL_GetTicks() % durTicks);
+	const uint32_t curFineangle = currentTick*FINEANGLES/durTicks;
+	const fixed delta = FLOAT2FIXED(wave.amplitude *
+		FIXED2FLOAT(finesine[curFineangle]));
+	fixed &olddelta = GetFilterposWaveOldDelta (wave.id);
+	GetCoordRef (wave.axis) += delta - olddelta;
+	olddelta = delta;
+}
+
 namespace FilterposApplier
 {
 	class Base
@@ -727,6 +775,22 @@ namespace FilterposApplier
 				{
 					Li::Iterator filterposThrust = item;
 					m[filterposThrust->id] = MakeFilter (*filterposThrust);
+				}
+				while(item.Next());
+			}
+		}
+
+		{
+			typedef AActor::FilterposWaveList Li;
+
+			Li *li = actor->GetFilterposWaveList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator filterposWave = item;
+					m[filterposWave->id] = MakeFilter (*filterposWave);
 				}
 				while(item.Next());
 			}
