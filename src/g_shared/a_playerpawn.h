@@ -82,6 +82,8 @@ class APlayerPawn : public AActor
 		fixed		forwardmove[2];
 		fixed		sidemove[2];
 		fixed		viewheight;
+		fixed		forwardthrust;
+		fixed		sidethrust;
 
 	protected:
 		AWeapon	*BestWeapon(const ClassDef *ammo=NULL);

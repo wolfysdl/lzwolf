@@ -265,7 +265,7 @@ struct TVector2
 	}
 
 	// Returns a rotated vector. TAngle is in radians.
-	TVector2 Rotated (double angle)
+	TVector2 Rotated (double angle) const
 	{
 		double cosval = cos (angle);
 		double sinval = sin (angle);
@@ -273,13 +273,13 @@ struct TVector2
 	}
 
 	// Returns a vector rotated 90 degrees clockwise.
-	TVector2 Rotated90CW()
+	TVector2 Rotated90CW() const
 	{
 		return TVector2(Y, -X);
 	}
 
 	// Returns a vector rotated 90 degrees counterclockwise.
-	TVector2 Rotated90CCW()
+	TVector2 Rotated90CCW() const
 	{
 		return TVector2(-Y, X);
 	}
