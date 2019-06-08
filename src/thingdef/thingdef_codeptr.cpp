@@ -370,7 +370,7 @@ ACTION_FUNCTION(A_Explode)
 		double output = damage;
 		if(dist > fulldamageradius)
 			output *= 1.0 - static_cast<double>(dist - fulldamageradius)*rolloff;
-		if(output <= 0.0)
+		if(static_cast<unsigned int>(output) <= 0)
 			continue;
 
 		const ClassDef  *damageClass = ClassDef::FindClassTentative(damagetype, NATIVE_CLASS(Damage));
