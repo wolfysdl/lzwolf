@@ -36,6 +36,7 @@
 
 #include <map>
 #include <string>
+#include <iostream>
 #include "actor.h"
 #include "id_ca.h"
 #include "id_sd.h"

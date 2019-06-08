@@ -1,6 +1,7 @@
 #ifndef __WL_GAME_H__
 #define __WL_GAME_H__
 
+#include <map>
 #include "textures/textures.h"
 
 /*

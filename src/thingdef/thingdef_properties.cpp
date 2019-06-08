@@ -539,6 +539,12 @@ HANDLE_PROPERTY(sighttime)
 		defaults->sightrandom = 0;
 }
 
+HANDLE_PROPERTY(singlespawn)
+{
+	INT_PARAM(status, 0);
+	defaults->singlespawn = status;
+}
+
 HANDLE_PROPERTY(slotnumber)
 {
 	INT_PARAM(slot, 0);
@@ -716,6 +722,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(selectionorder, Weapon, I),
 	DEFINE_PROP_PREFIX(sidemove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(sighttime, Actor, I_I),
+	DEFINE_PROP(singlespawn, Actor, I),
 	DEFINE_PROP(slotnumber, Weapon, I),
 	DEFINE_PROP(slotpriority, Weapon, F),
 	DEFINE_PROP(speed, Actor, F_F),

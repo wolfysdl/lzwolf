@@ -34,6 +34,7 @@
 
 #include <map>
 #include <sstream>
+#include <iostream>
 #include "actor.h"
 #include "a_inventory.h"
 #include "farchive.h"
@@ -801,6 +802,16 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 
 	if(flags & SPAWN_AllowReplacement)
 		type = type->GetReplacement();
+
+	if (type->GetDefault()->singlespawn)
+	{
+		for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+		{
+			AActor * const other = iter;
+			if (other->GetClass() == type)
+				return NULL;
+		}
+	}
 
 	AActor *actor = type->CreateInstance();
 	actor->x = x;

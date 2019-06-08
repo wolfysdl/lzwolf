@@ -251,6 +251,7 @@ class AActor : public Thinker,
 		int         haloLightMask;
 		int         zoneLightMask;
 		const ClassDef  *litfilter;
+		int         singlespawn;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn

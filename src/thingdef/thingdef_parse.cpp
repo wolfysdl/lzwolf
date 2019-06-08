@@ -32,6 +32,7 @@
 **
 */
 
+#include <iostream>
 #include "actor.h"
 #include "thingdef/thingdef.h"
 #include "thingdef/thingdef_codeptr.h"
