@@ -266,7 +266,7 @@ actor CeilingLight 47
 	{
 		Spawn:
 			GLMP A 1 A_SpawnItem("DustSource")
-			//GLMP A 1 A_EnableHaloLight(0, true)
+			GLMP A 1 A_EnableHaloLight(0, true)
 			//GLMP A 1 A_EnableHaloLight(1, true)
 			//GLMP A 1 A_EnableZoneLight(0, true)
 			GLMP A -1 bright

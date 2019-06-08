@@ -4,8 +4,15 @@ actor DustLit : Lit
 
 actor DustOne
 {
-	filterposwrap 0, 0.0, 3.0, 0
-	litfilter "DustLit"
+	//               axis   usefwd
+	filterposthrust     0,       1
+	filterposthrust     1,       0
+
+	//                 x1       x2   axis
+	filterposwrap     0.0,     3.0,     0
+	filterposwrap    -1.5,     1.5,     1
+
+	//litfilter "DustLit"
 	+DRAWRELATIVE
 	states
 	{
@@ -13,14 +20,14 @@ actor DustOne
 			SMOK A 0 A_ResetPosition(1.0, 0.0)
 			goto Puff
 		Puff:
-			SMOK A 1.5 A_InertMove(0.02, DIR_EAST)
+			SMOK A 1.5 //A_InertMove(0.02, DIR_EAST)
 			loop
 	}
 }
 
 actor DustTwo
 {
-	filterposwrap 0, 0.0, 3.0, 0
+	filterposwrap 0.0, 3.0, 0
 	litfilter "DustLit"
 	+DRAWRELATIVE
 	states

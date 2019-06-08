@@ -66,6 +66,7 @@ enum
 	AMETA_HaloLights,
 	AMETA_ZoneLights,
 	AMETA_FilterposWraps,
+	AMETA_FilterposThrusts,
 };
 
 enum
@@ -134,6 +135,15 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<FilterposWrap> FilterposWrapList;
 
+		struct FilterposThrust
+		{
+			public:
+				int             id;
+				unsigned int    axis;
+				int             usefwd;
+		};
+		typedef LinkedList<FilterposThrust> FilterposThrustList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -151,6 +161,7 @@ class AActor : public Thinker,
 		HaloLightList		*GetHaloLightList() const;
 		ZoneLightList		*GetZoneLightList() const;
 		FilterposWrapList		*GetFilterposWrapList() const;
+		FilterposThrustList		*GetFilterposThrustList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -167,6 +178,9 @@ class AActor : public Thinker,
 		virtual void	Tick();
 		virtual void	Touch(AActor *toucher) {}
 		void            ApplyFilterpos (FilterposWrap wrap);
+		void            ApplyFilterpos (FilterposThrust thrust);
+
+		fixed           &GetCoordRef (unsigned int axis);
 
 		void PrintInventory();
 
@@ -176,6 +190,7 @@ class AActor : public Thinker,
 		static PointerIndexTable<HaloLightList> haloLights;
 		static PointerIndexTable<ZoneLightList> zoneLights;
 		static PointerIndexTable<FilterposWrapList> filterposWraps;
+		static PointerIndexTable<FilterposThrustList> filterposThrusts;
 
 		// Basic properties from objtype
 		ActorFlags flags;

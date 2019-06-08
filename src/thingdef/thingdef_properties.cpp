@@ -32,6 +32,7 @@
 **
 */
 
+#include <iostream>
 #include "actor.h"
 #include "thingdef.h"
 #include "a_inventory.h"
@@ -271,18 +272,33 @@ HANDLE_PROPERTY(dropitem)
 	AActor::dropItems[cls->Meta.GetMetaInt(AMETA_DropItems)]->Push(drop);
 }
 
+HANDLE_PROPERTY(filterposthrust)
+{
+	INT_PARAM(axis, 0);
+	INT_PARAM(usefwd, 1);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposThrusts, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposThrusts))
+		cls->Meta.SetMetaInt(AMETA_FilterposThrusts, AActor::filterposThrusts.Push(new AActor::FilterposThrustList()));
+
+	AActor::FilterposThrust filterposThrust;
+	filterposThrust.id = cls->GetNextFilterposId();
+	filterposThrust.axis = axis;
+	filterposThrust.usefwd = usefwd;
+
+	AActor::filterposThrusts[cls->Meta.GetMetaInt(AMETA_FilterposThrusts)]->Push(filterposThrust);
+}
+
 HANDLE_PROPERTY(filterposwrap)
 {
-	INT_PARAM(id, 0);
-	FLOAT_PARAM(x1, 1);
-	FLOAT_PARAM(x2, 2);
-	INT_PARAM(axis, 3);
+	FLOAT_PARAM(x1, 0);
+	FLOAT_PARAM(x2, 1);
+	INT_PARAM(axis, 2);
 
 	if(cls->Meta.GetMetaInt(AMETA_FilterposWraps, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWraps))
 		cls->Meta.SetMetaInt(AMETA_FilterposWraps, AActor::filterposWraps.Push(new AActor::FilterposWrapList()));
 
 	AActor::FilterposWrap filterposWrap;
-	filterposWrap.id = id;
+	filterposWrap.id = cls->GetNextFilterposId();
 	filterposWrap.x1 = x1;
 	filterposWrap.x2 = x2;
 	filterposWrap.axis = axis;
@@ -692,7 +708,8 @@ extern const PropDef properties[] =
 	DEFINE_PROP(deathsound, Actor, S),
 	DEFINE_PROP_PREFIX(displayname, PlayerPawn, Player, S),
 	DEFINE_PROP(dropitem, Actor, S_II),
-	DEFINE_PROP(filterposwrap, Actor, IFFI),
+	DEFINE_PROP(filterposthrust, Actor, II),
+	DEFINE_PROP(filterposwrap, Actor, FFI),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(halolight, Actor, IFI_S),

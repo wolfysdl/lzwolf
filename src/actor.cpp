@@ -153,6 +153,7 @@ PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
 PointerIndexTable<AActor::HaloLightList> AActor::haloLights;
 PointerIndexTable<AActor::ZoneLightList> AActor::zoneLights;
 PointerIndexTable<AActor::FilterposWrapList> AActor::filterposWraps;
+PointerIndexTable<AActor::FilterposThrustList> AActor::filterposThrusts;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -393,6 +394,14 @@ AActor::FilterposWrapList *AActor::GetFilterposWrapList() const
 	if(filterposwrapsIndex == -1)
 		return NULL;
 	return filterposWraps[filterposwrapsIndex];
+}
+
+AActor::FilterposThrustList *AActor::GetFilterposThrustList() const
+{
+	int filterposthrustsIndex = GetClass()->Meta.GetMetaInt(AMETA_FilterposThrusts, -1);
+	if(filterposthrustsIndex == -1)
+		return NULL;
+	return filterposThrusts[filterposthrustsIndex];
 }
 
 const AActor *AActor::GetDefault() const
@@ -642,6 +651,19 @@ void AActor::ApplyFilterpos (FilterposWrap wrap)
 	z = FLOAT2FIXED(v[2]);
 }
 
+fixed &AActor::GetCoordRef (unsigned int axis)
+{
+	if (axis >= 3)
+		Quit ("Invalid axis!");
+	return (axis==0 ? x : (axis==1 ? y : z));
+}
+
+void AActor::ApplyFilterpos (FilterposThrust thrust)
+{
+	GetCoordRef (thrust.axis) -= (thrust.usefwd ?
+		players[0].mo->forwardthrust : players[0].mo->sidethrust);
+}
+
 namespace FilterposApplier
 {
 	class Base
@@ -689,6 +711,22 @@ namespace FilterposApplier
 				{
 					Li::Iterator filterposWrap = item;
 					m[filterposWrap->id] = MakeFilter (*filterposWrap);
+				}
+				while(item.Next());
+			}
+		}
+
+		{
+			typedef AActor::FilterposThrustList Li;
+
+			Li *li = actor->GetFilterposThrustList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator filterposThrust = item;
+					m[filterposThrust->id] = MakeFilter (*filterposThrust);
 				}
 				while(item.Next());
 			}
