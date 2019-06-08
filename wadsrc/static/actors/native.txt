@@ -62,6 +62,7 @@ actor Actor native
 	meleerange 44
 	scale 1.0
 	projectilepassheight -1
+	singlespawn 0
 
 	native angle_t angle;
 	native int health;
@@ -95,7 +96,7 @@ actor Actor native
 	action native A_Pain();
 	action native A_PlaySound(string soundname);
 	action native A_RadiusWake(int radius = 128);
-	action native A_ResetPosition(float x, float y);
+	action native A_ResetPosition(float x = 0, float y = 0);
 	action native A_ScaleVelocity(float scale);
 	action native A_Scream();
 	action native A_SetPicXY(int picX, int picY);

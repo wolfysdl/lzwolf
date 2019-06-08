@@ -13,7 +13,7 @@ actor DustOne
 			SMOK A 0 A_ResetPosition(1.0, 0.0)
 			goto Puff
 		Puff:
-			SMOK A 1.5 //A_InertMove(0.01, DIR_EAST)
+			SMOK A 1.5 A_InertMove(0.02, DIR_EAST)
 			loop
 	}
 }
@@ -29,7 +29,7 @@ actor DustTwo
 			SMOK A 0 A_ResetPosition(1.0, 0.5)
 			goto Puff
 		Puff:
-			SMOK A 1.5 //A_InertMove(0.01, DIR_EAST)
+			SMOK A 1.5 A_InertMove(0.01, DIR_EAST)
 			loop
 	}
 }
