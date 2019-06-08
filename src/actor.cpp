@@ -706,7 +706,7 @@ void AActor::ApplyFilterpos (FilterposWave wave)
 	const uint32_t currentTick = (SDL_GetTicks() % durTicks);
 	const uint32_t curFineangle = currentTick*FINEANGLES/durTicks;
 	const fixed delta = FLOAT2FIXED(wave.amplitude *
-		FIXED2FLOAT(finesine[curFineangle]));
+		FIXED2FLOAT((wave.usesine ? finesine : finecosine)[curFineangle]));
 	fixed &olddelta = GetFilterposWaveOldDelta (wave.id);
 	GetCoordRef (wave.axis) += delta - olddelta;
 	olddelta = delta;

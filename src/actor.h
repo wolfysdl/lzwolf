@@ -152,6 +152,7 @@ class AActor : public Thinker,
 				unsigned int    axis;
 				double          amplitude;
 				double          period;
+				int             usesine;
 		};
 		typedef LinkedList<FilterposWave> FilterposWaveList;
 

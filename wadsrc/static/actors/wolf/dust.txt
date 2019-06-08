@@ -8,8 +8,9 @@ actor DustOne
 	filterposthrust     0,       1
 	filterposthrust     1,       0
 
-	//               axis    amplitude     period
-	filterposwave       0,         0.3,       3.0
+	//               axis    amplitude     period    usesine
+	filterposwave       0,         0.1,       3.0,         1
+	filterposwave       2,         0.1,       3.0,         0
 
 	//                 x1       x2   axis
 	filterposwrap     0.0,     3.0,     0
