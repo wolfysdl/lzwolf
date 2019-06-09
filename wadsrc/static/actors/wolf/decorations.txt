@@ -258,15 +258,15 @@ actor MetalTable : BareTable 117
 
 actor CeilingLight 47
 {
-	//halolight 0, 1.0, 6, "DustLit"
+	halolight 0, 1.0, 6, "DustLit"
 	//halolight 1, 0.8, 6
 	//zonelight 0, 2
 
 	states
 	{
 		Spawn:
-			//GLMP A 1 A_SpawnItem("DustSource")
-			//GLMP A 1 A_EnableHaloLight(0, true)
+			GLMP A 1 A_SpawnItem("DustSource")
+			GLMP A 1 A_EnableHaloLight(0, true)
 			//GLMP A 1 A_EnableHaloLight(1, true)
 			//GLMP A 1 A_EnableZoneLight(0, true)
 			GLMP A -1 bright

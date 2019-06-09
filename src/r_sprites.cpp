@@ -32,6 +32,7 @@
 **
 */
 
+#include <iostream>
 #include "textures/textures.h"
 #include "c_cvars.h"
 #include "r_sprites.h"
@@ -450,6 +451,7 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 	const ClassDef * const litfilter = actor->litfilter;
 	if (litfilter != NULL)
 	{
+		//std::cerr << actor << " " << (upperedge>>3) << " " << actor->z << " " << tex->GetScaledTopOffsetDouble() << std::endl;
 		const fixed planeheight = viewz;
 		const int halfheight = (viewheight >> 1) - viewshift;
 		fixed planenumerator = FixedMul(heightnumerator, planeheight);

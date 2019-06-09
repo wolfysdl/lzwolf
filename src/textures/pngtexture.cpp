@@ -33,6 +33,7 @@
 **
 */
 
+#include <iostream>
 #include "wl_def.h"
 #include "m_swap.h"
 #include "zdoomsupport.h"
