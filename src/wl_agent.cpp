@@ -153,12 +153,15 @@ void CheckWeaponChange (AActor *self)
 namespace ThrustTracker
 {
 	TVector2<double> p0;
+	int32_t	a0;
 
 	void Start (APlayerPawn *ob)
 	{
 		ob->forwardthrust = 0;
 		ob->sidethrust = 0;
+		ob->rotthrust = 0;
 		p0 = TVector2<double>(FIXED2FLOAT(ob->x), FIXED2FLOAT(ob->y));
+		a0 = ob->angle>>ANGLETOFINESHIFT;
 	}
 
 	void Finish (APlayerPawn *ob)
@@ -170,6 +173,13 @@ namespace ThrustTracker
 
 		ob->forwardthrust = FLOAT2FIXED((p1-p0)|fwd);
 		ob->sidethrust = FLOAT2FIXED((p1-p0)|side);
+
+		const int32_t a1 = (int32_t)(ob->angle>>ANGLETOFINESHIFT);
+
+		int32_t a = a1 - a0;
+		a += (a>(FINEANGLES/2)) ? -FINEANGLES : (a<-(FINEANGLES/2)) ? FINEANGLES : 0;
+
+		ob->rotthrust = a;
 	}
 }
 

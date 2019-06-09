@@ -79,6 +79,16 @@ enum
 typedef TFlags<ActorFlag> ActorFlags;
 DEFINE_TFLAGS_OPERATORS (ActorFlags)
 
+namespace FilterposThrustSource
+{
+	enum e
+	{
+		forwardThrust,
+		sideThrust,
+		rotation,
+	};
+}
+
 class player_t;
 class ClassDef;
 class AInventory;
@@ -141,7 +151,7 @@ class AActor : public Thinker,
 			public:
 				int             id;
 				unsigned int    axis;
-				int             usefwd;
+				FilterposThrustSource::e src;
 		};
 		typedef LinkedList<FilterposThrust> FilterposThrustList;
 

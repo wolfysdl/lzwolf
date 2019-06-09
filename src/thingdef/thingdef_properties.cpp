@@ -275,7 +275,7 @@ HANDLE_PROPERTY(dropitem)
 HANDLE_PROPERTY(filterposthrust)
 {
 	INT_PARAM(axis, 0);
-	INT_PARAM(usefwd, 1);
+	INT_PARAM(src, 1);
 
 	if(cls->Meta.GetMetaInt(AMETA_FilterposThrusts, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposThrusts))
 		cls->Meta.SetMetaInt(AMETA_FilterposThrusts, AActor::filterposThrusts.Push(new AActor::FilterposThrustList()));
@@ -283,7 +283,7 @@ HANDLE_PROPERTY(filterposthrust)
 	AActor::FilterposThrust filterposThrust;
 	filterposThrust.id = cls->GetNextFilterposId();
 	filterposThrust.axis = axis;
-	filterposThrust.usefwd = usefwd;
+	filterposThrust.src = (FilterposThrustSource::e)src;
 
 	AActor::filterposThrusts[cls->Meta.GetMetaInt(AMETA_FilterposThrusts)]->Push(filterposThrust);
 }

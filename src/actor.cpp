@@ -678,8 +678,20 @@ fixed &AActor::GetCoordRef (unsigned int axis)
 
 void AActor::ApplyFilterpos (FilterposThrust thrust)
 {
-	GetCoordRef (thrust.axis) -= (thrust.usefwd ?
-		players[0].mo->forwardthrust : players[0].mo->sidethrust);
+	fixed move = 0;
+	switch (thrust.src)
+	{
+	case FilterposThrustSource::forwardThrust:
+		move = players[0].mo->forwardthrust;
+		break;
+	case FilterposThrustSource::sideThrust:
+		move = players[0].mo->sidethrust;
+		break;
+	case FilterposThrustSource::rotation:
+		move = players[0].mo->rotthrust * -50;
+		break;
+	}
+	GetCoordRef (thrust.axis) -= move;
 }
 
 fixed &AActor::GetFilterposWaveOldDelta (int id)
