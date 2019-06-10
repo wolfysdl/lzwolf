@@ -99,6 +99,7 @@ void APlayerPawn::Die()
 		player->PendingWeapon = WP_NOCHANGE;
 		if(player->ReadyWeapon)
 			player->SetPSprite(player->ReadyWeapon->GetDownState(), player_t::ps_weapon);
+		player->weaponSlotStates.Clear();
 	}
 	Super::Die();
 }

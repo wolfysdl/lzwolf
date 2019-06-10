@@ -130,8 +130,11 @@ void CheckWeaponChange (AActor *self)
 		{
 			if(cmd.buttonstate[bt_slot0 + i] && !cmd.buttonheld[bt_slot0 + i])
 			{
-				newWeapon = self->player->weapons.Slots[i].PickWeapon(self->player);
+				AWeapon *&lastWeapon = self->player->GetWeaponSlotState(i).LastWeapon;
+				newWeapon = self->player->weapons.Slots[i].PickWeapon(self->player, lastWeapon);
 				cmd.buttonheld[bt_slot0 + i] = true;
+				if (newWeapon && newWeapon != self->player->ReadyWeapon)
+					lastWeapon = newWeapon;
 				break;
 			}
 		}
@@ -906,6 +909,12 @@ void player_t::Reborn()
 	CalcProjection(mo->radius);
 }
 
+FArchive &operator<< (FArchive &arc, player_t::WeaponSlotState &player)
+{
+	arc << player.LastWeapon;
+	return arc;
+}
+
 void player_t::Serialize(FArchive &arc)
 {
 	BYTE state = this->state;
@@ -923,7 +932,8 @@ void player_t::Serialize(FArchive &arc)
 		<< ReadyWeapon
 		<< PendingWeapon
 		<< flags
-		<< extralight;
+		<< extralight
+		<< weaponSlotStates;
 
 	for(unsigned int i = 0;i < NUM_PSPRITES;++i)
 	{
