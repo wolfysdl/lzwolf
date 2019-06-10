@@ -452,7 +452,28 @@ namespace Shading
 		}
 
 		MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
-		if (spot->zone != NULL && zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
+		if (spot->tile)
+		{
+			unsigned int oldmapxdoor;
+			MapTile::Side doordir;
+			MapSpot doorspot;
+
+			if (spot->tile->offsetVertical && !spot->tile->offsetHorizontal)
+			{
+				doorspot = spot;
+				doordir = MapTile::East;
+				oldmapxdoor = xintercept >> (TILESHIFT-1);
+				spot = doorspot->GetAdjacent(doordir, !(oldmapxdoor&1));
+			}
+			else if (spot->tile->offsetHorizontal && !spot->tile->offsetVertical)
+			{
+				doorspot = spot;
+				doordir = MapTile::South;
+				oldmapxdoor = yintercept >> (TILESHIFT-1);
+				spot = doorspot->GetAdjacent(doordir, !(oldmapxdoor&1));
+			}
+		}
+		if (spot && spot->zone != NULL && zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
 			light += zoneLightMap.find(spot->zone->index)->second;
 
 		return light;
