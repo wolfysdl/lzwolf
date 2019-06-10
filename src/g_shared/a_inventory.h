@@ -116,6 +116,8 @@ class ADamage : public AInventory
 	public:
 		const ClassDef	*GetDamageType() const;
 
+		bool			noxdeath;
+
 	protected:
 		AInventory		*CreateCopy(AActor *holder);
 };

@@ -96,15 +96,6 @@ HANDLE_PROPERTY(ammouse2)
 	((AWeapon *)defaults)->ammouse[AWeapon::AltFire] = use;
 }
 
-HANDLE_PROPERTY(damagetype)
-{
-	STRING_PARAM(type, 0);
-	if(stricmp(type, "none") == 0 || *type == '\0')
-		((AWeapon *)defaults)->damagetype = NULL;
-	else
-		((AWeapon *)defaults)->damagetype = ClassDef::FindClassTentative(type, NATIVE_CLASS(Damage));
-}
-
 HANDLE_PROPERTY(amount)
 {
 	INT_PARAM(amt, 0);
@@ -225,6 +216,15 @@ HANDLE_PROPERTY(damagescreencolor)
 {
     STRING_PARAM(dmgcolor, 0);
     ((APlayerPawn *)defaults)->damagecolor = V_GetColorFromString(NULL, dmgcolor);
+}
+
+HANDLE_PROPERTY(damagetype)
+{
+	STRING_PARAM(type, 0);
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		((AWeapon *)defaults)->damagetype = NULL;
+	else
+		((AWeapon *)defaults)->damagetype = ClassDef::FindClassTentative(type, NATIVE_CLASS(Damage));
 }
 
 HANDLE_PROPERTY(deathsound)
@@ -391,6 +391,12 @@ HANDLE_PROPERTY(painchance)
 	else if(chance < 0)
 		chance = 0;
 	defaults->painchance = chance;
+}
+
+HANDLE_PROPERTY(noxdeath)
+{
+	INT_PARAM(noxdeath, 0);
+	((ADamage *)defaults)->noxdeath = noxdeath?true:false;
 }
 
 HANDLE_PROPERTY(overheadicon)
@@ -637,6 +643,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(missilefrequency, Actor, F),
 	DEFINE_PROP(MONSTER, Actor,),
 	DEFINE_PROP_PREFIX(movebob, PlayerPawn, Player, F),
+	DEFINE_PROP(noxdeath, Damage, I),
 	DEFINE_PROP(overheadicon, Actor, S),
 	DEFINE_PROP(painchance, Actor, I),
 	DEFINE_PROP(painsound, Actor, S),

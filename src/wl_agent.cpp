@@ -1076,6 +1076,22 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 			player.PendingWeapon = player.ReadyWeapon;
 		player.BringUpWeapon();
 	}
+
+	{
+		ClassDef::ClassIterator iter = ClassDef::GetClassIterator();
+		ClassDef::ClassPair *pair;
+		while(iter.NextPair(pair))
+		{
+			const ClassDef *cls = pair->Value;
+			if (cls->IsDescendantOf(NATIVE_CLASS(Damage)) && cls != NATIVE_CLASS(Damage))
+			{
+				AInventory *inv = NULL;
+				inv = (AInventory *) AActor::Spawn(cls, 0, 0, 0, 0);
+				players[0].mo->AddInventory(inv);
+				inv->RemoveFromWorld();
+			}
+		}
+	}
 }
 
 

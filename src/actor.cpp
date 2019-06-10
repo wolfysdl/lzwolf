@@ -291,6 +291,13 @@ void AActor::Die()
 	}
 
 	bool isExtremelyDead = health < -GetClass()->Meta.GetMetaInt(AMETA_GibHealth, (GetDefault()->health*gameinfo.GibFactor)>>FRACBITS);
+	if (killerdamagetype && isExtremelyDead)
+	{
+		ADamage *damage = static_cast<ADamage *>(players[0].mo->FindInventory(killerdamagetype));
+		if (damage && damage->noxdeath)
+			isExtremelyDead = false;
+	}
+
 	const Frame *deathstate = NULL;
 	if (!deathstate && isExtremelyDead && killerdamagetype)
 	{
