@@ -242,9 +242,12 @@ namespace Shading
 			const fixed gu0 = gu;
 			const fixed gv0 = gv;
 			unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
+			unsigned int oldmapxdoor = INT_MAX;
 			unsigned int oldzone = INT_MAX;
 			int zonex = -1;
 			unsigned int curzone = INT_MAX;
+			MapTile::Side doordir = MapTile::East;
+			MapSpot doorspot = NULL;
 			for (int x = lx; x < rx; x++)
 			{
 				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
@@ -256,19 +259,59 @@ namespace Shading
 					{
 						oldmapx = curx;
 						oldmapy = cury;
-						//std::cerr << oldmapx%mapwidth << " " << oldmapy%mapheight << std::endl;
+						oldmapxdoor = INT_MAX;
+
+						const int mapx = (int)(oldmapx%mapwidth);
+						const int mapy = (int)(oldmapy%mapheight);
 
 						const std::vector<Halo::Id> &ids =
-							tiles[Tile::Pos(oldmapx%mapwidth,oldmapy%mapheight)].haloIds;
+							tiles[Tile::Pos(mapx,mapy)].haloIds;
 						if (ids.size() > 0)
 						{
 							std::copy(ids.begin(), ids.end(),
 								std::inserter(haloIds, haloIds.end()));
 						}
 
-						MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, 0);
-						if (spot->zone != NULL)
-							curzone = spot->zone->index;
+						MapSpot spot = map->GetSpot(mapx, mapy, 0);
+						if (spot)
+						{
+							if (spot->tile)
+							{
+								if (spot->tile->offsetVertical && !spot->tile->offsetHorizontal)
+								{
+									doorspot = spot;
+									doordir = MapTile::East;
+									oldmapxdoor = gu >> (TILESHIFT-1);
+									spot = doorspot->GetAdjacent(doordir, !(oldmapxdoor&1));
+								}
+								else if (spot->tile->offsetHorizontal && !spot->tile->offsetVertical)
+								{
+									doorspot = spot;
+									doordir = MapTile::South;
+									oldmapxdoor = gv >> (TILESHIFT-1);
+									spot = doorspot->GetAdjacent(doordir, !(oldmapxdoor&1));
+								}
+								if (spot && spot->zone != NULL)
+									curzone = spot->zone->index;
+							}
+							else
+							{
+								if (spot->zone != NULL)
+									curzone = spot->zone->index;
+							}
+						}
+					}
+
+					if (oldmapxdoor != INT_MAX)
+					{
+						unsigned int curxdoor = ((doordir==MapTile::South ? gv:gu) >> (TILESHIFT-1));
+						if (curxdoor != oldmapxdoor)
+						{
+							MapSpot spot = doorspot->GetAdjacent(doordir, !(curxdoor&1));
+							if (spot && spot->zone != NULL)
+								curzone = spot->zone->index;
+							oldmapxdoor = INT_MAX;
+						}
 					}
 				}
 				else
