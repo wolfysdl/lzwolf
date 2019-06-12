@@ -148,8 +148,8 @@ AWeapon *FWeaponSlot::PickWeapon(player_t *player, AWeapon *lastWeapon, bool che
 		}
 	}
 
-	if (lastWeapon != NULL && lastWeapon->CheckAmmo(AWeapon::EitherFire, false))
-		return lastWeapon;
+	//if (lastWeapon != NULL && lastWeapon->CheckAmmo(AWeapon::EitherFire, false))
+	//	return lastWeapon;
 
 	for (i = Weapons.Size() - 1; i >= 0; i--)
 	{
