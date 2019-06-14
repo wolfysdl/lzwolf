@@ -177,6 +177,16 @@ void APlayerPawn::RemoveInventory(AInventory *item)
 			pickWeap = true;
 	}
 
+#ifdef USE_LASTWEAPON
+	unsigned int i;
+	for (i = 0; i < player->weaponSlotStates.Size(); i++)
+	{
+		player_t::WeaponSlotState &slot = player->weaponSlotStates[i];
+		if (slot.LastWeapon == item)
+			slot.LastWeapon = NULL;
+	}
+#endif
+
 	Super::RemoveInventory(item);
 
 	if(pickWeap)
