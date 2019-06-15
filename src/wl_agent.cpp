@@ -311,7 +311,11 @@ void player_t::TakeDamage (int points, AActor *attacker)
 
 	if (gamestate.victoryflag)
 		return;
+	const int damage = points;
 	points = (points*gamestate.difficulty->DamageFactor)>>FRACBITS;
+	// fix for baby mode
+	if (points <= 0 && damage > 0)
+		points = 1;
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
 	if (!godmode)
