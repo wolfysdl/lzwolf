@@ -351,7 +351,8 @@ ACTION_FUNCTION(A_CustomMissile)
 	if(!cls)
 		return false;
 	AActor *newobj = AActor::Spawn(cls, newx, newy, 0, SPAWN_AllowReplacement);
-	newobj->target = self;
+	newobj->missileParent = (self->missileParent ? self->missileParent : self);
+	newobj->target = newobj->missileParent;
 	newobj->angle = iangle;
 
 	newobj->velx = FixedMul(newobj->speed,finecosine[iangle>>ANGLETOFINESHIFT]);
