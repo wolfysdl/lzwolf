@@ -521,6 +521,8 @@ void AActor::Serialize(FArchive &arc)
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;
 
+	arc << missileParent;
+
 	if(arc.IsLoading() && !hasActorRef)
 		actors.Remove(this);
 

@@ -214,6 +214,8 @@ class AActor : public Thinker,
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
 
+		TObjPtr<AActor> missileParent;
+
 		TObjPtr<AInventory>	inventory;
 
 		const Dialog::Page *conversation;
