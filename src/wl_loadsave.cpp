@@ -288,15 +288,15 @@ bool SetupSaveGames()
 				sFile.filename = filename;
 				sFile.hasFiles = true;
 
-				char* savesig = M_GetPNGText(png, "ECWolf Save Version");
+				char* savesig = M_GetPNGText(png, "LZWolf Save Version");
 				if(savesig)
 				{
-					if(strncmp(savesig, GetSaveSignature(), 10) != 0) // Should be "ECWOLFSAVE"
+					if(strncmp(savesig, GetSaveSignature(), 10) != 0) // Should be "LZWOLFSAVE"
 						sFile.oldVersion = true;
 					else
 					{
 						unsigned long long savever = atoll(savesig+10);
-						char *prodver = M_GetPNGText(png, "ECWolf Save Product Version");
+						char *prodver = M_GetPNGText(png, "LZWolf Save Product Version");
 						// If the build was done in the revision control tree, then
 						// savever should be used for better precision.  Otherwise
 						// we must compare the version number itself.
@@ -580,11 +580,11 @@ bool Load(const FString &filename)
 	if(!quickSaveLoad)
 		DrawLSAction(0);
 
-	char* savesig = M_GetPNGText(png, "ECWolf Save Version");
+	char* savesig = M_GetPNGText(png, "LZWolf Save Version");
 	SaveVersion = atoll(savesig+10);
 	delete[] savesig;
 
-	char *prodver = M_GetPNGText(png, "ECWolf Save Product Version");
+	char *prodver = M_GetPNGText(png, "LZWolf Save Product Version");
 	SaveProdVersion = (DWORD)atoll(prodver);
 	delete[] prodver;
 
@@ -663,13 +663,13 @@ bool Save(const FString &filename, const FString &title)
 	}
 
 	SaveScreenshot(fileh);
-	M_AppendPNGText(fileh, "Software", "ECWolf");
+	M_AppendPNGText(fileh, "Software", "LZWolf");
 	M_AppendPNGText(fileh, "Engine", GAMESIG);
-	M_AppendPNGText(fileh, "ECWolf Save Version", GetSaveSignature());
+	M_AppendPNGText(fileh, "LZWolf Save Version", GetSaveSignature());
 	{
 		char saveprodver[11];
 		sprintf(saveprodver, "%u", SAVEPRODVER);
-		M_AppendPNGText(fileh, "ECWolf Save Product Version", saveprodver);
+		M_AppendPNGText(fileh, "LZWolf Save Product Version", saveprodver);
 	}
 	M_AppendPNGText(fileh, "Title", title);
 	M_AppendPNGText(fileh, "Current Map", levelInfo->MapName);

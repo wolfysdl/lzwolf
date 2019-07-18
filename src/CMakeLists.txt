@@ -292,14 +292,14 @@ set(SOURCE_FILES
 )
 
 if(NOT ANDROID)
-	add_executable(ecwolf ${PLATFORM_EXE_FLAGS}
+	add_executable(lzwolf ${PLATFORM_EXE_FLAGS}
 		${HEADER_FILES}
 		${OPL_SOURCES}
 		${SOURCE_FILES}
 		${EXTRA_FILES}
 	)
 else()
-	add_library(ecwolf SHARED
+	add_library(lzwolf SHARED
 		${HEADER_FILES}
 		${OPL_SOURCES}
 		${SOURCE_FILES}
@@ -308,12 +308,12 @@ else()
 
 	# Link test
 	add_executable(link-test android/link-test.cpp)
-	target_link_libraries(link-test ecwolf)
+	target_link_libraries(link-test lzwolf)
 endif()
 
-add_dependencies(ecwolf revision_check)
-target_link_libraries(ecwolf ${EXTRA_LIBRARIES} SDL2::SDL2_mixer SDL2::SDL2_net SDL2::SDL2 ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${JPEG_LIBRARIES} lzma gdtoa)
-target_include_directories(ecwolf PRIVATE
+add_dependencies(lzwolf revision_check)
+target_link_libraries(lzwolf ${EXTRA_LIBRARIES} SDL2::SDL2_mixer SDL2::SDL2_net SDL2::SDL2 ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${JPEG_LIBRARIES} lzma gdtoa)
+target_include_directories(lzwolf PRIVATE
 	${ZLIB_INCLUDE_DIR}
 	${BZIP2_INCLUDE_DIR}
 	${JPEG_INCLUDE_DIR}
@@ -325,7 +325,7 @@ target_include_directories(ecwolf PRIVATE
 	${CMAKE_BINARY_DIR}/deps/gdtoa
 )
 
-set_target_properties(ecwolf PROPERTIES
+set_target_properties(lzwolf PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
 	# On Linux look for any libraries we link against in the executable directory.
 	INSTALL_RPATH "\$ORIGIN"
@@ -334,11 +334,11 @@ set_target_properties(ecwolf PROPERTIES
 
 # Install
 if(NOT ANDROID)
-	install(TARGETS ecwolf BUNDLE DESTINATION ${OUTPUT_DIR} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime)
+	install(TARGETS lzwolf BUNDLE DESTINATION ${OUTPUT_DIR} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime)
 
 	if(NOT WIN32 AND NOT APPLE)
-		install(FILES "posix/ecwolf.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-		install(FILES "posix/icon.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps" RENAME "ecwolf.svg")
+		install(FILES "posix/lzwolf.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+		install(FILES "posix/icon.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps" RENAME "lzwolf.svg")
 	endif()
 endif()
 
