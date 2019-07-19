@@ -16,7 +16,7 @@ if(GPL)
 
 	if(USE_LIBTEXTSCREEN)
 		add_definitions(-DUSE_TEXTSCREEN)
-		include_directories(${ECWolf_SOURCE_DIR}/textscreen)
+		include_directories(${LZWolf_SOURCE_DIR}/textscreen)
 		set(EXTRA_LIBRARIES textscreen)
 	else()
 		set(EXTRA_LIBRARIES)
@@ -71,7 +71,7 @@ if(WIN32)
 	add_definitions(-DWINDOWS -DNO_STDIO_REDIRECT)
 
 	# RC file
-	set(EXTRA_FILES ${ECWolf_SOURCE_DIR}/src/win32/windows.rc)
+	set(EXTRA_FILES ${LZWolf_SOURCE_DIR}/src/win32/windows.rc)
 
 	# Fix stat in v140_xp (broken in RTM and Update 1 so far)
 	if( MSVC AND MSVC_VERSION EQUAL 1900 AND CMAKE_GENERATOR_TOOLSET STREQUAL "v140_xp" )
@@ -321,7 +321,7 @@ target_include_directories(lzwolf PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/g_shared
 	${LZMA_INCLUDE_DIR}
-	${ECWolf_SOURCE_DIR}/deps/gdtoa
+	${LZWolf_SOURCE_DIR}/deps/gdtoa
 	${CMAKE_BINARY_DIR}/deps/gdtoa
 )
 
