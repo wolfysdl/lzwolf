@@ -143,13 +143,13 @@ dockerfile_ubuntu_minimum() {
 			libflac-dev libogg-dev libvorbis-dev libopus-dev libopusfile-dev libmodplug-dev libfluidsynth-dev \
 			zlib1g-dev libbz2-dev libgtk2.0-dev \
 			libglu1-mesa-dev libglu1-mesa -y && \
-		useradd -rm ecwolf && \
-		echo "ecwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
-		mkdir /home/ecwolf/results && \
-		chown ecwolf:ecwolf /home/ecwolf/results && \
-		ln -s /home/ecwolf/results /results
+		useradd -rm lzwolf && \
+		echo "lzwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
+		mkdir /home/lzwolf/results && \
+		chown lzwolf:lzwolf /home/lzwolf/results && \
+		ln -s /home/lzwolf/results /results
 
-		USER ecwolf
+		USER lzwolf
 	EOF
 }
 
@@ -190,7 +190,7 @@ test_build_ecwolf_cfg() {
 	sudo make install 2>&1 | tee "/results/installlog-$BuildCfg.log"
 	(( PIPESTATUS[0] == 0 )) || return "${PIPESTATUS[0]}"
 
-	lddtree /usr/games/ecwolf | tee "/results/lddtree-$BuildCfg.txt"
+	lddtree /usr/games/lzwolf | tee "/results/lddtree-$BuildCfg.txt"
 }
 export -f test_build_ecwolf_cfg
 
@@ -259,8 +259,8 @@ package_ecwolf() {
 		build_ecwolf &&
 
 		make package &&
-		lintian --suppress-tags embedded-library ecwolf_*.deb &&
-		cp ecwolf_*.deb /results/
+		lintian --suppress-tags embedded-library lzwolf_*.deb &&
+		cp lzwolf_*.deb /results/
 	} 2>&1 | tee '/results/build.log'
 	return "${PIPESTATUS[0]}"
 }
@@ -299,13 +299,13 @@ dockerfile_clang() {
 			libflac-dev libogg-dev libvorbis-dev libopus-dev libopusfile-dev libmodplug-dev libfluidsynth-dev \
 			zlib1g-dev libbz2-dev libgtk2.0-dev \
 			libglu1-mesa-dev libglu1-mesa -y && \
-		useradd -rm ecwolf && \
-		echo "ecwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
-		mkdir /home/ecwolf/results && \
-		chown ecwolf:ecwolf /home/ecwolf/results && \
-		ln -s /home/ecwolf/results /results
+		useradd -rm lzwolf && \
+		echo "lzwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
+		mkdir /home/lzwolf/results && \
+		chown lzwolf:lzwolf /home/lzwolf/results && \
+		ln -s /home/lzwolf/results /results
 
-		USER ecwolf
+		USER lzwolf
 	EOF
 }
 
@@ -318,7 +318,7 @@ clang_build_ecwolf() {
 	sudo make install 2>&1 | tee "/results/installlog.log"
 	(( PIPESTATUS[0] == 0 )) || return "${PIPESTATUS[0]}"
 
-	lddtree /usr/games/ecwolf | tee "/results/lddtree.txt"
+	lddtree /usr/games/lzwolf | tee "/results/lddtree.txt"
 }
 export -f clang_build_ecwolf
 
@@ -342,13 +342,13 @@ dockerfile_mingw() {
 		apt-get install g++ cmake mercurial g++-mingw-w64-i686 g++-mingw-w64-x86-64 \
 			libsdl2-dev libsdl2-mixer-dev libsdl2-net-dev zlib1g-dev libbz2-dev libjpeg-turbo8-dev \
 			libglu1-mesa-dev libglu1-mesa -y && \
-		useradd -rm ecwolf && \
-		echo "ecwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
-		mkdir /home/ecwolf/results && \
-		chown ecwolf:ecwolf /home/ecwolf/results && \
-		ln -s /home/ecwolf/results /results
+		useradd -rm lzwolf && \
+		echo "lzwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
+		mkdir /home/lzwolf/results && \
+		chown lzwolf:lzwolf /home/lzwolf/results && \
+		ln -s /home/lzwolf/results /results
 
-		USER ecwolf
+		USER lzwolf
 	EOF
 }
 
@@ -374,7 +374,7 @@ build_mingw() {
 				-DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lpthread -Wl,-Bdynamic,--no-whole-archive" &&
 			make -j "$(nproc)" -O &&
 			make package &&
-			cp ecwolf-*.zip /results/
+			cp lzwolf-*.zip /results/
 		} 2>&1 | tee "/results/build-$Arch.log"
 		(( PIPESTATUS[0] == 0 )) || return "${PIPESTATUS[0]}"
 	done
@@ -403,11 +403,11 @@ dockerfile_android() {
 			g++ cmake mercurial openjdk-8-jdk-headless p7zip-full curl \
 			libsdl2-dev libsdl2-mixer-dev libsdl2-net-dev zlib1g-dev libbz2-dev libjpeg-turbo8-dev \
 			libglu1-mesa-dev libglu1-mesa -y && \
-		useradd -rm ecwolf && \
-		echo "ecwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
-		mkdir /home/ecwolf/results && \
-		chown ecwolf:ecwolf /home/ecwolf/results && \
-		ln -s /home/ecwolf/results /results && \
+		useradd -rm lzwolf && \
+		echo "lzwolf ALL=(ALL) NOPASSWD: /usr/bin/make install" >> /etc/sudoers && \
+		mkdir /home/lzwolf/results && \
+		chown lzwolf:lzwolf /home/lzwolf/results && \
+		ln -s /home/lzwolf/results /results && \
 		mkdir sdk && \
 		cd sdk && \
 		curl https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip -o sdk-tools-linux.zip && \
@@ -422,7 +422,7 @@ dockerfile_android() {
 		tools/bin/sdkmanager 'platforms;android-19' 'build-tools;19.1.0' 'extras;android;m2repository' && \
 		keytool -genkey -keystore untrusted.keystore -storepass untrusted -keypass untrusted -alias untrusted -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Untrusted,OU=Untrusted,O=Untrusted,L=Untrusted,S=Untrusted,C=US" -noprompt
 
-		USER ecwolf
+		USER lzwolf
 	EOF
 }
 
@@ -455,7 +455,7 @@ build_android() {
 				-DANDROID_SIGN_STOREPASS=untrusted \
 				-DINTERNAL_SDL{,_MIXER,_MIXER_CODECS,_NET}=ON
 			make -j "$(nproc)" &&
-			cp ecwolf.apk /results/ecwolf-"$Arch".apk
+			cp lzwolf.apk /results/lzwolf-"$Arch".apk
 		} 2>&1 | tee "/results/build-$Arch.log"
 		(( PIPESTATUS[0] == 0 )) || return "${PIPESTATUS[0]}"
 	done

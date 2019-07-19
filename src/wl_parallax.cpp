@@ -42,7 +42,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	int midangle = (players[ConsolePlayer].camera->angle)>>ANGLETOFINESHIFT;
 	int skyheight = viewheight >> 1;
 	int curtex = -1;
-	const byte *skytex;
+	const byte *skytex = NULL;
 	const int numParallax = levelInfo->ParallaxSky.Size();
 	int i;
 	int wbits = 0, hbits = 0;

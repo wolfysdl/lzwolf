@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: ECWolf
-Source: https://bitbucket.org/ecwolf/ecwolf
+Upstream-Name: LZWolf
+Source: https://bitbucket.org/linuxwolf6/lzwolf
 
 Files: *
 Copyright: 2008-2018, Braden "Blzut3" Obrzut <admin@maniacsvault.net>

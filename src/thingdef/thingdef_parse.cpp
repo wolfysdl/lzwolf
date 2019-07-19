@@ -57,7 +57,7 @@ enum DPARSER_CTL
 
 FDecorateParser::FDecorateParser(int lumpNum) : sc(lumpNum), newClass(NULL)
 {
-	// Enable ed num warning if not in ecwolf.pk3 (set to true which
+	// Enable ed num warning if not in lzwolf.pk3 (set to true which
 	// incidateds we've thrown this warning)
 	thingEdNumWarning = Wads.GetLumpFile(lumpNum) == 0;
 }
