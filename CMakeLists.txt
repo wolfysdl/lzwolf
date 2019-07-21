@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(ECWolf)
+project(LZWolf)
 
 if(POLICY CMP0054)
 	cmake_policy(SET CMP0054 NEW)
@@ -111,7 +111,7 @@ endif()
 function( add_pk3 PK3_NAME PK3_DIR )
 	# Generate target name. Just use "pk3" for main pk3 target.
 	string( REPLACE "." "_" PK3_TARGET ${PK3_NAME} )
-	if( ${PK3_TARGET} STREQUAL "ecwolf_pk3" )
+	if( ${PK3_TARGET} STREQUAL "lzwolf_pk3" )
 		set( PK3_TARGET "pk3" )
 	endif()
 
@@ -120,12 +120,12 @@ function( add_pk3 PK3_NAME PK3_DIR )
 	if( NOT ANDROID )
 		if(CMAKE_VERSION VERSION_LESS 3.0.0)
 			# CMake 2.8.12 doesn't support generator expressions in install()
-			get_target_property(TARGET_DIR ecwolf RUNTIME_OUTPUT_DIRECTORY)
+			get_target_property(TARGET_DIR lzwolf RUNTIME_OUTPUT_DIRECTORY)
 		else()
-			set(TARGET_DIR "$<TARGET_FILE_DIR:ecwolf>")
+			set(TARGET_DIR "$<TARGET_FILE_DIR:lzwolf>")
 		endif()
 		add_custom_target( ${PK3_TARGET} ALL
-			COMMAND zipdir -udf $<TARGET_FILE_DIR:ecwolf>/${PK3_NAME} ${PK3_DIR}
+			COMMAND zipdir -udf $<TARGET_FILE_DIR:lzwolf>/${PK3_NAME} ${PK3_DIR}
 			DEPENDS zipdir )
 		install(FILES ${TARGET_DIR}/${PK3_NAME} DESTINATION "${CMAKE_INSTALL_DATAPRODUCTDIR}")
 	else()
@@ -137,7 +137,7 @@ function( add_pk3 PK3_NAME PK3_DIR )
 	endif()
 endfunction()
 
-set(OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory in which to build ECWolf.")
+set(OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory in which to build LZWolf.")
 
 set(LZMA_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/lzma/C")
 
@@ -228,13 +228,13 @@ if(USE_CPACK AND NOT APPLE)
 	else()
 		install(FILES docs/copyright DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 		install(FILES docs/changelog DESTINATION "${CMAKE_INSTALL_DOCDIR}")
-		install(FILES docs/ecwolf.6 DESTINATION "${CMAKE_INSTALL_MANDIR}/man6")
+		install(FILES docs/lzwolf.6 DESTINATION "${CMAKE_INSTALL_MANDIR}/man6")
 
 		# Lintian requires that man pages in deb packages are compressed.
 		find_program(GZIP_BINARY NAMES gzip DOC "gzip program for man page compression.")
 		if(GZIP_BINARY)
 			install(CODE "execute_process(COMMAND \"${GZIP_BINARY}\" -fn9 \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}/changelog\")")
-			install(CODE "execute_process(COMMAND \"${GZIP_BINARY}\" -fn9 \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_MANDIR}/man6/ecwolf.6\")")
+			install(CODE "execute_process(COMMAND \"${GZIP_BINARY}\" -fn9 \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_MANDIR}/man6/lzwolf.6\")")
 		endif()
 	endif()
 endif()

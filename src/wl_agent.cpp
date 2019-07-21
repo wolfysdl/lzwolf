@@ -131,8 +131,11 @@ void CheckWeaponChange (AActor *self)
 		{
 			if(cmd.buttonstate[bt_slot0 + i] && !cmd.buttonheld[bt_slot0 + i])
 			{
-				newWeapon = self->player->weapons.Slots[i].PickWeapon(self->player);
+				AWeapon *&lastWeapon = self->player->GetWeaponSlotState(i).LastWeapon;
+				newWeapon = self->player->weapons.Slots[i].PickWeapon(self->player, lastWeapon);
 				cmd.buttonheld[bt_slot0 + i] = true;
+				if (newWeapon && newWeapon != self->player->ReadyWeapon)
+					lastWeapon = newWeapon;
 				break;
 			}
 		}
@@ -353,7 +356,11 @@ void player_t::TakeDamage (int points, AActor *attacker)
 
 	if (gamestate.victoryflag)
 		return;
+	const int damage = points;
 	points = (points*gamestate.difficulty->DamageFactor)>>FRACBITS;
+	// fix for baby mode
+	if (points <= 0 && damage > 0)
+		points = 1;
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
 	if (!godmode)
@@ -951,6 +958,12 @@ void player_t::Reborn()
 	CalcProjection(mo->radius);
 }
 
+FArchive &operator<< (FArchive &arc, player_t::WeaponSlotState &player)
+{
+	arc << player.LastWeapon;
+	return arc;
+}
+
 void player_t::Serialize(FArchive &arc)
 {
 	BYTE state = this->state;
@@ -968,7 +981,8 @@ void player_t::Serialize(FArchive &arc)
 		<< ReadyWeapon
 		<< PendingWeapon
 		<< flags
-		<< extralight;
+		<< extralight
+		<< weaponSlotStates;
 
 	for(unsigned int i = 0;i < NUM_PSPRITES;++i)
 	{
@@ -1294,7 +1308,11 @@ ACTION_FUNCTION(A_FireCustomMissile)
 	if(!cls)
 		return false;
 	AActor *newobj = AActor::Spawn(cls, newx, newy, 0, SPAWN_AllowReplacement);
-	newobj->target = self;
+	if (self->missileParent)
+		newobj->missileParent = self->missileParent;
+	else
+		newobj->missileParent = self;
+	newobj->target = newobj->missileParent;
 	newobj->angle = iangle;
 
 	newobj->velx = FixedMul(newobj->speed,finecosine[iangle>>ANGLETOFINESHIFT]);

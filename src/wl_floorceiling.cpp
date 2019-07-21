@@ -624,7 +624,7 @@ void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
 {
 	const int halfheight = (viewheight >> 1) - viewshift;
 
-	const byte skyceilcol = (gameinfo.parallaxskyceilcolor > 256 ?
+	const byte skyceilcol = (gameinfo.parallaxskyceilcolor >= 256 ?
 		(byte)(gameinfo.parallaxskyceilcolor&0xff) : 0xff);
 
 	const int numParallax = levelInfo->ParallaxSky.Size();

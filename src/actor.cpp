@@ -299,6 +299,13 @@ void AActor::Die()
 	}
 
 	bool isExtremelyDead = health < -GetClass()->Meta.GetMetaInt(AMETA_GibHealth, (GetDefault()->health*gameinfo.GibFactor)>>FRACBITS);
+	if (killerdamagetype && isExtremelyDead)
+	{
+		ADamage *damage = static_cast<ADamage *>(players[0].mo->FindInventory(killerdamagetype));
+		if (damage && damage->noxdeath)
+			isExtremelyDead = false;
+	}
+
 	const Frame *deathstate = NULL;
 	if (!deathstate && isExtremelyDead && killerdamagetype)
 	{
@@ -572,6 +579,8 @@ void AActor::Serialize(FArchive &arc)
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;
+
+	arc << missileParent;
 
 	if(arc.IsLoading() && !hasActorRef)
 		actors.Remove(this);

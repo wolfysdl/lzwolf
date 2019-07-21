@@ -130,6 +130,25 @@ extern class player_t
 
 		int32_t		flags;
 		State		state;
+
+		class WeaponSlotState
+		{
+		public:
+			AWeapon			*LastWeapon;
+
+			WeaponSlotState() : LastWeapon(0)
+			{
+			}
+		};
+		TArray<WeaponSlotState> weaponSlotStates;
+
+		WeaponSlotState &GetWeaponSlotState (unsigned int slot)
+		{
+			TArray<WeaponSlotState> &v = weaponSlotStates;
+			if (slot >= v.Size())
+				v.Resize(slot + 1);
+			return v[slot];
+		}
 } players[];
 
 FArchive &operator<< (FArchive &arc, player_t *&player);

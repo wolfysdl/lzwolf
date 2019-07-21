@@ -274,10 +274,6 @@ actor CeilingLight2 : CeilingLight 118
 			stop
 	}
 }
-actor SchabbsCeilingLight : DustCeilingLight replaces CeilingLight
-{
-}
-
 actor RedCeilingLight 85
 {
 	states

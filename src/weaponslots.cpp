@@ -108,7 +108,7 @@ int FWeaponSlot::LocateWeapon(const ClassDef *type)
 //
 //===========================================================================
 
-AWeapon *FWeaponSlot::PickWeapon(player_t *player, bool checkammo)
+AWeapon *FWeaponSlot::PickWeapon(player_t *player, AWeapon *lastWeapon, bool checkammo)
 {
 	int i, j;
 
@@ -147,6 +147,26 @@ AWeapon *FWeaponSlot::PickWeapon(player_t *player, bool checkammo)
 			}
 		}
 	}
+
+#ifdef USE_LASTWEAPON
+	// first try to pick last used weapon in this slot
+	if (lastWeapon != NULL)
+	{
+		for (i = Weapons.Size() - 1; i >= 0; i--)
+		{
+			AWeapon *weap = static_cast<AWeapon *> (player->mo->FindInventory(Weapons[i].Type));
+
+			if (weap != NULL && weap->IsKindOf(NATIVE_CLASS(Weapon)) && weap == lastWeapon)
+			{
+				if (!checkammo || weap->CheckAmmo(AWeapon::EitherFire, false))
+				{
+					return weap;
+				}
+			}
+		}
+	}
+#endif
+
 	for (i = Weapons.Size() - 1; i >= 0; i--)
 	{
 		AWeapon *weap = static_cast<AWeapon *> (player->mo->FindInventory(Weapons[i].Type));

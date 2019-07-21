@@ -554,7 +554,7 @@ int DebugKeys (void)
 		if(UseWolf4SDL3DSpriteScaler)
 			US_PrintCentered("3D Sprite scaler: 4SDL");
 		else
-			US_PrintCentered("3D Sprite scaler: ECWolf");
+			US_PrintCentered("3D Sprite scaler: LZWolf");
 		VW_UpdateScreen();
 		IN_Ack ();
 		return 1;
