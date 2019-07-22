@@ -123,7 +123,7 @@ void FResourceLump::LumpNameSetup(FString iname)
 void FResourceLump::CheckEmbedded()
 {
 	// Checks for embedded archives
-	const char *c = strstr(FullName, "ecwolf.");
+	const char *c = strstr(FullName, "lzwolf.");
 	// Expect to find a <ext>MAP lump in the ecwolf file so given 8 character
 	// limits the extension may be up to 5 characters long.
 	if (c && strlen(c) > 7 && strlen(c) <= 12 && !strchr(FullName, '/'))

@@ -1150,6 +1150,7 @@ static const char* CheckParameters(int argc, char *argv[], TArray<FString> &file
 		printf(
 			"%s\n"
 			"http://maniacsvault.net/ecwolf/\n"
+			"http://bitbucket.org/linuxwolf6/lzwolf/wiki\n"
 			"Based on Wolf4SDL v1.7\n"
 			"Ported by Chaos-Software (http://www.chaos-software.de.vu)\n"
 			"Original Wolfenstein 3D by id Software\n\n"

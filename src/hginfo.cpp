@@ -35,7 +35,7 @@
 #include "version.h"
 
 #define __GETSAVESIG(x) #x
-#define GETSAVESIG(x) "ECWOLFSAVE" __GETSAVESIG(x)
+#define GETSAVESIG(x) "LZWOLFSAVE" __GETSAVESIG(x)
 #if HG_DATE_INT < MINSAVEVER
 #define SAVEVER	SAVEVERUNDEFINED
 #else

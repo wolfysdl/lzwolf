@@ -351,7 +351,10 @@ ACTION_FUNCTION(A_CustomMissile)
 	if(!cls)
 		return false;
 	AActor *newobj = AActor::Spawn(cls, newx, newy, 0, SPAWN_AllowReplacement);
-	newobj->missileParent = (self->missileParent ? self->missileParent : self);
+	if (self->missileParent)
+		newobj->missileParent = self->missileParent;
+	else
+		newobj->missileParent = self;
 	newobj->target = newobj->missileParent;
 	newobj->angle = iangle;
 

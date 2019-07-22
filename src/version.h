@@ -12,7 +12,7 @@ const char *GetSaveSignature();
 const char *GetGameCaption();
 
 #include "versiondefs.h"
-#define MAIN_PK3 "ecwolf.pk3"
+#define MAIN_PK3 "lzwolf.pk3"
 
 #define SAVEVERUNDEFINED 99999999999ull
 #define MINSAVEVER	1370923175ull
