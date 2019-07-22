@@ -532,9 +532,13 @@ ACTION_FUNCTION(A_Chase)
 			if (viableTargets.size() > 0)
 			{
 				self->target = viableTargets[pr_chase()%viableTargets.size()];
-				assert(self->target);
 			}
-			// TODO: no target?
+			if(self->target == NULL && self->SpawnState && self->InStateSequence(self->SeeState))
+			{
+				self->SetState(self->SpawnState);
+				return true;
+			}
+			assert(self->target);
 		}
 	}
 
