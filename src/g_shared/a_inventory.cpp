@@ -480,6 +480,34 @@ const ClassDef *ADamage::GetDamageType() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
+IMPLEMENT_CLASS(Faction)
+
+AInventory *AFaction::CreateCopy(AActor *holder)
+{
+	const ClassDef *factionClass = GetFactionType();
+
+	if(factionClass == GetClass())
+		return Super::CreateCopy(holder);
+
+	GoAwayAndDie();
+
+	AInventory *copy = reinterpret_cast<AInventory *>(factionClass->CreateInstance());
+	copy->RemoveFromWorld();
+	copy->amount = amount;
+	copy->maxamount = maxamount;
+	return copy;
+}
+
+const ClassDef *AFaction::GetFactionType() const
+{
+	const ClassDef *cls = GetClass();
+	while(cls->GetParent() != NATIVE_CLASS(Faction))
+		cls = cls->GetParent();
+	return cls;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 // Opens a dialog when picked up, but otherwise behaves like a CustomInventory.
 class AQuizItem : public ACustomInventory
 {

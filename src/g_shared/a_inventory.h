@@ -122,6 +122,17 @@ class ADamage : public AInventory
 		AInventory		*CreateCopy(AActor *holder);
 };
 
+class AFaction : public AInventory
+{
+	DECLARE_NATIVE_CLASS(Faction, Inventory)
+
+	public:
+		const ClassDef	*GetFactionType() const;
+
+	protected:
+		AInventory		*CreateCopy(AActor *holder);
+};
+
 class AHealth : public AInventory
 {
 	DECLARE_NATIVE_CLASS(Health, Inventory)

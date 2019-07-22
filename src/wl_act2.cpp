@@ -508,13 +508,56 @@ ACTION_FUNCTION(A_Chase)
 	bool	dodge = !(flags & CHF_DONTDODGE);
 	bool	pathing = (self->flags & FL_PATHING) ? true : false;
 
-	if(!pathing && self->target == NULL)
+	// target as player cannot go stale
+	// target which loses FL_SHOOTABLE will go stale
+	bool	staletarget = (self->target != NULL && self->target->player == NULL && !(self->target->flags & FL_SHOOTABLE));
+
+	if(!pathing && (self->target == NULL || staletarget))
 	{
-		// Auto select player to target. ZDoom tries to sight for a target and
-		// if it doesn't find one switches to idle. Wolf3D, however, never had
-		// explicit targets so the player was assumed to always be targeted.
-		self->target = players[pr_chase()%Net::InitVars.numPlayers].mo;
-		assert(self->target);
+		if (staletarget)
+			self->target = NULL; // lose the stale target
+
+		if (self->GetEnemyFactionList() == NULL)
+		{
+			// Auto select player to target. ZDoom tries to sight for a target and
+			// if it doesn't find one switches to idle. Wolf3D, however, never had
+			// explicit targets so the player was assumed to always be targeted.
+			self->target = players[pr_chase()%Net::InitVars.numPlayers].mo;
+			assert(self->target);
+		}
+		else
+		{
+			AActor *mincheck = NULL;
+			uint32_t mindist = UINT32_MAX;
+
+			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+			{
+				int32_t deltax = iter->x - self->x;
+				int32_t deltay = iter->y - self->y;
+				const uint32_t dist = MAX(abs(deltax), abs(deltay));
+
+				if (iter != self &&
+					(iter->player || (iter->flags & FL_SHOOTABLE)) &&
+					CheckIsEnemyByFaction(self, iter) &&
+					(!mincheck || dist < mindist))
+				{
+					mincheck = iter;
+					mindist = dist;
+				}
+			}
+
+			if (mincheck)
+			{
+				self->target = mincheck;
+			}
+			if(self->target == NULL && self->SpawnState &&
+				self->InStateSequence(self->SeeState))
+			{
+				self->SetState(self->SpawnState);
+				return true;
+			}
+			assert(self->target);
+		}
 	}
 
 	if (self->dir == nodir)
@@ -767,6 +810,7 @@ ACTION_FUNCTION(A_WolfAttack)
 
 	int     dx,dy,dist;
 	int     hitchance;
+	bool	staletarget = (self->target != NULL && self->target->player == NULL && !(self->target->flags & FL_SHOOTABLE));
 
 	if(sound.Len() == 1 && sound[0] == '*')
 		PlaySoundLocActor(self->attacksound, self);
@@ -774,8 +818,11 @@ ACTION_FUNCTION(A_WolfAttack)
 		PlaySoundLocActor(sound, self);
 
 	AActor *target = self->target;
-	if(!target)
+	if(!target || staletarget)
 	{
+		if (staletarget)
+			self->target = NULL; // lose the stale target
+
 		NetDPrintf("Actor %s called A_WolfAttack without target.\n", self->GetClass()->GetName().GetChars());
 		return true;
 	}
@@ -793,7 +840,7 @@ ACTION_FUNCTION(A_WolfAttack)
 		dist = FixedMul(dist, snipe);
 		dist /= blocksize<<9;
 
-		if (target->player->thrustspeed >= runspeed)
+		if (target->player && target->player->thrustspeed >= runspeed)
 		{
 			if (self->flags&FL_VISABLE)
 				hitchance = 160-dist*16; // player can see to dodge

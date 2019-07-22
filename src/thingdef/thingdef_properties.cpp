@@ -271,6 +271,28 @@ HANDLE_PROPERTY(dropitem)
 	AActor::dropItems[cls->Meta.GetMetaInt(AMETA_DropItems)]->Push(drop);
 }
 
+HANDLE_PROPERTY(enemyfaction)
+{
+	STRING_PARAM(faction, 0);
+
+	if(cls->Meta.GetMetaInt(AMETA_EnemyFactions, -1) == -1 || cls->Meta.IsInherited(AMETA_EnemyFactions))
+		cls->Meta.SetMetaInt(AMETA_EnemyFactions, AActor::enemyFactions.Push(new AActor::EnemyFactionList()));
+
+	AActor::EnemyFaction enemyFaction;
+	enemyFaction.faction = ClassDef::FindClassTentative(faction, NATIVE_CLASS(Faction));
+
+	AActor::enemyFactions[cls->Meta.GetMetaInt(AMETA_EnemyFactions)]->Push(enemyFaction);
+}
+
+HANDLE_PROPERTY(faction)
+{
+	STRING_PARAM(type, 0);
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		defaults->faction = NULL;
+	else
+		defaults->faction = ClassDef::FindClassTentative(type, NATIVE_CLASS(Faction));
+}
+
 HANDLE_PROPERTY(forwardmove)
 {
 	FIXED_PARAM(forwardmove1, 0);
@@ -630,6 +652,8 @@ extern const PropDef properties[] =
 	DEFINE_PROP(deathsound, Actor, S),
 	DEFINE_PROP_PREFIX(displayname, PlayerPawn, Player, S),
 	DEFINE_PROP(dropitem, Actor, S_II),
+	DEFINE_PROP(enemyfaction, Actor, S),
+	DEFINE_PROP(faction, Actor, S),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(health, Actor, I_IIIIIIII),

@@ -63,6 +63,7 @@ enum
 	AMETA_DefaultHealth9,
 	AMETA_ConversationID,
 	AMETA_DamageResistances,
+	AMETA_EnemyFactions,
 };
 
 enum
@@ -104,6 +105,13 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<DamageResistance> DamageResistanceList;
 
+		struct EnemyFaction
+		{
+			public:
+				const ClassDef  *faction;
+		};
+		typedef LinkedList<EnemyFaction> EnemyFactionList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -118,6 +126,7 @@ class AActor : public Thinker,
 		const AActor	*GetDefault() const;
 		DropList		*GetDropList() const;
 		DamageResistanceList		*GetDamageResistanceList() const;
+		EnemyFactionList		*GetEnemyFactionList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -139,6 +148,7 @@ class AActor : public Thinker,
 		static PointerIndexTable<ExpressionNode> damageExpressions;
 		static PointerIndexTable<DropList> dropItems;
 		static PointerIndexTable<DamageResistanceList> damageResistances;
+		static PointerIndexTable<EnemyFactionList> enemyFactions;
 
 		// Basic properties from objtype
 		ActorFlags flags;
@@ -210,6 +220,7 @@ class AActor : public Thinker,
 		fixed		killerx,killery; // For deathcam
 		const ClassDef  *killerdamagetype;
 		int         picX, picY;
+		const ClassDef  *faction;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
