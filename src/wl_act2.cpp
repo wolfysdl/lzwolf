@@ -510,11 +510,32 @@ ACTION_FUNCTION(A_Chase)
 
 	if(!pathing && self->target == NULL)
 	{
-		// Auto select player to target. ZDoom tries to sight for a target and
-		// if it doesn't find one switches to idle. Wolf3D, however, never had
-		// explicit targets so the player was assumed to always be targeted.
-		self->target = players[pr_chase()%Net::InitVars.numPlayers].mo;
-		assert(self->target);
+		if (self->GetEnemyFactionList() == NULL)
+		{
+			// Auto select player to target. ZDoom tries to sight for a target and
+			// if it doesn't find one switches to idle. Wolf3D, however, never had
+			// explicit targets so the player was assumed to always be targeted.
+			self->target = players[pr_chase()%Net::InitVars.numPlayers].mo;
+			assert(self->target);
+		}
+		else
+		{
+			std::vector<AActor *> viableTargets;
+			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+			{
+				if ((iter->player || (iter->flags & FL_SHOOTABLE)) &&
+					CheckIsEnemyByFaction(ob, iter))
+				{
+					viableTargets.push_back(iter);
+				}
+			}
+			if (viableTargets.size() > 0)
+			{
+				self->target = viableTargets[pr_chase()%viableTargets.size()];
+				assert(self->target);
+			}
+			// TODO: no target?
+		}
 	}
 
 	if (self->dir == nodir)
