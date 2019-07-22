@@ -809,6 +809,7 @@ ACTION_FUNCTION(A_WolfAttack)
 
 	int     dx,dy,dist;
 	int     hitchance;
+	bool	staletarget = (self->target != NULL && self->target->player == NULL && !(self->target->flags & FL_SHOOTABLE));
 
 	if(sound.Len() == 1 && sound[0] == '*')
 		PlaySoundLocActor(self->attacksound, self);
@@ -816,8 +817,11 @@ ACTION_FUNCTION(A_WolfAttack)
 		PlaySoundLocActor(sound, self);
 
 	AActor *target = self->target;
-	if(!target)
+	if(!target || staletarget)
 	{
+		if (staletarget)
+			self->target = NULL; // lose the stale target
+
 		NetDPrintf("Actor %s called A_WolfAttack without target.\n", self->GetClass()->GetName().GetChars());
 		return true;
 	}
