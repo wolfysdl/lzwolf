@@ -536,7 +536,8 @@ ACTION_FUNCTION(A_Chase)
 				int32_t deltay = iter->y - self->y;
 				const uint32_t dist = MAX(abs(deltax), abs(deltay));
 
-				if ((iter->player || (iter->flags & FL_SHOOTABLE)) &&
+				if (iter != self &&
+					(iter->player || (iter->flags & FL_SHOOTABLE)) &&
 					CheckIsEnemyByFaction(self, iter) &&
 					(!mincheck || dist < mindist))
 				{
@@ -839,7 +840,7 @@ ACTION_FUNCTION(A_WolfAttack)
 		dist = FixedMul(dist, snipe);
 		dist /= blocksize<<9;
 
-		if (target->player->thrustspeed >= runspeed)
+		if (target->player && target->player->thrustspeed >= runspeed)
 		{
 			if (self->flags&FL_VISABLE)
 				hitchance = 160-dist*16; // player can see to dodge

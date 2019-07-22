@@ -1152,7 +1152,8 @@ static AActor *CheckSight (AActor *ob, double minseedist, double maxseedist, dou
 			int32_t deltay = iter->y - ob->y;
 			const uint32_t dist = MAX(abs(deltax), abs(deltay));
 
-			if ((iter->player || (iter->flags & FL_SHOOTABLE)) &&
+			if (iter != ob &&
+				(iter->player || (iter->flags & FL_SHOOTABLE)) &&
 				CheckIsEnemyByFaction(ob, iter) &&
 				CheckSightTo(ob, iter, minseedist, maxseedist, maxheardist, fov) &&
 				(!mincheck || dist < mindist))
