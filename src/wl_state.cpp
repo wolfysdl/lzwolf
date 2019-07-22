@@ -1110,14 +1110,50 @@ static bool CheckSightTo (AActor *ob, AActor *target, double minseedist, double 
 	return CheckLine (ob, target);
 }
 
-static int CheckSight (AActor *ob, double minseedist, double maxseedist, double maxheardist, double fov)
+static bool CheckIsEnemyByFaction (AActor *ob, AActor *check)
 {
-	for(unsigned int i = 0;i < Net::InitVars.numPlayers;++i)
+	typedef AActor::EnemyFactionList Li;
+	Li *li = ob->GetEnemyFactionList();
+	if (li)
 	{
-		if(CheckSightTo(ob, players[i].mo, minseedist, maxseedist, maxheardist, fov))
-			return i;
+		Li::Iterator item = li->Head();
+		do
+		{
+			Li::Iterator enemyFaction = item;
+			if (check->faction == enemyFaction->faction)
+			{
+				return true;
+			}
+		}
+		while(item.Next());
 	}
-	return -1;
+
+	return false;
+}
+
+static AActor *CheckSight (AActor *ob, double minseedist, double maxseedist, double maxheardist, double fov)
+{
+	if (ob->GetEnemyFactionList() == NULL)
+	{
+		for(unsigned int i = 0;i < Net::InitVars.numPlayers;++i)
+		{
+			if(CheckSightTo(ob, players[i].mo, minseedist, maxseedist, maxheardist, fov))
+				return players[i].mo;
+		}
+	}
+	else
+	{
+		for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+		{
+			if ((iter->player || (iter->flags & FL_SHOOTABLE)) &&
+				CheckIsEnemyByFaction(ob, iter) &&
+				CheckSightTo(ob, iter, minseedist, maxseedist, maxheardist, fov))
+			{
+				return iter;
+			}
+		}
+	}
+	return NULL;
 }
 
 
@@ -1194,10 +1230,10 @@ bool SightPlayer (AActor *ob, double minseedist, double maxseedist, double maxhe
 	}
 	else
 	{
-		int player = CheckSight (ob, minseedist, maxseedist, maxheardist, fov);
-		if (player >= 0)
+		AActor *target = CheckSight (ob, minseedist, maxseedist, maxheardist, fov);
+		if (target)
 		{
-			ob->target = players[player].mo;
+			ob->target = target;
 			ob->flags &= ~FL_AMBUSH;
 
 			--ob->sighttime; // We need to somehow mark we started.
