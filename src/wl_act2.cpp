@@ -508,8 +508,15 @@ ACTION_FUNCTION(A_Chase)
 	bool	dodge = !(flags & CHF_DONTDODGE);
 	bool	pathing = (self->flags & FL_PATHING) ? true : false;
 
-	if(!pathing && self->target == NULL)
+	// target as player cannot go stale
+	// target which loses FL_SHOOTABLE will go stale
+	bool	staletarget = (self->target != NULL && self->target->player == NULL && !(self->target->flags & FL_SHOOTABLE));
+
+	if(!pathing && (self->target == NULL || staletarget))
 	{
+		if (staletarget)
+			self->target = NULL; // lose the stale target
+
 		if (self->GetEnemyFactionList() == NULL)
 		{
 			// Auto select player to target. ZDoom tries to sight for a target and
