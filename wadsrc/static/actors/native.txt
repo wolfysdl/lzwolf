@@ -143,6 +143,10 @@ actor ExtraLifeItem : Inventory native
 	inventory.maxamount 1
 }
 
+actor Faction : Inventory native
+{
+}
+
 actor Health : Inventory native
 {
 	inventory.amount 1

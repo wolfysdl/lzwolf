@@ -13,6 +13,7 @@ actor BJPlayer : PlayerPawn
 	player.weaponslot 3, "MachineGun"
 	player.weaponslot 4, "GatlingGun"
 	player.damagescreencolor "FF 00 00"
+	//faction "BJ"
 	states
 	{
 		Spawn:

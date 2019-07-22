@@ -148,6 +148,7 @@ EmbeddedList<AActor>::List AActor::actors;
 PointerIndexTable<ExpressionNode> AActor::damageExpressions;
 PointerIndexTable<AActor::DropList> AActor::dropItems;
 PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
+PointerIndexTable<AActor::EnemyFactionList> AActor::enemyFactions;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -371,6 +372,14 @@ AActor::DamageResistanceList *AActor::GetDamageResistanceList() const
 	if(damageresistancesIndex == -1)
 		return NULL;
 	return damageResistances[damageresistancesIndex];
+}
+
+AActor::EnemyFactionList *AActor::GetEnemyFactionList() const
+{
+	int enemyfactionsIndex = GetClass()->Meta.GetMetaInt(AMETA_EnemyFactions, -1);
+	if(enemyfactionsIndex == -1)
+		return NULL;
+	return enemyFactions[enemyfactionsIndex];
 }
 
 const AActor *AActor::GetDefault() const
