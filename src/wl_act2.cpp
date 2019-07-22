@@ -527,20 +527,30 @@ ACTION_FUNCTION(A_Chase)
 		}
 		else
 		{
-			std::vector<AActor *> viableTargets;
+			AActor *mincheck = NULL;
+			uint32_t mindist = UINT32_MAX;
+
 			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
 			{
+				int32_t deltax = iter->x - self->x;
+				int32_t deltay = iter->y - self->y;
+				const uint32_t dist = MAX(abs(deltax), abs(deltay));
+
 				if ((iter->player || (iter->flags & FL_SHOOTABLE)) &&
-					CheckIsEnemyByFaction(ob, iter))
+					CheckIsEnemyByFaction(self, iter) &&
+					(!mincheck || dist < mindist))
 				{
-					viableTargets.push_back(iter);
+					mincheck = iter;
+					mindist = dist;
 				}
 			}
-			if (viableTargets.size() > 0)
+
+			if (mincheck)
 			{
-				self->target = viableTargets[pr_chase()%viableTargets.size()];
+				self->target = mincheck;
 			}
-			if(self->target == NULL && self->SpawnState && self->InStateSequence(self->SeeState))
+			if(self->target == NULL && self->SpawnState &&
+				self->InStateSequence(self->SeeState))
 			{
 				self->SetState(self->SpawnState);
 				return true;

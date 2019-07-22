@@ -1110,7 +1110,7 @@ static bool CheckSightTo (AActor *ob, AActor *target, double minseedist, double 
 	return CheckLine (ob, target);
 }
 
-static bool CheckIsEnemyByFaction (AActor *ob, AActor *check)
+bool CheckIsEnemyByFaction (AActor *ob, AActor *check)
 {
 	typedef AActor::EnemyFactionList Li;
 	Li *li = ob->GetEnemyFactionList();
@@ -1143,15 +1143,27 @@ static AActor *CheckSight (AActor *ob, double minseedist, double maxseedist, dou
 	}
 	else
 	{
+		AActor *mincheck = NULL;
+		uint32_t mindist = UINT32_MAX;
+
 		for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
 		{
+			int32_t deltax = iter->x - ob->x;
+			int32_t deltay = iter->y - ob->y;
+			const uint32_t dist = MAX(abs(deltax), abs(deltay));
+
 			if ((iter->player || (iter->flags & FL_SHOOTABLE)) &&
 				CheckIsEnemyByFaction(ob, iter) &&
-				CheckSightTo(ob, iter, minseedist, maxseedist, maxheardist, fov))
+				CheckSightTo(ob, iter, minseedist, maxseedist, maxheardist, fov) &&
+				(!mincheck || dist < mindist))
 			{
-				return iter;
+				mincheck = iter;
+				mindist = dist;
 			}
 		}
+
+		if (mincheck)
+			return mincheck;
 	}
 	return NULL;
 }
