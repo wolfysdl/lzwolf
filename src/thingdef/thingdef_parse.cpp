@@ -32,6 +32,7 @@
 **
 */
 
+#include <string>
 #include "actor.h"
 #include "thingdef/thingdef.h"
 #include "thingdef/thingdef_codeptr.h"
@@ -546,6 +547,20 @@ void FDecorateParser::ParseActorStateAction(StateDefinition &thisState, int func
 {
 	int specialNum = -1;
 	const ActionInfo *funcInf = newClass->FindFunction(sc->str, specialNum);
+	{
+		const AActor *defaults = (AActor*)newClass->defaultInstance;
+		if (defaults->actionns.GetIndex() != 0 && defaults->actionns.GetChars()[0] != '\0')
+		{
+			std::string nsFuncStr = std::string(defaults->actionns.GetChars()) + "::" + sc->str.GetChars();
+			FName nsFuncName(nsFuncStr.c_str());
+			if (nsFuncName.IsValidName())
+			{
+				const ActionInfo *nsFuncInf = newClass->FindFunction(nsFuncName, specialNum);
+				if (nsFuncInf)
+					funcInf = nsFuncInf;
+			}
+		}
+	}
 	if(funcInf)
 	{
 		thisState.functions[funcIdx].pointer = *funcInf->func;

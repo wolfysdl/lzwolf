@@ -48,6 +48,12 @@
 #define FIXED_PARAM(var, no) fixed var = static_cast<fixed>(params[no].f*FRACUNIT)
 #define STRING_PARAM(var, no) const char* var = params[no].s;
 
+HANDLE_PROPERTY(actionns)
+{
+	STRING_PARAM(ns, 0);
+	defaults->actionns = ns;
+}
+
 HANDLE_PROPERTY(activesound)
 {
 	STRING_PARAM(snd, 0);
@@ -628,6 +634,7 @@ HANDLE_PROPERTY(STATUSBAR)
 
 extern const PropDef properties[] =
 {
+	DEFINE_PROP(actionns, Actor, S),
 	DEFINE_PROP(activesound, Actor, S),
 	DEFINE_PROP(ammogive1, Weapon, I),
 	DEFINE_PROP(ammogive2, Weapon, I),

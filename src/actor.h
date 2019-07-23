@@ -214,6 +214,7 @@ class AActor : public Thinker,
 		fixed		meleerange;
 		uint16_t	painchance;
 		FNameNoInit	activesound, attacksound, deathsound, painsound, seesound;
+		FNameNoInit	actionns;
 
 		const Frame *SpawnState, *SeeState, *PathState, *PainState, *MeleeState, *MissileState, *RadiusWakeState;
 		short       temp1,hidden;
