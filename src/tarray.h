@@ -321,6 +321,13 @@ private:
 			Array[i].~T();
 		}
 	}
+
+public:
+	void SetInternals (T *arr, unsigned int cnt)
+	{
+		Array = arr;
+		Most = Count = cnt;
+	}
 };
 
 // Use TArray<TUniquePtr>

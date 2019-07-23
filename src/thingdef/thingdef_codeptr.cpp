@@ -36,6 +36,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include "actor.h"
 #include "id_ca.h"
 #include "id_sd.h"
@@ -311,12 +312,14 @@ ACTION_FUNCTION(A_ChangeVelocity)
 
 ACTION_FUNCTION(A_Explode)
 {
-	const CallArguments &oldArgs = args;
+	std::vector<CallArguments::Value> newArgs(&args[0], &args[args.Count()]);
+	newArgs.push_back(CallArguments::Value(FString("")));
 
 	{
-		CallArguments args(newArgs);
-		args.AddArgument(FString()); // damagetype
+		CallArguments args;
+		args.GetInternalArgs().SetInternals(&newArgs[0], newArgs.size());
 		CALL_SELFACTION_NS(A_Explode, lz);
+		args.GetInternalArgs().SetInternals(NULL, 0);
 	}
 
 	return true;

@@ -90,6 +90,10 @@ class CallArguments
 				}				val;
 				FString			str;
 				StateLabel		label;
+
+				Value() { }
+
+				explicit Value(const FString &str);
 		};
 
 		~CallArguments();
@@ -99,10 +103,14 @@ class CallArguments
 		void		Evaluate(AActor *self);
 		const Value	&operator[] (unsigned int idx) const { return args[idx]; }
 
-		void        AddArgument(const FString &str);
-
 	private:
 		TArray<Value> args;
+	
+	public:
+		TArray<Value> &GetInternalArgs ()
+		{
+			return args;
+		}
 };
 
 class ActionInfo
