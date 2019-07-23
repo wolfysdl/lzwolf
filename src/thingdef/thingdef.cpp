@@ -1326,6 +1326,17 @@ void CallArguments::AddArgument(const CallArguments::Value &val)
 	args.Push(val);
 }
 
+void CallArguments::AddArgument(const FString &str)
+{
+	Value val;
+	val.useType = Value::VAL_STRING;
+	val.isExpression = false;
+	val.expr = NULL;
+	val.str = str;
+	val.val.i = 0;
+	AddArgument(val);
+}
+
 void CallArguments::Evaluate(AActor *self)
 {
 	for(unsigned int i = 0;i < args.Size();++i)

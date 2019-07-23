@@ -311,6 +311,19 @@ ACTION_FUNCTION(A_ChangeVelocity)
 
 ACTION_FUNCTION(A_Explode)
 {
+	const CallArguments &oldArgs = args;
+
+	{
+		CallArguments args(newArgs);
+		args.AddArgument(FString()); // damagetype
+		CALL_SELFACTION_NS(A_Explode, lz);
+	}
+
+	return true;
+}
+
+ACTION_FUNCTION_NS(A_Explode, lz)
+{
 	enum
 	{
 		XF_HURTSOURCE = 1
