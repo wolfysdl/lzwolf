@@ -1312,6 +1312,15 @@ void ClassDef::DumpClasses()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+CallArguments::Value::Value(const FString &str_)
+{
+	isExpression = false;
+	expr = NULL;
+	val.i = 0;
+	useType = VAL_STRING;
+	str = str_;
+}
+
 CallArguments::~CallArguments()
 {
 	for(unsigned int i = 0;i < args.Size();++i)

@@ -40,6 +40,7 @@ const int DF_REVIVE = 1;
 
 actor Actor native
 {
+	actionns "lz"
 	damage 0
 	radius 20
 	height 16
@@ -65,7 +66,7 @@ actor Actor native
 	action native A_Chase(state melee="*", state ranged="*", int flags = 0);
 	action native A_CustomMissile(string missiletype, float spawnheight = 32, int spawnoffset = 0, float angle = 0, int aimflags = 0);
 	action native A_Dormant(state frame = "See", int flags = 0);
-	action native A_Explode(int damage = 128, int radius = 128, int flags = XF_HURTSOURCE, bool alert = false, int fulldamageradius = 0, string damagetype = "");
+	action native A_Explode(int damage = 128, int radius = 128, int flags = XF_HURTSOURCE, bool alert = false, int fulldamageradius = 0);
 	action native A_FaceTarget(float max_turn = 0, float max_pitch = 270);
 	action native A_Fall();
 	action native A_GiveExtraMan(int amount = 1);
@@ -93,6 +94,8 @@ actor Actor native
 	action native A_TakeInventory(string type, int amount);
 	action native A_Wander();
 	action native A_WolfAttack(int flags = 0, string sound = "*", float snipe = 1.0, int maxdamage = 64, int blocksize = 128, int pointblank = 2, int longrange = 4, float runspeed = 160.0);
+
+	action native lz::A_Explode(int damage = 128, int radius = 128, int flags = XF_HURTSOURCE, bool alert = false, int fulldamageradius = 0, string damagetype = "");
 
 	states
 	{

@@ -90,6 +90,10 @@ class CallArguments
 				}				val;
 				FString			str;
 				StateLabel		label;
+
+				Value() { }
+
+				explicit Value(const FString &str);
 		};
 
 		~CallArguments();
@@ -98,8 +102,15 @@ class CallArguments
 		int			Count() const { return args.Size(); }
 		void		Evaluate(AActor *self);
 		const Value	&operator[] (unsigned int idx) const { return args[idx]; }
+
 	private:
 		TArray<Value> args;
+	
+	public:
+		TArray<Value> &GetInternalArgs ()
+		{
+			return args;
+		}
 };
 
 class ActionInfo
@@ -146,6 +157,14 @@ typedef TArray<ActionInfo *> ActionTable;
 	FString name = args[num].str
 #define ACTION_PARAM_STATE(name, num, def) \
 	const Frame *name = args[num].label.Resolve(stateOwner, caller, def)
+
+#define ACTION_FUNCTION_NS(func, ns) \
+	bool __AF_##func##ns(AActor *, AActor *, const Frame * const, const CallArguments &, struct ActionResult *); \
+	static const ActionInfo __AI_##func##ns(__AF_##func##ns, #ns "::" #func); \
+	bool __AF_##func##ns(AActor *self, AActor *stateOwner, const Frame * const caller, const CallArguments &args, struct ActionResult *result)
+#define CALL_SELFACTION_NS(func, ns) \
+	bool __AF_##func##ns(AActor *, AActor *, const Frame * const, const CallArguments &, struct ActionResult *); \
+	__AF_##func##ns(self, stateOwner, caller, args, result);
 
 class SymbolInfo
 {

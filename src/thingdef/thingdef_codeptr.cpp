@@ -36,6 +36,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include "actor.h"
 #include "id_ca.h"
 #include "id_sd.h"
@@ -310,6 +311,21 @@ ACTION_FUNCTION(A_ChangeVelocity)
 }
 
 ACTION_FUNCTION(A_Explode)
+{
+	std::vector<CallArguments::Value> newArgs(&args[0], &args[args.Count()]);
+	newArgs.push_back(CallArguments::Value(FString("")));
+
+	{
+		CallArguments args;
+		args.GetInternalArgs().SetInternals(&newArgs[0], newArgs.size());
+		CALL_SELFACTION_NS(A_Explode, lz);
+		args.GetInternalArgs().SetInternals(NULL, 0);
+	}
+
+	return true;
+}
+
+ACTION_FUNCTION_NS(A_Explode, lz)
 {
 	enum
 	{

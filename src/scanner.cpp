@@ -518,7 +518,13 @@ bool Scanner::GetNextToken(bool expandState)
 					break;
 				case TK_Identifier:
 					if(cur != '_' && (cur < 'A' || cur > 'Z') && (cur < 'a' || cur > 'z') && (cur < '0' || cur > '9'))
-						end = scanPos;
+					{
+						// allow embedding namespace operator "::" within the identifier
+						if (cur == ':' && scanPos + 1 < length && data[scanPos + 1] == ':')
+							scanPos++;
+						else
+							end = scanPos;
+					}
 					break;
 				case TK_IntConst:
 					if(cur == '.' || (scanPos-1 != start && cur == 'e'))
