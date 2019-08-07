@@ -185,6 +185,7 @@ public:
 	unsigned int	LevelNumber;
 	bool			NoIntermission;
 	TArray<FTextureID>	ParallaxSky;
+	int             NumParallaxTiles;
 
 	bool			DeathCam;
 	bool			SecretDeathSounds;

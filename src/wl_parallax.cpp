@@ -45,7 +45,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	const byte *skytex = NULL;
 	const byte *floorskytex = NULL;
 	const int numParallax = levelInfo->ParallaxSky.Size();
-	const int numParallaxTiles = levelInfo->NumParallaxTiles;
+	const int numParallaxTiles = (levelInfo->NumParallaxTiles > 0 ? levelInfo->NumParallaxTiles : levelInfo->ParallaxSky.Size());
 	int i;
 	int wbits = 0, hbits = 0;
 
@@ -84,7 +84,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 		int curang = pixelangle[x] + midangle;
 		if(curang < 0) curang += FINEANGLES;
 		else if(curang >= FINEANGLES) curang -= FINEANGLES;
-		int xtex = curang * numParallax * w / FINEANGLES;
+		int xtex = curang * numParallaxTiles * w / FINEANGLES;
 		int newtex = xtex >> wbits;
 		if(newtex != curtex)
 		{
@@ -99,7 +99,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			}
 		}
 		int texoffs = tmask - ((xtex & (w - 1)) << hbits);
-		int yend = skyheight - ((wallheight[x]*heightFactor)>>FRACBITS);
+		int yend = skyheight - ((skywallheight[x]*heightFactor)>>FRACBITS);
 		if(yend <= 0) continue;
 
 		for(int y = 0, offs = x; y < yend; y++, offs += vbufPitch)
@@ -107,11 +107,11 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 
 		if (drawFloorSky)
 		{
-			yend = skyheight + (wallheight[x]>>FRACBITS);
+			yend = skyheight + skywallheight[x];
 			if(yend >= viewheight) continue;
 
 			for(int y = yend, offs = x + yend*vbufPitch; y < viewheight; y++, offs += vbufPitch)
-				vbuf[offs] = skytex[texoffs + (y * h) / skyheight];
+				vbuf[offs] = skytex[texoffs + ((y - yend) * h) / skyheight];
 		}
 	}
 }

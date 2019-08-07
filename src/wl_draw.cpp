@@ -75,6 +75,8 @@ int fps_frames=0, fps_time=0, fps=0;
 TUniquePtr<int[]> wallheight;
 int min_wallheight;
 
+TUniquePtr<int[]> skywallheight;
+
 //
 // math tables
 //
@@ -393,7 +395,8 @@ void HitVertWall (void)
 		texture -= texture%texxscale;
 
 		ScalePost();
-		wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
+		wallheight[pixx] = CalcHeight();
+		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postx=pixx;
@@ -406,7 +409,8 @@ void HitVertWall (void)
 	lastside=1;
 	lastintercept=xtile;
 	lasttilehit=tilehit;
-	wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
+	wallheight[pixx] = CalcHeight();
+	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -467,7 +471,8 @@ void HitHorizWall (void)
 		texture -= texture%texxscale;
 
 		ScalePost();
-		wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
+		wallheight[pixx] = CalcHeight();
+		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postx=pixx;
@@ -480,7 +485,8 @@ void HitHorizWall (void)
 	lastside=0;
 	lastintercept=ytile;
 	lasttilehit=tilehit;
-	wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
+	wallheight[pixx] = CalcHeight();
+	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
 	postx = pixx;
 	FTexture *source = NULL;
 
