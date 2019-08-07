@@ -43,7 +43,9 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	int skyheight = viewheight >> 1;
 	int curtex = -1;
 	const byte *skytex = NULL;
+	const byte *floorskytex = NULL;
 	const int numParallax = levelInfo->ParallaxSky.Size();
+	const int numParallaxTiles = levelInfo->NumParallaxTiles;
 	int i;
 	int wbits = 0, hbits = 0;
 
@@ -58,7 +60,15 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 		if (source->HeightBits != hbits)
 			return;
 	}
+	// NumParallaxTiles allowed values
+	//
+	// zero:            ceiling sky only
+	// numParallax:     ceiling sky only
+	// numParallax/2:   ceiling sky and floor sky
+	if (numParallaxTiles > 0 && numParallaxTiles != numParallax && numParallaxTiles * 2 != numParallax)
+		return;
 
+	const bool drawFloorSky = (numParallaxTiles * 2 == numParallax);
 	const int w = (1 << wbits);
 	const int h = (1 << hbits);
 
@@ -67,7 +77,7 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 	fixed planeheight = viewz+(map->GetPlane(0).depth<<FRACBITS);
 	const fixed heightFactor = abs(planeheight)>>8;
 
-	startpage += numParallax - 1;
+	startpage += numParallaxTiles - 1;
 
 	for(int x = 0; x < viewwidth; x++)
 	{
@@ -81,7 +91,12 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			curtex = newtex;
 			FTexture *source = TexMan(levelInfo->ParallaxSky[startpage-curtex]);
 			skytex = source->GetPixels();
-			//skytex = PM_GetTexture(startpage - curtex);
+
+			if (drawFloorSky)
+			{
+				source = TexMan(levelInfo->ParallaxSky[(startpage-curtex) + numParallaxTiles]);
+				floorskytex = source->GetPixels();
+			}
 		}
 		int texoffs = tmask - ((xtex & (w - 1)) << hbits);
 		int yend = skyheight - ((wallheight[x]*heightFactor)>>FRACBITS);
@@ -89,5 +104,14 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 
 		for(int y = 0, offs = x; y < yend; y++, offs += vbufPitch)
 			vbuf[offs] = skytex[texoffs + (y * h) / skyheight];
+
+		if (drawFloorSky)
+		{
+			yend = skyheight + (wallheight[x]>>FRACBITS);
+			if(yend >= viewheight) continue;
+
+			for(int y = yend, offs = x + yend*vbufPitch; y < viewheight; y++, offs += vbufPitch)
+				vbuf[offs] = skytex[texoffs + (y * h) / skyheight];
+		}
 	}
 }
