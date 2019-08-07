@@ -393,7 +393,7 @@ void HitVertWall (void)
 		texture -= texture%texxscale;
 
 		ScalePost();
-		wallheight[pixx] = CalcHeight();
+		wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postx=pixx;
@@ -406,7 +406,7 @@ void HitVertWall (void)
 	lastside=1;
 	lastintercept=xtile;
 	lasttilehit=tilehit;
-	wallheight[pixx] = CalcHeight();
+	wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -467,7 +467,7 @@ void HitHorizWall (void)
 		texture -= texture%texxscale;
 
 		ScalePost();
-		wallheight[pixx] = CalcHeight();
+		wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postx=pixx;
@@ -480,7 +480,7 @@ void HitHorizWall (void)
 	lastside=0;
 	lastintercept=ytile;
 	lasttilehit=tilehit;
-	wallheight[pixx] = CalcHeight();
+	wallheight[pixx] = (tilehit->tile->showSky ? 0 : CalcHeight());
 	postx = pixx;
 	FTexture *source = NULL;
 

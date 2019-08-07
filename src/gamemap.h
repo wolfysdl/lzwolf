@@ -112,7 +112,7 @@ class GameMap
 		struct Tile
 		{
 			Tile() : offsetVertical(false), offsetHorizontal(false),
-				mapped(0), dontOverlay(false)
+				mapped(0), dontOverlay(false), showSky(false)
 			{
 				overhead.SetInvalid();
 				sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
@@ -128,6 +128,7 @@ class GameMap
 
 			unsigned int	mapped; // filter level for always visible
 			bool			dontOverlay;
+			bool			showSky;
 		};
 		struct Sector
 		{

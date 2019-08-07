@@ -139,6 +139,11 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.offsetHorizontal = sc->boolean;
 	}
+	else CheckKey("showsky")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.showSky = sc->boolean;
+	}
 
 	EndParseBlock
 }
