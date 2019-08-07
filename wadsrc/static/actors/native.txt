@@ -40,7 +40,7 @@ const int DF_REVIVE = 1;
 
 actor Actor native
 {
-	actionns ""
+	actionns "lz"
 	damage 0
 	radius 20
 	height 16
