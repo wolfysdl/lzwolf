@@ -117,6 +117,7 @@ class ADamage : public AInventory
 		const ClassDef	*GetDamageType() const;
 
 		bool			noxdeath;
+		bool			squishing;
 
 	protected:
 		AInventory		*CreateCopy(AActor *holder);
