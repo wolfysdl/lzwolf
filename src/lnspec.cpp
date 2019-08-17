@@ -769,10 +769,13 @@ class EVPushwall : public Thinker
 					if(actor->tilex+dirdeltax[actor->dir] == movex &&
 						actor->tiley+dirdeltay[actor->dir] == movey)
 					{
-						if (nostop && !actor->player && squishDamageInv && squishDamageInv->squishing)
+						if (nostop && !actor->player && squishDamageInv)
 						{
-							// Squish!
-							DamageActor(actor, NULL, 10000, squishDamageClass);
+							if (actor->flags & FL_SHOOTABLE)
+							{
+								// Squish!
+								DamageActor(actor, NULL, 10000, squishDamageClass);
+							}
 							continue;
 						}
 						// Blocked!

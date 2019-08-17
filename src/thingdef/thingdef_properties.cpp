@@ -557,12 +557,6 @@ HANDLE_PROPERTY(speed)
 		defaults->runspeed = defaults->speed;
 }
 
-HANDLE_PROPERTY(squishing)
-{
-	INT_PARAM(squishing, 0);
-	((ADamage *)defaults)->squishing = squishing?true:false;
-}
-
 HANDLE_PROPERTY(startitem)
 {
 	// NOTE: This property is not inherited.
@@ -693,7 +687,6 @@ extern const PropDef properties[] =
 	DEFINE_PROP(slotnumber, Weapon, I),
 	DEFINE_PROP(slotpriority, Weapon, F),
 	DEFINE_PROP(speed, Actor, F_F),
-	DEFINE_PROP(squishing, Damage, I),
 	DEFINE_PROP_PREFIX(startitem, PlayerPawn, Player, S_I),
 	DEFINE_PROP_PREFIX(viewheight, PlayerPawn, Player, F),
 	DEFINE_PROP_PREFIX(weaponslot, PlayerPawn, Player, IS_SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS),
