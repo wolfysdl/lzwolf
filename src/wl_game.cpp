@@ -985,6 +985,13 @@ restartgame:
 				if(dointermission)
 					LevelCompleted ();              // do the intermission
 
+				if (dointermission && !levelInfo->Intermission.IsEmpty())
+				{
+					VW_FadeOut ();
+					IntermissionInfo *intermission = IntermissionInfo::Find(levelInfo->Intermission);
+					ShowIntermission(intermission);
+				}
+
 				LevelInfo &nextLevel = LevelInfo::Find(next);
 				if(nextLevel.Cluster != levelInfo->Cluster)
 					EndText (levelInfo->Cluster, nextLevel.Cluster);

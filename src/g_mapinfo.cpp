@@ -569,6 +569,8 @@ protected:
 		}
 		else if(key.CompareNoCase("NumParallaxTiles") == 0)
 			ParseIntAssignment(mapInfo.NumParallaxTiles);
+		else if(key.CompareNoCase("Intermission") == 0)
+			ParseStringAssignment(mapInfo.Intermission);
 		else
 			return false;
 		return true;
