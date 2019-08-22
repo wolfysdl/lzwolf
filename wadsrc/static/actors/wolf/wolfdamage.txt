@@ -1,3 +1,7 @@
 actor FireDamage : Damage
 {
 }
+
+actor SquishDamage : Damage
+{
+}

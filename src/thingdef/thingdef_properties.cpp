@@ -622,11 +622,6 @@ HANDLE_PROPERTY(PROJECTILE)
 	defaults->flags |= FL_MISSILE;
 }
 
-HANDLE_PROPERTY(STATUSBAR)
-{
-	defaults->flags |= FL_STATUSBAR;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #define DEFINE_PROP_PREFIX(name, class, prefix, params) { A##class::__StaticClass, #prefix, #name, #params, __Handler_##name }
@@ -693,7 +688,6 @@ extern const PropDef properties[] =
 	DEFINE_PROP(slotpriority, Weapon, F),
 	DEFINE_PROP(speed, Actor, F_F),
 	DEFINE_PROP_PREFIX(startitem, PlayerPawn, Player, S_I),
-	DEFINE_PROP(STATUSBAR, Actor,),
 	DEFINE_PROP_PREFIX(viewheight, PlayerPawn, Player, F),
 	DEFINE_PROP_PREFIX(weaponslot, PlayerPawn, Player, IS_SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS),
 	DEFINE_PROP(xscale, Actor, F),
