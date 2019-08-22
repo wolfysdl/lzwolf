@@ -929,7 +929,7 @@ void GameMap::ReadMacData()
 void GameMap::ReadPlanesData()
 {
 	static const unsigned short UNIT = 64;
-	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
+	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, Plane_Info, NUM_USABLE_PLANES };
 
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
@@ -987,8 +987,17 @@ void GameMap::ReadPlanesData()
 	if(numPlanes > 3)
 	{
 		lump->Seek(size*2*3, SEEK_CUR);
-		lump->Read(infoplane.Get(), size*2);
+
+		TUniquePtr<WORD[]> oldplane(new WORD[size]);
+		lump->Read(oldplane.Get(), size*2);
+
 		lump->Seek(18+nameLength, SEEK_SET);
+
+		for(unsigned int i = 0;i < size;++i)
+		{
+			oldplane[i] = LittleShort(oldplane[i]);
+			infoplane[i] = oldplane[i];
+		}
 	}
 	else
 		memset(infoplane.Get(), 0, size*2);
@@ -998,11 +1007,9 @@ void GameMap::ReadPlanesData()
 
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
-		if(plane == 3) // Info plane is already read
-			continue;
-
 		TUniquePtr<WORD[]> oldplane(new WORD[size]);
-		lump->Read(oldplane.Get(), size*2);
+		if (plane < 3) // Info plane is already read
+			lump->Read(oldplane.Get(), size*2);
 
 		switch(plane)
 		{
@@ -1326,6 +1333,25 @@ void GameMap::ReadPlanesData()
 					mapPlane.map[i].sector = &sectorPalette[flatMap[oldplane[i]]];
 				break;
 			}
+
+			case Plane_Info:
+			{
+				for(unsigned int i = 0;i < size;++i)
+				{
+					const WORD info = infoplane[i];
+					if (info)
+					{
+						unsigned int tag = (unsigned int)info;
+
+						int x, y;
+						x = i%header.width;
+						y = i/header.width;
+						MapSpot target = GetSpot(x, y, 0);
+						SetSpotTag(target, tag);
+					}
+				}
+				break;
+			}
 		}
 	}
 
@@ -1354,7 +1380,8 @@ void GameMap::ReadPlanesData()
 		Trigger &templateTrigger = triggers[i];
 
 		// Check the info plane and if set move the activation point to a switch ot touch plate
-		const WORD info = infoplane[templateTrigger.y*header.width + templateTrigger.x];
+		// TODO: why do we need this?
+		/*const WORD info = infoplane[templateTrigger.y*header.width + templateTrigger.x];
 		if(info)
 		{
 			MapSpot target = GetSpot(templateTrigger.x, templateTrigger.y, 0);
@@ -1378,7 +1405,7 @@ void GameMap::ReadPlanesData()
 				templateTrigger.playerUse = false;
 			}
 			templateTrigger.activate[0] = templateTrigger.activate[1] = templateTrigger.activate[2] = templateTrigger.activate[3] = true;
-		}
+		}*/
 
 		Trigger &trig = NewTrigger(templateTrigger.x, templateTrigger.y, templateTrigger.z);
 		trig = templateTrigger;
