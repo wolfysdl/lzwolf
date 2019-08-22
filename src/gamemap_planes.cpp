@@ -1007,11 +1007,9 @@ void GameMap::ReadPlanesData()
 
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
-		if (plane != Plane_Info) // Info plane is already read
-		{
-			TUniquePtr<WORD[]> oldplane(new WORD[size]);
+		TUniquePtr<WORD[]> oldplane(new WORD[size]);
+		if (plane < 3) // Info plane is already read
 			lump->Read(oldplane.Get(), size*2);
-		}
 
 		switch(plane)
 		{
