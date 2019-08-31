@@ -69,6 +69,7 @@ public:
 	{
 		TSF_ISELEVATOR = 1,
 		TSF_ISTRIGGER = 2,
+		TSF_ISTELEPORTER = 4,
 
 		// Only returned by TranslateThing to indicate that the thing object is valid.
 		TSF_ISTHING = 0x80000000
@@ -558,6 +559,14 @@ protected:
 
 					sc.MustGetToken(';');
 				}
+				else if(sc->str.CompareNoCase("teleporter") == 0)
+				{
+					sc.MustGetToken(TK_IntConst);
+					ThingSpecialXlat &thing = thingSpecialTable[sc->number];
+					thing.flags |= Xlat::TSF_ISTELEPORTER;
+
+					sc.MustGetToken(';');
+				}
 				else
 					sc.ScriptMessage(Scanner::ERROR, "Unknown thing table block '%s'.", sc->str.GetChars());
 			}
@@ -981,6 +990,7 @@ void GameMap::ReadPlanesData()
 	TArray<WORD> ambushSpots;
 	TArray<MapTrigger> triggers;
 	TMap<WORD, TArray<MapSpot> > elevatorSpots;
+	TMap<WORD, TArray<MapSpot> > teleporterSpots;
 
 	// Read and store the info plane so we can reference it
 	TUniquePtr<WORD[]> infoplane(new WORD[size]);
@@ -1270,6 +1280,10 @@ void GameMap::ReadPlanesData()
 						{
 							elevatorSpots[oldplane[i]].Push(&mapPlane.map[i]);
 						}
+						if(tsFlags & Xlat::TSF_ISTELEPORTER)
+						{
+							teleporterSpots[oldplane[i]].Push(&mapPlane.map[i]);
+						}
 						if(tsFlags & Xlat::TSF_ISTHING)
 						{
 							thing.x = ((i%header.width)<<FRACBITS)+(FRACUNIT/2);
@@ -1476,6 +1490,34 @@ void GameMap::ReadPlanesData()
 			}
 			if(lastNext)
 				*lastNext = swtchTag;
+		}
+	}
+
+	// Install teleporters
+	{
+		TMap<WORD, TArray<MapSpot> >::ConstIterator iter(teleporterSpots);
+		TMap<WORD, TArray<MapSpot> >::ConstPair *pair;
+		while(iter.NextPair(pair))
+		{
+			const TArray<MapSpot> &locations = pair->Value;
+
+			assert(locations.Size() > 0);
+			{
+				for(unsigned int i = 0;i < locations.Size();++i)
+				{
+					MapSpot spot = locations[i];
+					MapSpot nextSpot = locations[(i + 1) % locations.Size()];
+
+					Trigger &trigger = NewTrigger(spot->GetX(), spot->GetY(), 0);
+					trigger.action = Specials::Teleport_Relative;
+					trigger.playerCross = true;
+					trigger.repeatable = true;
+					trigger.arg[0] = (nextSpot->GetX()<<8)|nextSpot->GetY();
+					trigger.arg[1] = 0; // angle offset
+					trigger.arg[2] = 0; // flags
+					SetSpotTag(nextSpot, trigger.arg[0]);
+				}
+			}
 		}
 	}
 }
