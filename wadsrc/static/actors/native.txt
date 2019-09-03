@@ -38,6 +38,17 @@ const int ZOOM_NOSCALETURNING = 2;
 
 const int DF_REVIVE = 1;
 
+const int CHAN_AUTO = 1;
+const int CHAN_WEAPON = 2;
+const int CHAN_VOICE = 3;
+const int CHAN_ITEM = 4;
+const int CHAN_BODY = 5;
+
+const float ATTN_NONE = 0.0; // full volume the entire level
+const float ATTN_NORM = 1.0;
+const float ATTN_IDLE = 1.001;
+const float ATTN_STATIC = 3.0; // diminish very rapidly with distance
+
 actor Actor native
 {
 	actionns "lz"
@@ -81,7 +92,7 @@ actor Actor native
 	action native A_MirrorPosition(float mirx);
 	action native A_MonsterRefire(int chance, state abort);
 	action native A_Pain();
-	action native A_PlaySound(string soundname);
+	action native A_PlaySound(string soundname, int slot = CHAN_BODY, float volume = 1.0, bool looping = false, float attenuation = ATTN_NORM);
 	action native A_RadiusWake(int radius = 128);
 	action native A_ScaleVelocity(float scale);
 	action native A_Scream();
@@ -91,6 +102,7 @@ actor Actor native
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
 	action native A_SpawnItemEx(string type, float xoffset = 0, float yoffset = 0, float zoffset = 0, float xvel = 0, float yvel = 0, float zvel = 0, float angle = 0, int flags = 0, int failchance = 0);
 	action native A_Stop();
+	action native A_StopSound(int slot = CHAN_VOICE);	// Bad default but that's what is originally was...
 	action native A_TakeInventory(string type, int amount);
 	action native A_Wander();
 	action native A_WolfAttack(int flags = 0, string sound = "*", float snipe = 1.0, int maxdamage = 64, int blocksize = 128, int pointblank = 2, int longrange = 4, float runspeed = 160.0);
