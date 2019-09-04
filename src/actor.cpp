@@ -690,6 +690,11 @@ void AActor::FinishSpawningActors()
 	SpawnedActors.Clear();
 }
 
+namespace ActorSpawnID
+{
+	std::map<unsigned int, AActor *> Actors;
+}
+
 FRandom pr_spawnmobj("SpawnActor");
 AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags)
 {
@@ -766,6 +771,7 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	}
 
 	actor->spawnid = SpawnedActors.Size ();
+	ActorSpawnID::Actors[actor->spawnid] = actor;
 	SpawnedActors.Push(actor);
 
 	return actor;

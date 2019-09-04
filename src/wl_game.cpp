@@ -1097,6 +1097,11 @@ namespace LoopedAudio
 		}
 	}
 
+	int tileDist (AActor *ob, AActor *check)
+	{
+		return 0;
+	}
+
 	void updateSoundPos (void)
 	{
 		typedef int FadeLevel;
@@ -1104,9 +1109,9 @@ namespace LoopedAudio
 		FLMap flm;
 		for (ChanMap::iterator it = chans.begin(); it != chans.end(); ++it)
 		{
-			objtype *ob = objlist + (it->first - 1);
+			AActor *ob = ActorSpawnID::Actors[it->first - 1];
 			Chan &chan = it->second;
-			flm[Object::tileDist(ob, player)] = it;
+			flm[tileDist(ob, players[0].mo)] = it;
 		}
 		
 		int closestCounter;
@@ -1114,7 +1119,7 @@ namespace LoopedAudio
 		for (closestCounter = (int)flm.size() - 1, it2 = flm.rbegin(); it2 != flm.rend(); ++it2, --closestCounter)
 		{
 			ChanMap::iterator it = it2->second;
-			objtype *ob = objlist + (it->first - 1);
+			AActor *ob = ActorSpawnID::Actors[it->first - 1];
 			Chan &chan = it->second;
 
 			// group 2 has 2 channels only
@@ -1138,12 +1143,10 @@ namespace LoopedAudio
 			{
 				if (chan.first == -1)
 				{
-					const unsigned int objId = it->first - 1;
-
 					const soundnames sound = chan.second;
 					chans.erase(it);
 
-					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, objId, true);
+					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true);
 					break;
 				}
 			}

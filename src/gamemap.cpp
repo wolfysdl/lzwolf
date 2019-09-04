@@ -500,6 +500,8 @@ void GameMap::SetupLinks()
 extern FRandom pr_spawnmobj;
 void GameMap::SpawnThings() const
 {
+	ActorSpawnID::Actors.clear();
+
 #if 0
 	// Debug code - Show the number of things spawned at map start.
 	printf("Spawning %d things\n", things.Size());

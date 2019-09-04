@@ -258,4 +258,9 @@ public:
 	TObjPtr<AActor> actualObject;
 };
 
+namespace ActorSpawnID
+{
+	extern std::map<unsigned int, AActor *> Actors;
+}
+
 #endif
