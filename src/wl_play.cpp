@@ -1146,6 +1146,7 @@ void PlayLoop (void)
 		GC::CheckGC();
 
 		UpdateSoundLoc ();      // JAB
+		LoopedAudio::updateSoundPos ();
 		if (screenfaded)
 		{
 			VW_FadeIn ();

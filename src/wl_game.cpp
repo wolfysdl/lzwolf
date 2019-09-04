@@ -214,7 +214,8 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 
 	if (looped && objId != 0)
 	{
-		LoopedAudio::add (objId, channel, s);
+		const SoundIndex &sound = SoundInfo.FindSound(s);
+		LoopedAudio::add (objId, channel, sound);
 	}
 }
 
@@ -1054,8 +1055,7 @@ restartgame:
 
 namespace LoopedAudio
 {
-	typedef unsigned int ObjId;
-	typedef std::pair<SndChannel, soundnames> Chan;
+	typedef std::pair<SndChannel, SoundIndex> Chan;
 
 	typedef std::map<ObjId, Chan> ChanMap;
 	static ChanMap chans;
@@ -1065,7 +1065,7 @@ namespace LoopedAudio
 		return chans.find(objId) != chans.end();
 	}
 
-	void add (ObjId objId, SndChannel channel, soundnames sound)
+	void add (ObjId objId, SndChannel channel, const SoundIndex &sound)
 	{
 		chans[objId] = std::make_pair(channel, sound);
 	}
@@ -1109,7 +1109,7 @@ namespace LoopedAudio
 		FLMap flm;
 		for (ChanMap::iterator it = chans.begin(); it != chans.end(); ++it)
 		{
-			AActor *ob = ActorSpawnID::Actors[it->first - 1];
+			AActor *ob = ActorSpawnID::Actors[it->first];
 			Chan &chan = it->second;
 			flm[tileDist(ob, players[0].mo)] = it;
 		}
@@ -1119,7 +1119,7 @@ namespace LoopedAudio
 		for (closestCounter = (int)flm.size() - 1, it2 = flm.rbegin(); it2 != flm.rend(); ++it2, --closestCounter)
 		{
 			ChanMap::iterator it = it2->second;
-			AActor *ob = ActorSpawnID::Actors[it->first - 1];
+			AActor *ob = ActorSpawnID::Actors[it->first];
 			Chan &chan = it->second;
 
 			// group 2 has 2 channels only
@@ -1143,9 +1143,10 @@ namespace LoopedAudio
 			{
 				if (chan.first == -1)
 				{
-					const soundnames sound = chan.second;
+					const SoundIndex sound = chan.second;
 					chans.erase(it);
 
+					const char *s = SoundInfo[sound].GetLogicalChars();
 					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true);
 					break;
 				}
@@ -1155,7 +1156,7 @@ namespace LoopedAudio
 		for (ChanMap::const_iterator it = chans.begin();
 			it != chans.end(); ++it)
 		{
-			objtype *ob = objlist + (it->first - 1);
+			AActor *ob = ActorSpawnID::Actors[it->first];
 			const Chan &chan = it->second;
 
 			if (chan.first != -1)
@@ -1167,9 +1168,8 @@ namespace LoopedAudio
 		}
 	}
 
-	void stopSoundFrom (AActor *ob)
+	void stopSoundFrom (ObjId objId)
 	{
-		const unsigned int objId = ob->spawnid;
 		ChanMap::const_iterator it = chans.find(objId);
 		if (it != chans.end())
 		{

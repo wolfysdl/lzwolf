@@ -501,6 +501,7 @@ extern FRandom pr_spawnmobj;
 void GameMap::SpawnThings() const
 {
 	ActorSpawnID::Actors.clear();
+	LoopedAudio::reset ();
 
 #if 0
 	// Debug code - Show the number of things spawned at map start.

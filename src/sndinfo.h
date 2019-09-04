@@ -93,6 +93,12 @@ class SoundData
 
 		friend class SoundInformation;
 		friend struct TMoveInsert<SoundData>;
+	
+	public:
+		const char *GetLogicalChars (void) const
+		{
+			return logicalName.GetChars();
+		}
 };
 
 class SoundInformation

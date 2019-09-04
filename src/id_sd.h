@@ -112,6 +112,8 @@ typedef struct
 } globalsoundpos;
 #pragma pack(pop)
 
+typedef int SndChannel;
+
 extern globalsoundpos channelSoundPos[];
 
 // Global variables
