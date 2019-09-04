@@ -203,6 +203,7 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 
 	SetSoundLoc(gx, gy);
 	SD_PositionSound(leftchannel, rightchannel);
+	SD_SetLoopingPlay(looped);
 
 	int channel = SD_PlaySound(s, static_cast<SoundChannel> (chan));
 	if(channel)

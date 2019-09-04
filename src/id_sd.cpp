@@ -80,6 +80,7 @@ static  word                    SoundPriority;
 static  word                    DigiPriority;
 static  int                     LeftPosition;
 static  int                     RightPosition;
+static  bool                    LoopingPlay;
 
 static  bool					DigiPlaying;
 
@@ -610,7 +611,7 @@ Mix_Chunk* SD_PrepareSound(int which)
 	return Mix_LoadWAV_RW(SDL_RWFromMem(soundLump.GetMem(), size), 1);
 }
 
-int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan)
+int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan,bool looping)
 {
 	if (!DigiMode)
 		return 0;
@@ -640,7 +641,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 		return 0;
 
 	Mix_Volume(channel, static_cast<int> (ceil(128.0*MULTIPLY_VOLUME(SoundVolume))));
-	if(Mix_PlayChannel(channel, sample, 0) == -1)
+	if(Mix_PlayChannel(channel, sample, looping ? -1 : 0) == -1)
 	{
 		printf("Unable to play sound: %s\n", Mix_GetError());
 		return 0;
@@ -1148,6 +1149,18 @@ SD_PositionSound(int leftvol,int rightvol)
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//      SD_SetLoopingPlay() - Sets up looping effect for the next
+//              sound to be played.
+//
+///////////////////////////////////////////////////////////////////////////
+void
+SD_SetLoopingPlay(bool looped)
+{
+	LoopingPlay = looped;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
 //      SD_PlaySound() - plays the specified sound on the appropriate hardware
 //              Returns the channel of the sound if it played, else 0.
 //
@@ -1156,11 +1169,14 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 {
 	bool            ispos;
 	int             lp,rp;
+	bool            looping;
 
 	lp = LeftPosition;
 	rp = RightPosition;
+	looping = LoopingPlay;
 	LeftPosition = 0;
 	RightPosition = 0;
+	LoopingPlay = false;
 
 	ispos = nextsoundpos;
 	nextsoundpos = false;
@@ -1194,7 +1210,7 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 				return(false);
 #endif
 
-			int channel = SD_PlayDigitized(sindex, lp, rp, chan);
+			int channel = SD_PlayDigitized(sindex, lp, rp, chan, looping);
 			SoundPositioned = ispos;
 			DigiPriority = sindex.GetPriority();
 			SoundPlaying = sound;
