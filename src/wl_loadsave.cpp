@@ -64,6 +64,11 @@ void R_RenderView();
 extern byte* vbuf;
 extern unsigned vbufPitch;
 
+namespace LoopedAudio
+{
+	void Serialize(FArchive &arc);
+}
+
 namespace GameSave {
 
 unsigned long long SaveVersion = GetSaveVersion();
@@ -554,6 +559,8 @@ static void Serialize(FArchive &arc)
 	arc << map;
 
 	players[0].Serialize(arc);
+
+	LoopedAudio::Serialize(arc);
 }
 
 #define SNAP_ID MAKE_ID('s','n','A','p')

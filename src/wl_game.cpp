@@ -1193,4 +1193,9 @@ namespace LoopedAudio
 	{
 		chans.clear();
 	}
+
+	void Serialize(FArchive &arc)
+	{
+		arc << chans;
+	}
 }
