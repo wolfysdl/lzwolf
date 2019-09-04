@@ -193,11 +193,11 @@ SetSoundLoc(fixed gx,fixed gy)
 =
 ==========================
 */
-void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,AActor *self,bool looped)
+void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped)
 {
-	if (looped && self != 0)
+	if (looped && objId != 0)
 	{
-		if (LoopedAudio::has (self))
+		if (LoopedAudio::has (objId))
 			return;
 	}
 
@@ -212,9 +212,9 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,AActor *self,bo
 		channelSoundPos[channel - 1].valid = 1;
 	}
 
-	if (looped && self)
+	if (looped && objId != 0)
 	{
-		LoopedAudio::add (self, channel, s);
+		LoopedAudio::add (objId, channel, s);
 	}
 }
 
@@ -1048,4 +1048,146 @@ restartgame:
 		}
 	} while (1);
 	return false;
+}
+
+//==========================================================================
+
+namespace LoopedAudio
+{
+	typedef unsigned int ObjId;
+	typedef std::pair<SndChannel, soundnames> Chan;
+
+	typedef std::map<ObjId, Chan> ChanMap;
+	static ChanMap chans;
+
+	bool has (ObjId objId)
+	{
+		return chans.find(objId) != chans.end();
+	}
+
+	void add (ObjId objId, SndChannel channel, soundnames sound)
+	{
+		chans[objId] = std::make_pair(channel, sound);
+	}
+
+	bool claimed (SndChannel channel)
+	{
+		for (ChanMap::const_iterator it = chans.begin();
+			it != chans.end(); ++it)
+		{
+			const Chan &chan = it->second;
+			if (chan.first == channel)
+				return true;
+		}
+
+		return false;
+	}
+
+	void finished (SndChannel channel)
+	{
+		for (ChanMap::iterator it = chans.begin();
+			it != chans.end(); ++it)
+		{
+			Chan &chan = it->second;
+
+			// keep objId but wipe out the channel
+			// we will restart the sound on a different channel later
+			if (chan.first == channel)
+				chan.first = -1;
+		}
+	}
+
+	void updateSoundPos (void)
+	{
+		typedef int FadeLevel;
+		typedef std::map<FadeLevel, ChanMap::iterator> FLMap;
+		FLMap flm;
+		for (ChanMap::iterator it = chans.begin(); it != chans.end(); ++it)
+		{
+			objtype *ob = objlist + (it->first - 1);
+			Chan &chan = it->second;
+			flm[Object::tileDist(ob, player)] = it;
+		}
+		
+		int closestCounter;
+		FLMap::const_reverse_iterator it2;
+		for (closestCounter = (int)flm.size() - 1, it2 = flm.rbegin(); it2 != flm.rend(); ++it2, --closestCounter)
+		{
+			ChanMap::iterator it = it2->second;
+			objtype *ob = objlist + (it->first - 1);
+			Chan &chan = it->second;
+
+			// group 2 has 2 channels only
+			// so stop looped audio from objects too distant
+			if (closestCounter >= 2)
+			{
+				if (chan.first != -1)
+				{
+					globalsoundpos *soundpos = &channelSoundPos[chan.first];
+					if (soundpos->valid)
+					{
+						soundpos->valid = 0;
+						Mix_HaltChannel(chan.first);
+					}
+
+					chan.first = -1;
+				}
+			}
+			// start looped audio for proximal objects
+			else
+			{
+				if (chan.first == -1)
+				{
+					const unsigned int objId = it->first - 1;
+
+					const soundnames sound = chan.second;
+					chans.erase(it);
+
+					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, objId, true);
+					break;
+				}
+			}
+		}
+
+		for (ChanMap::const_iterator it = chans.begin();
+			it != chans.end(); ++it)
+		{
+			objtype *ob = objlist + (it->first - 1);
+			const Chan &chan = it->second;
+
+			if (chan.first != -1)
+			{
+				globalsoundpos *soundpos = &channelSoundPos[chan.first];
+				soundpos->globalsoundx = ob->x;
+				soundpos->globalsoundy = ob->y;
+			}
+		}
+	}
+
+	void stopSoundFrom (AActor *ob)
+	{
+		const unsigned int objId = ob->spawnid;
+		ChanMap::const_iterator it = chans.find(objId);
+		if (it != chans.end())
+		{
+			const Chan &chan = it->second;
+
+			if (chan.first != -1)
+			{
+				globalsoundpos *soundpos = &channelSoundPos[chan.first];
+				if (soundpos->valid)
+				{
+					soundpos->valid = 0;
+					Mix_HaltChannel(chan.first);
+				}
+			}
+
+			chans.erase(objId);
+		}
+	}
+
+	void reset (void)
+	{
+		chans.clear();
+	}
 }

@@ -478,7 +478,8 @@ void AActor::Serialize(FArchive &arc)
 	arc << dir;
 	this->dir = static_cast<dirtype>(dir);
 
-	arc << flags
+	arc << spawnid
+		<< flags
 		<< distance
 		<< x
 		<< y;
@@ -764,6 +765,7 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 		}
 	}
 
+	actor->spawnid = SpawnedActors.Size ();
 	SpawnedActors.Push(actor);
 
 	return actor;
