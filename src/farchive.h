@@ -330,6 +330,7 @@ template <typename K, typename T>
 inline FArchive &operator<< (FArchive &arc, std::pair<K, T> &x)
 {
 	arc << x.first << x.second;
+	return arc;
 }
 
 template <typename K, typename T>

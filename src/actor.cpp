@@ -770,9 +770,10 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 		}
 	}
 
+	SpawnedActors.Push(actor);
+
 	actor->spawnid = SpawnedActors.Size ();
 	ActorSpawnID::Actors[actor->spawnid] = actor;
-	SpawnedActors.Push(actor);
 
 	return actor;
 }

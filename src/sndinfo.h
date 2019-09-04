@@ -39,6 +39,7 @@
 #include "tmemory.h"
 #include "name.h"
 #include "zstring.h"
+#include "farchive.h"
 
 class SoundInformation;
 
@@ -52,9 +53,20 @@ class SoundIndex
 		SoundIndex(const char* logical);
 
 		operator int() const { return index; }
+
+		void Serialize(FArchive &arc)
+		{
+			arc << index;
+		}
 	private:
 		int index;
 };
+
+inline FArchive &operator<< (FArchive &arc, SoundIndex &x)
+{
+	x.Serialize(arc);
+	return arc;
+}
 
 class SoundData
 {
