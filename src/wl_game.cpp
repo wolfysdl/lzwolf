@@ -193,8 +193,14 @@ SetSoundLoc(fixed gx,fixed gy)
 =
 ==========================
 */
-void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan)
+void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,AActor *self,bool looped)
 {
+	if (looped && self != 0)
+	{
+		if (LoopedAudio::has (self))
+			return;
+	}
+
 	SetSoundLoc(gx, gy);
 	SD_PositionSound(leftchannel, rightchannel);
 
@@ -204,6 +210,11 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan)
 		channelSoundPos[channel - 1].globalsoundx = gx;
 		channelSoundPos[channel - 1].globalsoundy = gy;
 		channelSoundPos[channel - 1].valid = 1;
+	}
+
+	if (looped && self)
+	{
+		LoopedAudio::add (self, channel, s);
 	}
 }
 

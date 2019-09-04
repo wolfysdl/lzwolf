@@ -136,7 +136,7 @@ enum SoundChannel
 {
 	SD_GENERIC = -1,
 	SD_WEAPONS,
-	SD_BOSSWEAPONS
+	SD_BOSSWEAPONS,
 };
 
 // Function prototypes

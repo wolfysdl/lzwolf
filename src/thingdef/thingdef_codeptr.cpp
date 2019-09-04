@@ -614,7 +614,7 @@ ACTION_FUNCTION(A_PlaySound)
 	ACTION_PARAM_BOOL(looping, 3);
 	ACTION_PARAM_DOUBLE(attenuation, 4);
 
-	PlaySoundLocActor(sound, self);
+	PlaySoundLocGlobal(sound, self->x, self->y, SD_GENERIC, self, looping);
 	return true;
 }
 
