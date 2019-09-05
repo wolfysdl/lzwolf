@@ -769,6 +769,14 @@ ACTION_FUNCTION(A_Stop)
 	return true;
 }
 
+ACTION_FUNCTION(A_StopSound)
+{
+	ACTION_PARAM_INT(slot, 0);
+
+	LoopedAudio::stopSoundFrom (self->spawnid);
+	return true;
+}
+
 ACTION_FUNCTION(A_TakeInventory)
 {
 	ACTION_PARAM_STRING(className, 0);

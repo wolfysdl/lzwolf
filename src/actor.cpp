@@ -154,6 +154,42 @@ IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(target)
 END_POINTERS
 
+namespace ActorSpawnID
+{
+	typedef std::map<unsigned int, AActor *> ActorMap;
+	ActorMap Actors;
+
+	std::set<unsigned int> AvailKeys;
+
+	void NewActor (AActor *actor)
+	{
+		unsigned int key = 0;
+
+		std::set<unsigned int>::iterator it = AvailKeys.begin();
+		if (it != AvailKeys.end())
+		{
+			key = *it;
+			AvailKeys.erase(it);
+		}
+		else
+		{
+			key = (unsigned int)(ActorMap.size() + 1);
+		}
+
+		actor->spawnid = key;
+		ActorMap[key] = actor;
+	}
+
+	void UnlinkActor (AActor *actor)
+	{
+		unsigned int key = actor->spawnid;
+		if (key != ActorMap.size())
+			AvailKeys.insert(AvailKeys.begin(), key);
+		ActorMap.erase(key);
+		actor->spawnid = 0;
+	}
+}
+
 void AActor::AddInventory(AInventory *item)
 {
 	item->AttachToOwner(this);
@@ -199,6 +235,7 @@ void AActor::Destroy()
 {
 	Super::Destroy();
 	RemoveFromWorld();
+	ActorSpawnID::UnlinkActor (this);
 
 	// Inventory items don't have a registered thinker so we must free them now
 	if(inventory)
@@ -647,6 +684,7 @@ void AActor::RemoveFromWorld()
 	actors.Remove(this);
 	if(IsThinking())
 		Deactivate();
+	LoopedAudio::stopSoundFrom (this->spawnid);
 }
 
 void AActor::RemoveInventory(AInventory *item)
@@ -688,11 +726,6 @@ void AActor::FinishSpawningActors()
 		actor->ObjectFlags &= ~OF_JustSpawned;
 	}
 	SpawnedActors.Clear();
-}
-
-namespace ActorSpawnID
-{
-	std::map<unsigned int, AActor *> Actors;
 }
 
 FRandom pr_spawnmobj("SpawnActor");
@@ -771,10 +804,7 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	}
 
 	SpawnedActors.Push(actor);
-
-	actor->spawnid = SpawnedActors.Size ();
-	ActorSpawnID::Actors[actor->spawnid] = actor;
-
+	ActorSpawnID::NewActor (actor);
 	return actor;
 }
 
