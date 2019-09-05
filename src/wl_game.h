@@ -82,8 +82,6 @@ namespace LoopedAudio
 	void updateSoundPos (void);
 
 	void stopSoundFrom (ObjId objId);
-
-	void reset (void);
 }
 
 #endif

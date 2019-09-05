@@ -628,7 +628,14 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	if(chan == SD_GENERIC)
 	{
 		channel = Mix_GroupAvailable(1);
-		if(channel == -1) channel = Mix_GroupOldest(1);
+		if(channel == -1)
+		{
+			channel = Mix_GroupOldest(1);
+
+			// nobody is allowed to steal from looped audio
+			if (LoopedAudio::claimed (channel))
+				channel = -1;
+		}
 		if(channel == -1)           // All sounds stopped in the meantime?
 			channel = Mix_GroupAvailable(1);
 	}
@@ -655,6 +662,7 @@ void SD_ChannelFinished(int channel)
 {
 	SoundPlaying = FString();
 	channelSoundPos[channel].valid = 0;
+	LoopedAudio::finished (channel);
 }
 
 void

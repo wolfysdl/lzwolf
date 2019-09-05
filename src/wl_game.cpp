@@ -1190,11 +1190,6 @@ namespace LoopedAudio
 		}
 	}
 
-	void reset (void)
-	{
-		chans.clear();
-	}
-
 	void Serialize(FArchive &arc)
 	{
 		arc << chans;
