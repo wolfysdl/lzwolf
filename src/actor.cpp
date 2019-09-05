@@ -192,10 +192,16 @@ namespace ActorSpawnID
 	void Serialize(FArchive &arc)
 	{
 		arc << AvailKeys;
-		arc << ActorMap;
 
 		if (arc.IsLoading())
 		{
+			ActorMap.clear();
+
+			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+			{
+				AActor * const actor = iter;
+				ActorMap[actor->spawnid] = actor;
+			}
 		}
 	}
 }
