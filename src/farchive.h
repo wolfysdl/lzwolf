@@ -35,6 +35,7 @@
 #define __FARCHIVE_H__
 
 #include <map>
+#include <set>
 #include <stdio.h>
 #include "dobject.h"
 #include "tarray.h"

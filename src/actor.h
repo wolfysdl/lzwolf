@@ -261,6 +261,8 @@ public:
 namespace ActorSpawnID
 {
 	extern std::map<unsigned int, AActor *> Actors;
+
+	void Serialize(FArchive &arc);
 }
 
 #endif

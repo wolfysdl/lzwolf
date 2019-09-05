@@ -173,19 +173,19 @@ namespace ActorSpawnID
 		}
 		else
 		{
-			key = (unsigned int)(ActorMap.size() + 1);
+			key = (unsigned int)(Actors.size() + 1);
 		}
 
 		actor->spawnid = key;
-		ActorMap[key] = actor;
+		Actors[key] = actor;
 	}
 
 	void UnlinkActor (AActor *actor)
 	{
 		unsigned int key = actor->spawnid;
-		if (key != ActorMap.size())
+		if (key != Actors.size())
 			AvailKeys.insert(AvailKeys.begin(), key);
-		ActorMap.erase(key);
+		Actors.erase(key);
 		actor->spawnid = 0;
 	}
 
@@ -195,12 +195,12 @@ namespace ActorSpawnID
 
 		if (arc.IsLoading())
 		{
-			ActorMap.clear();
+			Actors.clear();
 
 			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
 			{
 				AActor * const actor = iter;
-				ActorMap[actor->spawnid] = actor;
+				Actors[actor->spawnid] = actor;
 			}
 		}
 	}

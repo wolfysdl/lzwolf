@@ -206,11 +206,11 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 	SD_SetLoopingPlay(looped);
 
 	int channel = SD_PlaySound(s, static_cast<SoundChannel> (chan));
-	if(channel)
+	if(channel != -1)
 	{
-		channelSoundPos[channel - 1].globalsoundx = gx;
-		channelSoundPos[channel - 1].globalsoundy = gy;
-		channelSoundPos[channel - 1].valid = 1;
+		channelSoundPos[channel].globalsoundx = gx;
+		channelSoundPos[channel].globalsoundy = gy;
+		channelSoundPos[channel].valid = 1;
 	}
 
 	if (looped && objId != 0)
