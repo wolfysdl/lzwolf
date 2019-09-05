@@ -188,6 +188,16 @@ namespace ActorSpawnID
 		ActorMap.erase(key);
 		actor->spawnid = 0;
 	}
+
+	void Serialize(FArchive &arc)
+	{
+		arc << AvailKeys;
+		arc << ActorMap;
+
+		if (arc.IsLoading())
+		{
+		}
+	}
 }
 
 void AActor::AddInventory(AInventory *item)

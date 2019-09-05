@@ -342,7 +342,7 @@ inline FArchive &operator<< (FArchive &arc, std::map<K, T> &x)
 	size_type count = x.size();
 	arc << count;
 
-	if (!arc.IsStoring())
+	if (arc.IsLoading())
 	{
 		x.clear();
 		for (size_type i = 0; i < count; i++)
@@ -357,6 +357,37 @@ inline FArchive &operator<< (FArchive &arc, std::map<K, T> &x)
 		for (iterator_type it = x.begin(); it != x.end(); it++)
 		{
 			std::pair<K, T> y = *it;
+			arc << y;
+		}
+	}
+
+	return arc;
+}
+
+template <typename T>
+inline FArchive &operator<< (FArchive &arc, std::set<T> &x)
+{
+	typedef typename std::set<T>::size_type size_type;
+	typedef typename std::set<T>::iterator iterator_type;
+
+	size_type count = x.size();
+	arc << count;
+
+	if (arc.IsLoading())
+	{
+		x.clear();
+		for (size_type i = 0; i < count; i++)
+		{
+			T y;
+			arc << y;
+			x.insert(x.begin(), y);
+		}
+	}
+	else
+	{
+		for (iterator_type it = x.begin(); it != x.end(); ++it)
+		{
+			T y = *it;
 			arc << y;
 		}
 	}

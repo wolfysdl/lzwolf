@@ -561,6 +561,7 @@ static void Serialize(FArchive &arc)
 	players[0].Serialize(arc);
 
 	LoopedAudio::Serialize(arc);
+	ActorSpawnID::Serialize(arc);
 }
 
 #define SNAP_ID MAKE_ID('s','n','A','p')
