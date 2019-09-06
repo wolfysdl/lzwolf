@@ -73,7 +73,7 @@ namespace LoopedAudio
 
 	bool has (ObjId objId);
 
-	void add (ObjId objId, SndChannel channel, const SoundIndex &sound);
+	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation);
 
 	bool claimed (SndChannel channel);
 

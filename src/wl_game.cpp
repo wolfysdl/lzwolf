@@ -229,7 +229,7 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 	if (looped && objId != 0)
 	{
 		const SoundIndex &sound = SoundInfo.FindSound(s);
-		LoopedAudio::add (objId, channel, sound);
+		LoopedAudio::add (objId, channel, sound, attenuation);
 	}
 }
 
@@ -1064,7 +1064,36 @@ restartgame:
 
 namespace LoopedAudio
 {
-	typedef std::pair<SndChannel, SoundIndex> Chan;
+	class Chan
+	{
+	public:
+		SndChannel channel;
+		SoundIndex sound;
+		double attenuation;
+
+		Chan() : channel(-1), attenuation(0.0)
+		{
+		}
+
+		explicit Chan(
+			SndChannel channel_,
+			SoundIndex sound_,
+			double attenuation_
+			) :
+			channel(channel_),
+			sound(sound_),
+			attenuation(attenuation_)
+		{
+		}
+	};
+
+	inline FArchive &operator<< (FArchive &arc, Chan &x)
+	{
+		arc << x.channel
+			<< x.sound
+			<< x.attenuation;
+		return arc;
+	}
 
 	typedef std::map<ObjId, Chan> ChanMap;
 	static ChanMap chans;
@@ -1074,9 +1103,9 @@ namespace LoopedAudio
 		return chans.find(objId) != chans.end();
 	}
 
-	void add (ObjId objId, SndChannel channel, const SoundIndex &sound)
+	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation)
 	{
-		chans[objId] = std::make_pair(channel, sound);
+		chans[objId] = Chan(channel, sound, attenuation);
 	}
 
 	bool claimed (SndChannel channel)
@@ -1085,7 +1114,7 @@ namespace LoopedAudio
 			it != chans.end(); ++it)
 		{
 			const Chan &chan = it->second;
-			if (chan.first == channel)
+			if (chan.channel == channel)
 				return true;
 		}
 
@@ -1101,8 +1130,8 @@ namespace LoopedAudio
 
 			// keep objId but wipe out the channel
 			// we will restart the sound on a different channel later
-			if (chan.first == channel)
-				chan.first = -1;
+			if (chan.channel == channel)
+				chan.channel = -1;
 		}
 	}
 
@@ -1135,28 +1164,29 @@ namespace LoopedAudio
 			// so stop looped audio from objects too distant
 			if (closestCounter >= 2)
 			{
-				if (chan.first != -1)
+				if (chan.channel != -1)
 				{
-					globalsoundpos *soundpos = &channelSoundPos[chan.first];
+					globalsoundpos *soundpos = &channelSoundPos[chan.channel];
 					if (soundpos->valid)
 					{
 						soundpos->valid = 0;
-						Mix_HaltChannel(chan.first);
+						Mix_HaltChannel(chan.channel);
 					}
 
-					chan.first = -1;
+					chan.channel = -1;
 				}
 			}
 			// start looped audio for proximal objects
 			else
 			{
-				if (chan.first == -1)
+				if (chan.channel == -1)
 				{
-					const SoundIndex sound = chan.second;
+					const SoundIndex sound = chan.sound;
+					const double attenuation = chan.attenuation;
 					chans.erase(it);
 
 					const char *s = SoundInfo[sound].GetLogicalChars();
-					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true, /*TODO: attenuation*/);
+					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true, attenuation);
 					break;
 				}
 			}
@@ -1168,9 +1198,9 @@ namespace LoopedAudio
 			AActor *ob = ActorSpawnID::Actors[it->first];
 			const Chan &chan = it->second;
 
-			if (chan.first != -1)
+			if (chan.channel != -1)
 			{
-				globalsoundpos *soundpos = &channelSoundPos[chan.first];
+				globalsoundpos *soundpos = &channelSoundPos[chan.channel];
 				soundpos->globalsoundx = ob->x;
 				soundpos->globalsoundy = ob->y;
 			}
@@ -1184,13 +1214,13 @@ namespace LoopedAudio
 		{
 			const Chan &chan = it->second;
 
-			if (chan.first != -1)
+			if (chan.channel != -1)
 			{
-				globalsoundpos *soundpos = &channelSoundPos[chan.first];
+				globalsoundpos *soundpos = &channelSoundPos[chan.channel];
 				if (soundpos->valid)
 				{
 					soundpos->valid = 0;
-					Mix_HaltChannel(chan.first);
+					Mix_HaltChannel(chan.channel);
 				}
 			}
 
