@@ -632,7 +632,7 @@ ACTION_FUNCTION(A_PlaySound)
 	ACTION_PARAM_BOOL(looping, 3);
 	ACTION_PARAM_DOUBLE(attenuation, 4);
 
-	enum sndchan = SD_GENERIC;
+	enum SoundChannel sndchan = SD_GENERIC;
 	sndchan = (channel == CHAN_WEAPON ? SD_WEAPONS : sndchan);
 	sndchan = (channel == CHAN_VOICE ? SD_BOSSWEAPONS : sndchan);
 

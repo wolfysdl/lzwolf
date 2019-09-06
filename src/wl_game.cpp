@@ -181,7 +181,7 @@ SetSoundLoc(fixed gx,fixed gy,double attenuation)
 	}
 	else if (fabs(attenuation-ATTN_NONE)>EQUAL_EPSILON)
 	{
-		const double dist = sqrt(FIXED2FLOAT(FixedMul(gx,gx) + FixedMul(gy,gy)))
+		const double dist = sqrt(FIXED2FLOAT(FixedMul(gx,gx) + FixedMul(gy,gy)));
 		const double maxdist = 64.0; // "standard" map size
 		channeldist = (int)(dist * attenuation * 255 / maxdist);
 		channeldist = std::min(channeldist, 255);

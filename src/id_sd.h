@@ -145,7 +145,7 @@ enum SoundChannel
 extern  void    SD_Startup(void),
 				SD_Shutdown(void);
 
-extern  void    SD_PositionSound(int leftvol,int rightvol);
+extern  void    SD_PositionSound(int leftvol,int rightvol,int distance);
 extern  void    SD_SetLoopingPlay(bool looped);
 extern  void    SD_SetPlayVolume(double volume);
 extern  int		SD_PlaySound(const char* sound,SoundChannel chan=SD_GENERIC);
