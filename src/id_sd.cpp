@@ -83,6 +83,7 @@ static  int                     LeftPosition;
 static  int                     RightPosition;
 static  int                     ChannelDist;
 static  bool                    LoopingPlay;
+static  double                  PlayVolume;
 
 static  bool					DigiPlaying;
 
@@ -614,7 +615,7 @@ Mix_Chunk* SD_PrepareSound(int which)
 	return Mix_LoadWAV_RW(SDL_RWFromMem(soundLump.GetMem(), size), 1);
 }
 
-int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan,bool looping, int distance)
+int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan,bool looping, int distance, double volume)
 {
 	if (!DigiMode)
 		return -1;
@@ -650,7 +651,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	if(sample == NULL)
 		return -1;
 
-	Mix_Volume(channel, static_cast<int> (ceil(128.0*MULTIPLY_VOLUME(SoundVolume))));
+	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
 	if(Mix_PlayChannel(channel, sample, looping ? -1 : 0) == -1)
 	{
 		printf("Unable to play sound: %s\n", Mix_GetError());
@@ -1172,6 +1173,18 @@ SD_SetLoopingPlay(bool looped)
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//      SD_SetPlayVolume() - Sets up volume level for the next
+//              sound to be played.
+//
+///////////////////////////////////////////////////////////////////////////
+void
+SD_SetPlayVolume(double volume)
+{
+	PlayVolume = volume;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
 //      SD_PlaySound() - plays the specified sound on the appropriate hardware
 //              Returns the channel of the sound if it played, else -1.
 //
@@ -1181,15 +1194,18 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 	bool            ispos;
 	int             lp,rp,dist;
 	bool            looping;
+	double          volume;
 
 	lp = LeftPosition;
 	rp = RightPosition;
 	dist = ChannelDist;
 	looping = LoopingPlay;
+	volume = PlayVolume;
 	LeftPosition = 0;
 	RightPosition = 0;
 	ChannelDist = 0;
 	LoopingPlay = false;
+	PlayVolume = 1.0;
 
 	ispos = nextsoundpos;
 	nextsoundpos = false;
@@ -1223,7 +1239,7 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 				return -1;
 #endif
 
-			int channel = SD_PlayDigitized(sindex, lp, rp, chan, looping, dist);
+			int channel = SD_PlayDigitized(sindex, lp, rp, chan, looping, dist, volume);
 			SoundPositioned = ispos;
 			DigiPriority = sindex.GetPriority();
 			SoundPlaying = sound;

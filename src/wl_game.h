@@ -61,7 +61,7 @@ extern struct NewMap_t
 #define PlaySoundLocTile(s,tx,ty)       PlaySoundLocGlobal(s,(((int32_t)(tx) << TILESHIFT) + (1L << (TILESHIFT - 1))),(((int32_t)ty << TILESHIFT) + (1L << (TILESHIFT - 1))),SD_GENERIC)
 #define PlaySoundLocActor(s,ob)         PlaySoundLocGlobal(s,(ob)->x,(ob)->y,SD_GENERIC)
 #define PlaySoundLocActorBoss(s,ob)     PlaySoundLocGlobal(s,(ob)->x,(ob)->y,SD_BOSSWEAPONS)
-void    PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId=0,bool looped=false,double attenuation=0.0);
+void    PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId=0,bool looped=false,double attenuation=0.0,double volume=1.0);
 void UpdateSoundLoc(void);
 
 class SoundIndex;
@@ -73,7 +73,7 @@ namespace LoopedAudio
 
 	bool has (ObjId objId);
 
-	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation);
+	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation, double volume);
 
 	bool claimed (SndChannel channel);
 

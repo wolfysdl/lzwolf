@@ -636,7 +636,7 @@ ACTION_FUNCTION(A_PlaySound)
 	sndchan = (channel == CHAN_WEAPON ? SD_WEAPONS : sndchan);
 	sndchan = (channel == CHAN_VOICE ? SD_BOSSWEAPONS : sndchan);
 
-	PlaySoundLocGlobal(sound, self->x, self->y, sndchan, self->spawnid, looping);
+	PlaySoundLocGlobal(sound, self->x, self->y, sndchan, self->spawnid, looping, attenuation, volume);
 	return true;
 }
 

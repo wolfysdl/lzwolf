@@ -205,7 +205,7 @@ SetSoundLoc(fixed gx,fixed gy,float attenuation)
 =
 ==========================
 */
-void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped,double attenuation)
+void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped,double attenuation, double volume)
 {
 	if (looped && objId != 0)
 	{
@@ -216,6 +216,7 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 	SetSoundLoc(gx, gy, attenuation);
 	SD_PositionSound(leftchannel, rightchannel, channeldist);
 	SD_SetLoopingPlay(looped);
+	SD_SetPlayVolume(volume);
 
 	int channel = SD_PlaySound(s, static_cast<SoundChannel> (chan));
 	if(channel != -1)
@@ -223,13 +224,14 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 		channelSoundPos[channel].globalsoundx = gx;
 		channelSoundPos[channel].globalsoundy = gy;
 		channelSoundPos[channel].attenuation = attenuation;
+		channelSoundPos[channel].volume = volume;
 		channelSoundPos[channel].valid = 1;
 	}
 
 	if (looped && objId != 0)
 	{
 		const SoundIndex &sound = SoundInfo.FindSound(s);
-		LoopedAudio::add (objId, channel, sound, attenuation);
+		LoopedAudio::add (objId, channel, sound, attenuation, volume);
 	}
 }
 
@@ -1070,19 +1072,22 @@ namespace LoopedAudio
 		SndChannel channel;
 		SoundIndex sound;
 		double attenuation;
+		double volume;
 
-		Chan() : channel(-1), attenuation(0.0)
+		Chan() : channel(-1), attenuation(0.0), volume(1.0)
 		{
 		}
 
 		explicit Chan(
 			SndChannel channel_,
 			SoundIndex sound_,
-			double attenuation_
+			double attenuation_,
+			double volume_
 			) :
 			channel(channel_),
 			sound(sound_),
-			attenuation(attenuation_)
+			attenuation(attenuation_),
+			volume(volume_)
 		{
 		}
 	};
@@ -1091,7 +1096,8 @@ namespace LoopedAudio
 	{
 		arc << x.channel
 			<< x.sound
-			<< x.attenuation;
+			<< x.attenuation
+			<< x.volume;
 		return arc;
 	}
 
@@ -1103,9 +1109,9 @@ namespace LoopedAudio
 		return chans.find(objId) != chans.end();
 	}
 
-	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation)
+	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation, double volume)
 	{
-		chans[objId] = Chan(channel, sound, attenuation);
+		chans[objId] = Chan(channel, sound, attenuation, volume);
 	}
 
 	bool claimed (SndChannel channel)
@@ -1183,10 +1189,11 @@ namespace LoopedAudio
 				{
 					const SoundIndex sound = chan.sound;
 					const double attenuation = chan.attenuation;
+					const double volume = chan.volume;
 					chans.erase(it);
 
 					const char *s = SoundInfo[sound].GetLogicalChars();
-					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true, attenuation);
+					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true, attenuation, volume);
 					break;
 				}
 			}
