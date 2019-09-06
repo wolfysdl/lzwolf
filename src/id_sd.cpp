@@ -39,6 +39,7 @@
 #endif
 #include "wl_main.h"
 #include "id_sd.h"
+#include "wl_game.h"
 
 #ifndef ECWOLF_MIXER
 #pragma message "Not using customized SDL_mixer. Features will be disabled. https://bitbucket.org/Blzut3/sdl_mixer-for-ecwolf"
@@ -80,6 +81,9 @@ static  word                    SoundPriority;
 static  word                    DigiPriority;
 static  int                     LeftPosition;
 static  int                     RightPosition;
+static  int                     ChannelDist;
+static  bool                    LoopingPlay;
+static  double                  PlayVolume;
 
 static  bool					DigiPlaying;
 
@@ -472,7 +476,7 @@ void SD_StopDigitized(void)
 	Mix_HaltChannel(-1);
 }
 
-void SD_SetPosition(int channel, int leftpos, int rightpos)
+void SD_SetPosition(int channel, int leftpos, int rightpos, int distance)
 {
 	if((leftpos < 0) || (leftpos > 15) || (rightpos < 0) || (rightpos > 15)
 			|| ((leftpos == 15) && (rightpos == 15)))
@@ -485,6 +489,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos)
 		case sds_SoundBlaster:
 //            SDL_PositionSBP(leftpos,rightpos);
 			Mix_SetPanning(channel, TO_SDL_POSITION(leftpos), TO_SDL_POSITION(rightpos));
+			Mix_SetDistance(channel, distance);
 			break;
 	}
 }
@@ -610,16 +615,16 @@ Mix_Chunk* SD_PrepareSound(int which)
 	return Mix_LoadWAV_RW(SDL_RWFromMem(soundLump.GetMem(), size), 1);
 }
 
-int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan)
+int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan,bool looping, int distance, double volume)
 {
 	if (!DigiMode)
-		return 0;
+		return -1;
 
 	// If this sound has been played too recently, don't play it again.
 	// (Fix for extremely loud sounds when one plays over itself too much.)
 	uint32_t currentTick = SDL_GetTicks();
 	if (currentTick - SoundInfo.GetLastPlayTick(which) < MIN_TICKS_BETWEEN_DIGI_REPEATS)
-		return 0;
+		return -1;
 
 	SoundInfo.SetLastPlayTick(which, currentTick);
 
@@ -627,33 +632,40 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	if(chan == SD_GENERIC)
 	{
 		channel = Mix_GroupAvailable(1);
-		if(channel == -1) channel = Mix_GroupOldest(1);
+		if(channel == -1)
+		{
+			channel = Mix_GroupOldest(1);
+
+			// nobody is allowed to steal from looped audio
+			if (LoopedAudio::claimed (channel))
+				channel = -1;
+		}
 		if(channel == -1)           // All sounds stopped in the meantime?
 			channel = Mix_GroupAvailable(1);
 	}
-	SD_SetPosition(channel, leftpos,rightpos);
+	SD_SetPosition(channel, leftpos, rightpos, distance);
 
 	DigiPlaying = true;
 
 	Mix_Chunk *sample = which.GetDigitalData();
 	if(sample == NULL)
-		return 0;
+		return -1;
 
-	Mix_Volume(channel, static_cast<int> (ceil(128.0*MULTIPLY_VOLUME(SoundVolume))));
-	if(Mix_PlayChannel(channel, sample, 0) == -1)
+	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
+	if(Mix_PlayChannel(channel, sample, looping ? -1 : 0) == -1)
 	{
 		printf("Unable to play sound: %s\n", Mix_GetError());
-		return 0;
+		return -1;
 	}
 
-	// Return channel + 1 because zero is a valid channel.
-	return channel + 1;
+	return channel;
 }
 
 void SD_ChannelFinished(int channel)
 {
 	SoundPlaying = FString();
 	channelSoundPos[channel].valid = 0;
+	LoopedAudio::finished (channel);
 }
 
 void
@@ -1139,28 +1151,61 @@ SD_Shutdown(void)
 //
 ///////////////////////////////////////////////////////////////////////////
 void
-SD_PositionSound(int leftvol,int rightvol)
+SD_PositionSound(int leftvol,int rightvol,int distance)
 {
 	LeftPosition = leftvol;
 	RightPosition = rightvol;
+	ChannelDist = distance;
 	nextsoundpos = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//      SD_SetLoopingPlay() - Sets up looping effect for the next
+//              sound to be played.
+//
+///////////////////////////////////////////////////////////////////////////
+void
+SD_SetLoopingPlay(bool looped)
+{
+	LoopingPlay = looped;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+//      SD_SetPlayVolume() - Sets up volume level for the next
+//              sound to be played.
+//
+///////////////////////////////////////////////////////////////////////////
+void
+SD_SetPlayVolume(double volume)
+{
+	PlayVolume = volume;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
 //      SD_PlaySound() - plays the specified sound on the appropriate hardware
-//              Returns the channel of the sound if it played, else 0.
+//              Returns the channel of the sound if it played, else -1.
 //
 ///////////////////////////////////////////////////////////////////////////
 int SD_PlaySound(const char* sound, SoundChannel chan)
 {
 	bool            ispos;
-	int             lp,rp;
+	int             lp,rp,dist;
+	bool            looping;
+	double          volume;
 
 	lp = LeftPosition;
 	rp = RightPosition;
+	dist = ChannelDist;
+	looping = LoopingPlay;
+	volume = PlayVolume;
 	LeftPosition = 0;
 	RightPosition = 0;
+	ChannelDist = 0;
+	LoopingPlay = false;
+	PlayVolume = 1.0;
 
 	ispos = nextsoundpos;
 	nextsoundpos = false;
@@ -1168,7 +1213,7 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 	const SoundData &sindex = SoundInfo[sound];
 
 	if ((SoundMode != sdm_Off) && sindex.IsNull())
-		return 0;
+		return -1;
 
 	if ((DigiMode != sds_Off) && sindex.HasType(SoundData::DIGITAL))
 	{
@@ -1176,7 +1221,7 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 		{
 #ifdef NOTYET
 			if (s->priority < SoundPriority)
-				return 0;
+				return -1;
 
 			SDL_PCStopSound();
 
@@ -1184,38 +1229,39 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 			SoundPositioned = ispos;
 			SoundPriority = s->priority;
 #else
-			return 0;
+			return -1;
 #endif
 		}
 		else
 		{
 #ifdef NOTYET
 			if (s->priority < DigiPriority)
-				return(false);
+				return -1;
 #endif
 
-			int channel = SD_PlayDigitized(sindex, lp, rp, chan);
+			int channel = SD_PlayDigitized(sindex, lp, rp, chan, looping, dist, volume);
 			SoundPositioned = ispos;
 			DigiPriority = sindex.GetPriority();
 			SoundPlaying = sound;
 			return channel;
 		}
 
-		return(true);
+		// this cannot happen..
+		return -1;
 	}
 
 	if (SoundMode == sdm_Off)
-		return 0;
+		return -1;
 
 //    if (!s->length)
 //        Quit("SD_PlaySound() - Zero length sound");
 	if (sindex.GetPriority() < SoundPriority)
-		return 0;
+		return -1;
 
 #ifndef ECWOLF_MIXER
 	// With stock SDL_mixer we can't play music and emulated sounds.
 	if (music != NULL)
-		return 0;
+		return -1;
 #endif
 
 	bool didPlaySound = false;
@@ -1247,7 +1293,7 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 		SoundPlaying = sound;
 	}
 
-	return 0;
+	return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////

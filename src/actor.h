@@ -150,6 +150,9 @@ class AActor : public Thinker,
 		static PointerIndexTable<DamageResistanceList> damageResistances;
 		static PointerIndexTable<EnemyFactionList> enemyFactions;
 
+		// Spawned actor ID
+		unsigned int spawnid;
+
 		// Basic properties from objtype
 		ActorFlags flags;
 
@@ -254,5 +257,12 @@ public:
 
 	TObjPtr<AActor> actualObject;
 };
+
+namespace ActorSpawnID
+{
+	extern std::map<unsigned int, AActor *> Actors;
+
+	void Serialize(FArchive &arc);
+}
 
 #endif

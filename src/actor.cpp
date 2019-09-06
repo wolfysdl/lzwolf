@@ -154,6 +154,58 @@ IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(target)
 END_POINTERS
 
+namespace ActorSpawnID
+{
+	typedef std::map<unsigned int, AActor *> ActorMap;
+	ActorMap Actors;
+
+	std::set<unsigned int> AvailKeys;
+
+	void NewActor (AActor *actor)
+	{
+		unsigned int key = 0;
+
+		std::set<unsigned int>::iterator it = AvailKeys.begin();
+		if (it != AvailKeys.end())
+		{
+			key = *it;
+			AvailKeys.erase(it);
+		}
+		else
+		{
+			key = (unsigned int)(Actors.size() + 1);
+		}
+
+		actor->spawnid = key;
+		Actors[key] = actor;
+	}
+
+	void UnlinkActor (AActor *actor)
+	{
+		unsigned int key = actor->spawnid;
+		if (key != Actors.size())
+			AvailKeys.insert(AvailKeys.begin(), key);
+		Actors.erase(key);
+		actor->spawnid = 0;
+	}
+
+	void Serialize(FArchive &arc)
+	{
+		arc << AvailKeys;
+
+		if (arc.IsLoading())
+		{
+			Actors.clear();
+
+			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+			{
+				AActor * const actor = iter;
+				Actors[actor->spawnid] = actor;
+			}
+		}
+	}
+}
+
 void AActor::AddInventory(AInventory *item)
 {
 	item->AttachToOwner(this);
@@ -199,6 +251,7 @@ void AActor::Destroy()
 {
 	Super::Destroy();
 	RemoveFromWorld();
+	ActorSpawnID::UnlinkActor (this);
 
 	// Inventory items don't have a registered thinker so we must free them now
 	if(inventory)
@@ -478,7 +531,8 @@ void AActor::Serialize(FArchive &arc)
 	arc << dir;
 	this->dir = static_cast<dirtype>(dir);
 
-	arc << flags
+	arc << spawnid
+		<< flags
 		<< distance
 		<< x
 		<< y;
@@ -646,6 +700,7 @@ void AActor::RemoveFromWorld()
 	actors.Remove(this);
 	if(IsThinking())
 		Deactivate();
+	LoopedAudio::stopSoundFrom (this->spawnid);
 }
 
 void AActor::RemoveInventory(AInventory *item)
@@ -765,7 +820,7 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	}
 
 	SpawnedActors.Push(actor);
-
+	ActorSpawnID::NewActor (actor);
 	return actor;
 }
 

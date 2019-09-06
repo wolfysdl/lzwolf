@@ -63,6 +63,9 @@ actor Guard : WolfensteinMonster 11
 			GARD K 7.5 A_Fall
 			GARD L 7.5 A_Scream
 			GARD M 7.5
+			//GARD L 7.5 A_PlaySound("guard/sight", CHAN_BODY, 1.0, true, ATTN_NORM)
+			//GARD M 100.0
+			//GARD M 1.0 A_StopSound(CHAN_BODY)
 			GARD N -1
 			stop
 		//Death_FireDamage:

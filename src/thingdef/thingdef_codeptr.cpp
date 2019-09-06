@@ -608,9 +608,35 @@ ACTION_FUNCTION(A_Pain)
 
 ACTION_FUNCTION(A_PlaySound)
 {
-	ACTION_PARAM_STRING(sound, 0);
+	// sound channels
+	// channel 0 and 1 never willingly overrides
+	// other channels (2+) always override a playing sound on that channel
+	//
+	// CHAN_AUTO     : 2+  : searches for a channel not in use in "other channels"
+	// CHAN_WEAPON   : 0   : is for weapons
+	// CHAN_VOICE    : 1   : is for oof, sight, or other voice sounds
+	// CHAN_ITEM     : 2+  : is for small things and item pickup
+	// CHAN_BODY     : 2+  : is for generic body sounds
+	enum
+	{
+		CHAN_AUTO = 1,
+		CHAN_WEAPON = 2,
+		CHAN_VOICE = 3,
+		CHAN_ITEM = 4,
+		CHAN_BODY = 5,
+	};
 
-	PlaySoundLocActor(sound, self);
+	ACTION_PARAM_STRING(sound, 0);
+	ACTION_PARAM_INT(channel, 1);
+	ACTION_PARAM_DOUBLE(volume, 2);
+	ACTION_PARAM_BOOL(looping, 3);
+	ACTION_PARAM_DOUBLE(attenuation, 4);
+
+	enum SoundChannel sndchan = SD_GENERIC;
+	sndchan = (channel == CHAN_WEAPON ? SD_WEAPONS : sndchan);
+	sndchan = (channel == CHAN_VOICE ? SD_BOSSWEAPONS : sndchan);
+
+	PlaySoundLocGlobal(sound, self->x, self->y, sndchan, self->spawnid, looping, attenuation, volume);
 	return true;
 }
 
@@ -762,6 +788,14 @@ ACTION_FUNCTION(A_Stop)
 	self->velx = 0;
 	self->vely = 0;
 	self->dir = nodir;
+	return true;
+}
+
+ACTION_FUNCTION(A_StopSound)
+{
+	ACTION_PARAM_INT(slot, 0);
+
+	LoopedAudio::stopSoundFrom (self->spawnid);
 	return true;
 }
 
