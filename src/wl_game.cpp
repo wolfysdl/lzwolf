@@ -136,7 +136,7 @@ byte lefttable[ATABLEMAX][ATABLEMAX * 2] = {
 };
 
 void
-SetSoundLoc(fixed gx,fixed gy,float attenuation)
+SetSoundLoc(fixed gx,fixed gy,double attenuation)
 {
 	fixed   xt,yt;
 	int     x,y;
