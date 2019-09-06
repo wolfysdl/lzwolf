@@ -98,7 +98,7 @@ bool GameLoop (void);
 ==========================
 */
 
-int leftchannel, rightchannel;
+int leftchannel, rightchannel, channeldist;
 #define ATABLEMAX 15
 byte righttable[ATABLEMAX][ATABLEMAX * 2] = {
 { 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 6, 0, 0, 0, 0, 0, 1, 3, 5, 8, 8, 8, 8, 8, 8, 8, 8},
@@ -136,7 +136,7 @@ byte lefttable[ATABLEMAX][ATABLEMAX * 2] = {
 };
 
 void
-SetSoundLoc(fixed gx,fixed gy)
+SetSoundLoc(fixed gx,fixed gy,float attenuation)
 {
 	fixed   xt,yt;
 	int     x,y;
@@ -172,6 +172,18 @@ SetSoundLoc(fixed gx,fixed gy)
 	leftchannel  =  lefttable[x][y + ATABLEMAX];
 	rightchannel = righttable[x][y + ATABLEMAX];
 
+	if (attenuation > 0.001)
+	{
+		const double dist = sqrt(FIXED2FLOAT(FixedMul(gx,gx) + FixedMul(gy,gy)))
+		const double maxdist = 64.0; // "standard" map size
+		channeldist = (int)(dist * attenuation * 255 / maxdist);
+		channeldist = std::min(channeldist, 255);
+	}
+	else
+	{
+		channeldist = 0;
+	}
+
 #if 0
 	US_CenterWindow(8,1);
 	US_PrintSigned(leftchannel);
@@ -193,7 +205,7 @@ SetSoundLoc(fixed gx,fixed gy)
 =
 ==========================
 */
-void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped)
+void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped,float attenuation)
 {
 	if (looped && objId != 0)
 	{
@@ -201,8 +213,8 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 			return;
 	}
 
-	SetSoundLoc(gx, gy);
-	SD_PositionSound(leftchannel, rightchannel);
+	SetSoundLoc(gx, gy, attenuation);
+	SD_PositionSound(leftchannel, rightchannel, channeldist);
 	SD_SetLoopingPlay(looped);
 
 	int channel = SD_PlaySound(s, static_cast<SoundChannel> (chan));

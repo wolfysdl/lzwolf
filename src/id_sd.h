@@ -146,7 +146,7 @@ extern  void    SD_Startup(void),
 extern  void    SD_PositionSound(int leftvol,int rightvol);
 extern  void    SD_SetLoopingPlay(bool looped);
 extern  int		SD_PlaySound(const char* sound,SoundChannel chan=SD_GENERIC);
-extern  void    SD_SetPosition(int channel, int leftvol,int rightvol);
+extern  void    SD_SetPosition(int channel, int leftvol, int rightvol, int distance);
 extern  void    SD_StopSound(void);
 extern  void    SD_WaitSoundDone(void);
 
@@ -163,7 +163,7 @@ extern  bool    SD_SoundPlaying(void);
 
 extern  void    SD_SetDigiDevice(SDSMode);
 extern  struct Mix_Chunk *SD_PrepareSound(int which);
-extern  int     SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan=SD_GENERIC,bool looping=false);
+extern  int     SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan=SD_GENERIC,bool looping=false,int distance=0);
 extern  void    SD_StopDigitized(void);
 
 #endif

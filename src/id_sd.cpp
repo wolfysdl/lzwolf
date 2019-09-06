@@ -81,6 +81,7 @@ static  word                    SoundPriority;
 static  word                    DigiPriority;
 static  int                     LeftPosition;
 static  int                     RightPosition;
+static  int                     ChannelDist;
 static  bool                    LoopingPlay;
 
 static  bool					DigiPlaying;
@@ -474,7 +475,7 @@ void SD_StopDigitized(void)
 	Mix_HaltChannel(-1);
 }
 
-void SD_SetPosition(int channel, int leftpos, int rightpos)
+void SD_SetPosition(int channel, int leftpos, int rightpos, int distance)
 {
 	if((leftpos < 0) || (leftpos > 15) || (rightpos < 0) || (rightpos > 15)
 			|| ((leftpos == 15) && (rightpos == 15)))
@@ -487,6 +488,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos)
 		case sds_SoundBlaster:
 //            SDL_PositionSBP(leftpos,rightpos);
 			Mix_SetPanning(channel, TO_SDL_POSITION(leftpos), TO_SDL_POSITION(rightpos));
+			Mix_SetDistance(channel, distance);
 			break;
 	}
 }
@@ -612,7 +614,7 @@ Mix_Chunk* SD_PrepareSound(int which)
 	return Mix_LoadWAV_RW(SDL_RWFromMem(soundLump.GetMem(), size), 1);
 }
 
-int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan,bool looping)
+int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan,bool looping, int distance)
 {
 	if (!DigiMode)
 		return -1;
@@ -640,7 +642,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 		if(channel == -1)           // All sounds stopped in the meantime?
 			channel = Mix_GroupAvailable(1);
 	}
-	SD_SetPosition(channel, leftpos,rightpos);
+	SD_SetPosition(channel, leftpos, rightpos, distance);
 
 	DigiPlaying = true;
 
@@ -1148,10 +1150,11 @@ SD_Shutdown(void)
 //
 ///////////////////////////////////////////////////////////////////////////
 void
-SD_PositionSound(int leftvol,int rightvol)
+SD_PositionSound(int leftvol,int rightvol,int distance)
 {
 	LeftPosition = leftvol;
 	RightPosition = rightvol;
+	ChannelDist = distance;
 	nextsoundpos = true;
 }
 
@@ -1176,14 +1179,16 @@ SD_SetLoopingPlay(bool looped)
 int SD_PlaySound(const char* sound, SoundChannel chan)
 {
 	bool            ispos;
-	int             lp,rp;
+	int             lp,rp,dist;
 	bool            looping;
 
 	lp = LeftPosition;
 	rp = RightPosition;
+	dist = ChannelDist;
 	looping = LoopingPlay;
 	LeftPosition = 0;
 	RightPosition = 0;
+	ChannelDist = 0;
 	LoopingPlay = false;
 
 	ispos = nextsoundpos;
@@ -1218,7 +1223,7 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 				return -1;
 #endif
 
-			int channel = SD_PlayDigitized(sindex, lp, rp, chan, looping);
+			int channel = SD_PlayDigitized(sindex, lp, rp, chan, looping, dist);
 			SoundPositioned = ispos;
 			DigiPriority = sindex.GetPriority();
 			SoundPlaying = sound;
