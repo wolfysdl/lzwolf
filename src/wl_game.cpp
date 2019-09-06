@@ -172,15 +172,23 @@ SetSoundLoc(fixed gx,fixed gy,float attenuation)
 	leftchannel  =  lefttable[x][y + ATABLEMAX];
 	rightchannel = righttable[x][y + ATABLEMAX];
 
-	if (attenuation > 0.001)
+	const double ATTN_NONE = 0.0;
+	const double ATTN_NORM = 1.0;
+
+	if (fabs(attenuation-ATTN_NORM)<=EQUAL_EPSILON)
+	{
+		channeldist = 0;
+	}
+	else if (fabs(attenuation-ATTN_NONE)>EQUAL_EPSILON)
 	{
 		const double dist = sqrt(FIXED2FLOAT(FixedMul(gx,gx) + FixedMul(gy,gy)))
 		const double maxdist = 64.0; // "standard" map size
 		channeldist = (int)(dist * attenuation * 255 / maxdist);
 		channeldist = std::min(channeldist, 255);
 	}
-	else
+	else // ATTN_NONE
 	{
+		leftchannel = rightchannel = 0;
 		channeldist = 0;
 	}
 
