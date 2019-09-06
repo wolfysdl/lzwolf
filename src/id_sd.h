@@ -109,6 +109,7 @@ typedef struct
 {
 	int valid;
 	fixed globalsoundx, globalsoundy;
+	double attenuation;
 } globalsoundpos;
 #pragma pack(pop)
 

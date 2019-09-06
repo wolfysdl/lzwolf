@@ -205,7 +205,7 @@ SetSoundLoc(fixed gx,fixed gy,float attenuation)
 =
 ==========================
 */
-void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped,float attenuation)
+void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped,double attenuation)
 {
 	if (looped && objId != 0)
 	{
@@ -222,6 +222,7 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 	{
 		channelSoundPos[channel].globalsoundx = gx;
 		channelSoundPos[channel].globalsoundy = gy;
+		channelSoundPos[channel].attenuation = attenuation;
 		channelSoundPos[channel].valid = 1;
 	}
 
@@ -234,19 +235,14 @@ void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int ob
 
 void UpdateSoundLoc(void)
 {
-/*    if (SoundPositioned)
-	{
-		SetSoundLoc(globalsoundx,globalsoundy);
-		SD_SetPosition(leftchannel,rightchannel);
-	}*/
-
 	for(int i = 0; i < MIX_CHANNELS; i++)
 	{
 		if(channelSoundPos[i].valid)
 		{
 			SetSoundLoc(channelSoundPos[i].globalsoundx,
-				channelSoundPos[i].globalsoundy);
-			SD_SetPosition(i, leftchannel, rightchannel);
+				channelSoundPos[i].globalsoundy,
+				channelSoundPos[i].attenuation);
+			SD_SetPosition(i, leftchannel, rightchannel, channeldist);
 		}
 	}
 }
@@ -1112,7 +1108,7 @@ namespace LoopedAudio
 
 	int tileDist (AActor *ob, AActor *check)
 	{
-		return 0;
+		return MAX(abs(check->tilex - ob->tilex), abs(check->tiley - ob->tiley));
 	}
 
 	void updateSoundPos (void)
@@ -1160,7 +1156,7 @@ namespace LoopedAudio
 					chans.erase(it);
 
 					const char *s = SoundInfo[sound].GetLogicalChars();
-					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true);
+					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true, /*TODO: attenuation*/);
 					break;
 				}
 			}
