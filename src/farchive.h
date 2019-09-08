@@ -337,10 +337,11 @@ inline FArchive &operator<< (FArchive &arc, std::pair<K, T> &x)
 template <typename K, typename T>
 inline FArchive &operator<< (FArchive &arc, std::map<K, T> &x)
 {
-	typedef typename std::map<K, T>::size_type size_type;
+	//typedef typename std::map<K, T>::size_type size_type;
+	typedef DWORD size_type;
 	typedef typename std::map<K, T>::iterator iterator_type;
 
-	size_type count = x.size();
+	size_type count = (size_type)x.size();
 	arc << count;
 
 	if (arc.IsLoading())
@@ -368,10 +369,11 @@ inline FArchive &operator<< (FArchive &arc, std::map<K, T> &x)
 template <typename T>
 inline FArchive &operator<< (FArchive &arc, std::set<T> &x)
 {
-	typedef typename std::set<T>::size_type size_type;
+	//typedef typename std::set<T>::size_type size_type;
+	typedef DWORD size_type;
 	typedef typename std::set<T>::iterator iterator_type;
 
-	size_type count = x.size();
+	size_type count = (size_type)x.size();
 	arc << count;
 
 	if (arc.IsLoading())
