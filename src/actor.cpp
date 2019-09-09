@@ -156,10 +156,63 @@ PointerIndexTable<AActor::ZoneLightList> AActor::zoneLights;
 PointerIndexTable<AActor::FilterposWrapList> AActor::filterposWraps;
 PointerIndexTable<AActor::FilterposThrustList> AActor::filterposThrusts;
 PointerIndexTable<AActor::FilterposWaveList> AActor::filterposWaves;
+PointerIndexTable<AActor::EnemyFactionList> AActor::enemyFactions;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
 END_POINTERS
+
+namespace ActorSpawnID
+{
+	typedef std::map<unsigned int, AActor *> ActorMap;
+	ActorMap Actors;
+
+	std::set<unsigned int> AvailKeys;
+
+	void NewActor (AActor *actor)
+	{
+		unsigned int key = 0;
+
+		std::set<unsigned int>::iterator it = AvailKeys.begin();
+		if (it != AvailKeys.end())
+		{
+			key = *it;
+			AvailKeys.erase(it);
+		}
+		else
+		{
+			key = (unsigned int)(Actors.size() + 1);
+		}
+
+		actor->spawnid = key;
+		Actors[key] = actor;
+	}
+
+	void UnlinkActor (AActor *actor)
+	{
+		unsigned int key = actor->spawnid;
+		if (key != Actors.size())
+			AvailKeys.insert(AvailKeys.begin(), key);
+		Actors.erase(key);
+		actor->spawnid = 0;
+	}
+
+	void Serialize(FArchive &arc)
+	{
+		arc << AvailKeys;
+
+		if (arc.IsLoading())
+		{
+			Actors.clear();
+
+			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+			{
+				AActor * const actor = iter;
+				Actors[actor->spawnid] = actor;
+			}
+		}
+	}
+}
 
 void AActor::AddInventory(AInventory *item)
 {
@@ -206,6 +259,7 @@ void AActor::Destroy()
 {
 	Super::Destroy();
 	RemoveFromWorld();
+	ActorSpawnID::UnlinkActor (this);
 
 	// Inventory items don't have a registered thinker so we must free them now
 	if(inventory)
@@ -421,6 +475,14 @@ AActor::FilterposWaveList *AActor::GetFilterposWaveList() const
 	return filterposWaves[filterposwavesIndex];
 }
 
+AActor::EnemyFactionList *AActor::GetEnemyFactionList() const
+{
+	int enemyfactionsIndex = GetClass()->Meta.GetMetaInt(AMETA_EnemyFactions, -1);
+	if(enemyfactionsIndex == -1)
+		return NULL;
+	return enemyFactions[enemyfactionsIndex];
+}
+
 const AActor *AActor::GetDefault() const
 {
 	return GetClass()->GetDefault();
@@ -523,7 +585,8 @@ void AActor::Serialize(FArchive &arc)
 	arc << dir;
 	this->dir = static_cast<dirtype>(dir);
 
-	arc << flags
+	arc << spawnid
+		<< flags
 		<< distance
 		<< x
 		<< y;
@@ -871,6 +934,7 @@ void AActor::RemoveFromWorld()
 	actors.Remove(this);
 	if(IsThinking())
 		Deactivate();
+	LoopedAudio::stopSoundFrom (this->spawnid);
 }
 
 void AActor::RemoveInventory(AInventory *item)
@@ -1000,7 +1064,7 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	}
 
 	SpawnedActors.Push(actor);
-
+	ActorSpawnID::NewActor (actor);
 	return actor;
 }
 

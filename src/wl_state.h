@@ -24,5 +24,6 @@ void    DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassD
 
 bool CheckSlidePass(unsigned int style, unsigned int intercept, unsigned int amount);
 bool CheckLine (AActor *ob, AActor *ob2);
+bool CheckIsEnemyByFaction (AActor *ob, AActor *check);
 
 #endif

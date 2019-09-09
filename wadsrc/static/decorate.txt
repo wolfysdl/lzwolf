@@ -18,6 +18,7 @@
 #include "actors/wolf/wolfplayer.txt"
 #include "actors/wolf/wolfweapons.txt"
 #include "actors/wolf/wolfdamage.txt"
+#include "actors/wolf/wolffaction.txt"
 #include "actors/wolf/macintosh.txt"
 #include "actors/noah/noahammo.txt"
 #include "actors/noah/noahanimals.txt"

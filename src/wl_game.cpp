@@ -98,7 +98,7 @@ bool GameLoop (void);
 ==========================
 */
 
-int leftchannel, rightchannel;
+int leftchannel, rightchannel, channeldist;
 #define ATABLEMAX 15
 byte righttable[ATABLEMAX][ATABLEMAX * 2] = {
 { 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 6, 0, 0, 0, 0, 0, 1, 3, 5, 8, 8, 8, 8, 8, 8, 8, 8},
@@ -136,7 +136,7 @@ byte lefttable[ATABLEMAX][ATABLEMAX * 2] = {
 };
 
 void
-SetSoundLoc(fixed gx,fixed gy)
+SetSoundLoc(fixed gx,fixed gy,double attenuation)
 {
 	fixed   xt,yt;
 	int     x,y;
@@ -172,6 +172,26 @@ SetSoundLoc(fixed gx,fixed gy)
 	leftchannel  =  lefttable[x][y + ATABLEMAX];
 	rightchannel = righttable[x][y + ATABLEMAX];
 
+	const double ATTN_NONE = 0.0;
+	const double ATTN_NORM = 1.0;
+
+	if (fabs(attenuation-ATTN_NORM)<=EQUAL_EPSILON)
+	{
+		channeldist = 0;
+	}
+	else if (fabs(attenuation-ATTN_NONE)>EQUAL_EPSILON)
+	{
+		const double dist = sqrt(FIXED2FLOAT(FixedMul(gx,gx) + FixedMul(gy,gy)));
+		const double maxdist = 64.0; // "standard" map size
+		channeldist = (int)(dist * attenuation * 255 / maxdist);
+		channeldist = std::min(channeldist, 255);
+	}
+	else // ATTN_NONE
+	{
+		leftchannel = rightchannel = 0;
+		channeldist = 0;
+	}
+
 #if 0
 	US_CenterWindow(8,1);
 	US_PrintSigned(leftchannel);
@@ -193,35 +213,46 @@ SetSoundLoc(fixed gx,fixed gy)
 =
 ==========================
 */
-void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan)
+void PlaySoundLocGlobal(const char* s,fixed gx,fixed gy,int chan,unsigned int objId,bool looped,double attenuation, double volume)
 {
-	SetSoundLoc(gx, gy);
-	SD_PositionSound(leftchannel, rightchannel);
+	if (looped && objId != 0)
+	{
+		if (LoopedAudio::has (objId))
+			return;
+	}
+
+	SetSoundLoc(gx, gy, attenuation);
+	SD_PositionSound(leftchannel, rightchannel, channeldist);
+	SD_SetLoopingPlay(looped);
+	SD_SetPlayVolume(volume);
 
 	int channel = SD_PlaySound(s, static_cast<SoundChannel> (chan));
-	if(channel)
+	if(channel != -1)
 	{
-		channelSoundPos[channel - 1].globalsoundx = gx;
-		channelSoundPos[channel - 1].globalsoundy = gy;
-		channelSoundPos[channel - 1].valid = 1;
+		channelSoundPos[channel].globalsoundx = gx;
+		channelSoundPos[channel].globalsoundy = gy;
+		channelSoundPos[channel].attenuation = attenuation;
+		channelSoundPos[channel].volume = volume;
+		channelSoundPos[channel].valid = 1;
+	}
+
+	if (looped && objId != 0)
+	{
+		const SoundIndex &sound = SoundInfo.FindSound(s);
+		LoopedAudio::add (objId, channel, sound, attenuation, volume);
 	}
 }
 
 void UpdateSoundLoc(void)
 {
-/*    if (SoundPositioned)
-	{
-		SetSoundLoc(globalsoundx,globalsoundy);
-		SD_SetPosition(leftchannel,rightchannel);
-	}*/
-
 	for(int i = 0; i < MIX_CHANNELS; i++)
 	{
 		if(channelSoundPos[i].valid)
 		{
 			SetSoundLoc(channelSoundPos[i].globalsoundx,
-				channelSoundPos[i].globalsoundy);
-			SD_SetPosition(i, leftchannel, rightchannel);
+				channelSoundPos[i].globalsoundy,
+				channelSoundPos[i].attenuation);
+			SD_SetPosition(i, leftchannel, rightchannel, channeldist);
 		}
 	}
 }
@@ -985,6 +1016,13 @@ restartgame:
 				if(dointermission)
 					LevelCompleted ();              // do the intermission
 
+				if (dointermission && !levelInfo->Intermission.IsEmpty())
+				{
+					VW_FadeOut ();
+					IntermissionInfo *intermission = IntermissionInfo::Find(levelInfo->Intermission);
+					ShowIntermission(intermission);
+				}
+
 				LevelInfo &nextLevel = LevelInfo::Find(next);
 				if(nextLevel.Cluster != levelInfo->Cluster)
 					EndText (levelInfo->Cluster, nextLevel.Cluster);
@@ -1030,4 +1068,183 @@ restartgame:
 		}
 	} while (1);
 	return false;
+}
+
+//==========================================================================
+
+namespace LoopedAudio
+{
+	class Chan
+	{
+	public:
+		SndChannel channel;
+		SoundIndex sound;
+		double attenuation;
+		double volume;
+
+		Chan() : channel(-1), attenuation(0.0), volume(1.0)
+		{
+		}
+
+		explicit Chan(
+			SndChannel channel_,
+			SoundIndex sound_,
+			double attenuation_,
+			double volume_
+			) :
+			channel(channel_),
+			sound(sound_),
+			attenuation(attenuation_),
+			volume(volume_)
+		{
+		}
+	};
+
+	inline FArchive &operator<< (FArchive &arc, Chan &x)
+	{
+		arc << x.channel
+			<< x.sound
+			<< x.attenuation
+			<< x.volume;
+		return arc;
+	}
+
+	typedef std::map<ObjId, Chan> ChanMap;
+	static ChanMap chans;
+
+	bool has (ObjId objId)
+	{
+		return chans.find(objId) != chans.end();
+	}
+
+	void add (ObjId objId, SndChannel channel, const SoundIndex &sound, double attenuation, double volume)
+	{
+		chans[objId] = Chan(channel, sound, attenuation, volume);
+	}
+
+	bool claimed (SndChannel channel)
+	{
+		for (ChanMap::const_iterator it = chans.begin();
+			it != chans.end(); ++it)
+		{
+			const Chan &chan = it->second;
+			if (chan.channel == channel)
+				return true;
+		}
+
+		return false;
+	}
+
+	void finished (SndChannel channel)
+	{
+		for (ChanMap::iterator it = chans.begin();
+			it != chans.end(); ++it)
+		{
+			Chan &chan = it->second;
+
+			// keep objId but wipe out the channel
+			// we will restart the sound on a different channel later
+			if (chan.channel == channel)
+				chan.channel = -1;
+		}
+	}
+
+	int tileDist (AActor *ob, AActor *check)
+	{
+		return MAX(abs(check->tilex - ob->tilex), abs(check->tiley - ob->tiley));
+	}
+
+	void updateSoundPos (void)
+	{
+		typedef int FadeLevel;
+		typedef std::map<FadeLevel, ChanMap::iterator> FLMap;
+		FLMap flm;
+		for (ChanMap::iterator it = chans.begin(); it != chans.end(); ++it)
+		{
+			AActor *ob = ActorSpawnID::Actors[it->first];
+			Chan &chan = it->second;
+			flm[tileDist(ob, players[0].mo)] = it;
+		}
+		
+		int closestCounter;
+		FLMap::const_reverse_iterator it2;
+		for (closestCounter = (int)flm.size() - 1, it2 = flm.rbegin(); it2 != flm.rend(); ++it2, --closestCounter)
+		{
+			ChanMap::iterator it = it2->second;
+			AActor *ob = ActorSpawnID::Actors[it->first];
+			Chan &chan = it->second;
+
+			// group 2 has 2 channels only
+			// so stop looped audio from objects too distant
+			if (closestCounter >= 2)
+			{
+				if (chan.channel != -1)
+				{
+					globalsoundpos *soundpos = &channelSoundPos[chan.channel];
+					if (soundpos->valid)
+					{
+						soundpos->valid = 0;
+						Mix_HaltChannel(chan.channel);
+					}
+
+					chan.channel = -1;
+				}
+			}
+			// start looped audio for proximal objects
+			else
+			{
+				if (chan.channel == -1)
+				{
+					const SoundIndex sound = chan.sound;
+					const double attenuation = chan.attenuation;
+					const double volume = chan.volume;
+					chans.erase(it);
+
+					const char *s = SoundInfo[sound].GetLogicalChars();
+					PlaySoundLocGlobal(s, ob->x, ob->y, SD_GENERIC, ob->spawnid, true, attenuation, volume);
+					break;
+				}
+			}
+		}
+
+		for (ChanMap::const_iterator it = chans.begin();
+			it != chans.end(); ++it)
+		{
+			AActor *ob = ActorSpawnID::Actors[it->first];
+			const Chan &chan = it->second;
+
+			if (chan.channel != -1)
+			{
+				globalsoundpos *soundpos = &channelSoundPos[chan.channel];
+				soundpos->globalsoundx = ob->x;
+				soundpos->globalsoundy = ob->y;
+			}
+		}
+	}
+
+	void stopSoundFrom (ObjId objId)
+	{
+		ChanMap::const_iterator it = chans.find(objId);
+		if (it != chans.end())
+		{
+			const Chan &chan = it->second;
+
+			if (chan.channel != -1)
+			{
+				globalsoundpos *soundpos = &channelSoundPos[chan.channel];
+				if (soundpos->valid)
+				{
+					soundpos->valid = 0;
+					Mix_HaltChannel(chan.channel);
+				}
+			}
+
+			chans.erase(objId);
+		}
+	}
+
+	void Serialize(FArchive &arc)
+	{
+		arc << chans;
+	}
 }

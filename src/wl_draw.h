@@ -19,6 +19,7 @@ extern  fixed finetangent[FINEANGLES/2 + ANG180];
 extern	fixed finesine[FINEANGLES+FINEANGLES/4];
 extern	fixed* finecosine;
 extern  TUniquePtr<int[]> wallheight;
+extern  TUniquePtr<int[]> skywallheight;
 extern  word horizwall[],vertwall[];
 extern  int32_t    frameon;
 extern	int r_extralight;

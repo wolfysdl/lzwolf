@@ -294,6 +294,7 @@ LevelInfo::LevelInfo() : ResetHealth(false), ResetInventory(false),
 	SpawnWithWeaponRaised = false;
 	ForceTally = false;
 	HighScoresGraphic.SetInvalid();
+	NumParallaxTiles = 0;
 }
 
 FTextureID LevelInfo::GetBorderTexture() const
@@ -566,6 +567,10 @@ protected:
 				mapInfo.ParallaxSky.Push(skyTex);
 			}
 		}
+		else if(key.CompareNoCase("NumParallaxTiles") == 0)
+			ParseIntAssignment(mapInfo.NumParallaxTiles);
+		else if(key.CompareNoCase("Intermission") == 0)
+			ParseStringAssignment(mapInfo.Intermission);
 		else
 			return false;
 		return true;

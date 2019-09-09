@@ -49,6 +49,12 @@
 #define FIXED_PARAM(var, no) fixed var = static_cast<fixed>(params[no].f*FRACUNIT)
 #define STRING_PARAM(var, no) const char* var = params[no].s;
 
+HANDLE_PROPERTY(actionns)
+{
+	STRING_PARAM(ns, 0);
+	defaults->actionns = ns;
+}
+
 HANDLE_PROPERTY(activesound)
 {
 	STRING_PARAM(snd, 0);
@@ -270,6 +276,28 @@ HANDLE_PROPERTY(dropitem)
 	}
 
 	AActor::dropItems[cls->Meta.GetMetaInt(AMETA_DropItems)]->Push(drop);
+}
+
+HANDLE_PROPERTY(enemyfaction)
+{
+	STRING_PARAM(faction, 0);
+
+	if(cls->Meta.GetMetaInt(AMETA_EnemyFactions, -1) == -1 || cls->Meta.IsInherited(AMETA_EnemyFactions))
+		cls->Meta.SetMetaInt(AMETA_EnemyFactions, AActor::enemyFactions.Push(new AActor::EnemyFactionList()));
+
+	AActor::EnemyFaction enemyFaction;
+	enemyFaction.faction = ClassDef::FindClassTentative(faction, NATIVE_CLASS(Faction));
+
+	AActor::enemyFactions[cls->Meta.GetMetaInt(AMETA_EnemyFactions)]->Push(enemyFaction);
+}
+
+HANDLE_PROPERTY(faction)
+{
+	STRING_PARAM(type, 0);
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		defaults->faction = NULL;
+	else
+		defaults->faction = ClassDef::FindClassTentative(type, NATIVE_CLASS(Faction));
 }
 
 HANDLE_PROPERTY(filterposthrust)
@@ -702,11 +730,6 @@ HANDLE_PROPERTY(PROJECTILE)
 	defaults->flags |= FL_MISSILE;
 }
 
-HANDLE_PROPERTY(STATUSBAR)
-{
-	defaults->flags |= FL_STATUSBAR;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #define DEFINE_PROP_PREFIX(name, class, prefix, params) { A##class::__StaticClass, #prefix, #name, #params, __Handler_##name }
@@ -714,6 +737,7 @@ HANDLE_PROPERTY(STATUSBAR)
 
 extern const PropDef properties[] =
 {
+	DEFINE_PROP(actionns, Actor, S),
 	DEFINE_PROP(activesound, Actor, S),
 	DEFINE_PROP(ammogive1, Weapon, I),
 	DEFINE_PROP(ammogive2, Weapon, I),
@@ -738,6 +762,8 @@ extern const PropDef properties[] =
 	DEFINE_PROP(deathsound, Actor, S),
 	DEFINE_PROP_PREFIX(displayname, PlayerPawn, Player, S),
 	DEFINE_PROP(dropitem, Actor, S_II),
+	DEFINE_PROP(enemyfaction, Actor, S),
+	DEFINE_PROP(faction, Actor, S),
 	DEFINE_PROP(filterposthrust, Actor, II),
 	DEFINE_PROP(filterposwave, Actor, IFFI),
 	DEFINE_PROP(filterposwrap, Actor, FFI),
@@ -776,7 +802,6 @@ extern const PropDef properties[] =
 	DEFINE_PROP(slotpriority, Weapon, F),
 	DEFINE_PROP(speed, Actor, F_F),
 	DEFINE_PROP_PREFIX(startitem, PlayerPawn, Player, S_I),
-	DEFINE_PROP(STATUSBAR, Actor,),
 	DEFINE_PROP_PREFIX(viewheight, PlayerPawn, Player, F),
 	DEFINE_PROP_PREFIX(weaponslot, PlayerPawn, Player, IS_SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS),
 	DEFINE_PROP(xscale, Actor, F),

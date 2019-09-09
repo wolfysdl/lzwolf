@@ -68,6 +68,7 @@ enum
 	AMETA_FilterposWraps,
 	AMETA_FilterposThrusts,
 	AMETA_FilterposWaves,
+	AMETA_EnemyFactions,
 };
 
 enum
@@ -166,6 +167,13 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<FilterposWave> FilterposWaveList;
 
+		struct EnemyFaction
+		{
+			public:
+				const ClassDef  *faction;
+		};
+		typedef LinkedList<EnemyFaction> EnemyFactionList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -185,6 +193,7 @@ class AActor : public Thinker,
 		FilterposWrapList		*GetFilterposWrapList() const;
 		FilterposThrustList		*GetFilterposThrustList() const;
 		FilterposWaveList		*GetFilterposWaveList() const;
+		EnemyFactionList		*GetEnemyFactionList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -217,6 +226,10 @@ class AActor : public Thinker,
 		static PointerIndexTable<FilterposWrapList> filterposWraps;
 		static PointerIndexTable<FilterposThrustList> filterposThrusts;
 		static PointerIndexTable<FilterposWaveList> filterposWaves;
+		static PointerIndexTable<EnemyFactionList> enemyFactions;
+
+		// Spawned actor ID
+		unsigned int spawnid;
 
 		// Basic properties from objtype
 		ActorFlags flags;
@@ -283,6 +296,7 @@ class AActor : public Thinker,
 		fixed		meleerange;
 		uint16_t	painchance;
 		FNameNoInit	activesound, attacksound, deathsound, painsound, seesound;
+		FNameNoInit	actionns;
 
 		const Frame *SpawnState, *SeeState, *PathState, *PainState, *MeleeState, *MissileState, *RadiusWakeState;
 		short       temp1,hidden;
@@ -300,6 +314,7 @@ class AActor : public Thinker,
 			fixed delta;
 		};
 		TArray<FilterposWaveLastMove> filterposwaveLastMoves;
+		const ClassDef  *faction;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
@@ -340,5 +355,12 @@ class ALit : public AActor
 	public:
 		const ClassDef	*GetLitType() const;
 };
+
+namespace ActorSpawnID
+{
+	extern std::map<unsigned int, AActor *> Actors;
+
+	void Serialize(FArchive &arc);
+}
 
 #endif

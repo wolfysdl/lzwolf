@@ -69,6 +69,7 @@ public:
 	{
 		TSF_ISELEVATOR = 1,
 		TSF_ISTRIGGER = 2,
+		TSF_ISTELEPORTER = 4,
 
 		// Only returned by TranslateThing to indicate that the thing object is valid.
 		TSF_ISTHING = 0x80000000
@@ -558,6 +559,14 @@ protected:
 
 					sc.MustGetToken(';');
 				}
+				else if(sc->str.CompareNoCase("teleporter") == 0)
+				{
+					sc.MustGetToken(TK_IntConst);
+					ThingSpecialXlat &thing = thingSpecialTable[sc->number];
+					thing.flags |= Xlat::TSF_ISTELEPORTER;
+
+					sc.MustGetToken(';');
+				}
 				else
 					sc.ScriptMessage(Scanner::ERROR, "Unknown thing table block '%s'.", sc->str.GetChars());
 			}
@@ -929,7 +938,7 @@ void GameMap::ReadMacData()
 void GameMap::ReadPlanesData()
 {
 	static const unsigned short UNIT = 64;
-	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
+	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, Plane_Info, NUM_USABLE_PLANES };
 
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
@@ -981,14 +990,24 @@ void GameMap::ReadPlanesData()
 	TArray<WORD> ambushSpots;
 	TArray<MapTrigger> triggers;
 	TMap<WORD, TArray<MapSpot> > elevatorSpots;
+	TMap<WORD, TArray<MapSpot> > teleporterSpots;
 
 	// Read and store the info plane so we can reference it
 	TUniquePtr<WORD[]> infoplane(new WORD[size]);
 	if(numPlanes > 3)
 	{
 		lump->Seek(size*2*3, SEEK_CUR);
-		lump->Read(infoplane.Get(), size*2);
+
+		TUniquePtr<WORD[]> oldplane(new WORD[size]);
+		lump->Read(oldplane.Get(), size*2);
+
 		lump->Seek(18+nameLength, SEEK_SET);
+
+		for(unsigned int i = 0;i < size;++i)
+		{
+			oldplane[i] = LittleShort(oldplane[i]);
+			infoplane[i] = oldplane[i];
+		}
 	}
 	else
 		memset(infoplane.Get(), 0, size*2);
@@ -998,11 +1017,9 @@ void GameMap::ReadPlanesData()
 
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
-		if(plane == 3) // Info plane is already read
-			continue;
-
 		TUniquePtr<WORD[]> oldplane(new WORD[size]);
-		lump->Read(oldplane.Get(), size*2);
+		if (plane < 3) // Info plane is already read
+			lump->Read(oldplane.Get(), size*2);
 
 		switch(plane)
 		{
@@ -1263,6 +1280,10 @@ void GameMap::ReadPlanesData()
 						{
 							elevatorSpots[oldplane[i]].Push(&mapPlane.map[i]);
 						}
+						if(tsFlags & Xlat::TSF_ISTELEPORTER)
+						{
+							teleporterSpots[oldplane[i]].Push(&mapPlane.map[i]);
+						}
 						if(tsFlags & Xlat::TSF_ISTHING)
 						{
 							thing.x = ((i%header.width)<<FRACBITS)+(FRACUNIT/2);
@@ -1326,6 +1347,25 @@ void GameMap::ReadPlanesData()
 					mapPlane.map[i].sector = &sectorPalette[flatMap[oldplane[i]]];
 				break;
 			}
+
+			case Plane_Info:
+			{
+				for(unsigned int i = 0;i < size;++i)
+				{
+					const WORD info = infoplane[i];
+					if (info)
+					{
+						unsigned int tag = (unsigned int)info;
+
+						int x, y;
+						x = i%header.width;
+						y = i/header.width;
+						MapSpot target = GetSpot(x, y, 0);
+						SetSpotTag(target, tag);
+					}
+				}
+				break;
+			}
 		}
 	}
 
@@ -1354,7 +1394,8 @@ void GameMap::ReadPlanesData()
 		Trigger &templateTrigger = triggers[i];
 
 		// Check the info plane and if set move the activation point to a switch ot touch plate
-		const WORD info = infoplane[templateTrigger.y*header.width + templateTrigger.x];
+		// TODO: why do we need this?
+		/*const WORD info = infoplane[templateTrigger.y*header.width + templateTrigger.x];
 		if(info)
 		{
 			MapSpot target = GetSpot(templateTrigger.x, templateTrigger.y, 0);
@@ -1378,7 +1419,7 @@ void GameMap::ReadPlanesData()
 				templateTrigger.playerUse = false;
 			}
 			templateTrigger.activate[0] = templateTrigger.activate[1] = templateTrigger.activate[2] = templateTrigger.activate[3] = true;
-		}
+		}*/
 
 		Trigger &trig = NewTrigger(templateTrigger.x, templateTrigger.y, templateTrigger.z);
 		trig = templateTrigger;
@@ -1449,6 +1490,34 @@ void GameMap::ReadPlanesData()
 			}
 			if(lastNext)
 				*lastNext = swtchTag;
+		}
+	}
+
+	// Install teleporters
+	{
+		TMap<WORD, TArray<MapSpot> >::ConstIterator iter(teleporterSpots);
+		TMap<WORD, TArray<MapSpot> >::ConstPair *pair;
+		while(iter.NextPair(pair))
+		{
+			const TArray<MapSpot> &locations = pair->Value;
+
+			assert(locations.Size() > 0);
+			{
+				for(unsigned int i = 0;i < locations.Size();++i)
+				{
+					MapSpot spot = locations[i];
+					MapSpot nextSpot = locations[(i + 1) % locations.Size()];
+
+					Trigger &trigger = NewTrigger(spot->GetX(), spot->GetY(), 0);
+					trigger.action = Specials::Teleport_Relative;
+					trigger.playerCross = true;
+					trigger.repeatable = true;
+					trigger.arg[0] = (nextSpot->GetX()<<8)|nextSpot->GetY();
+					trigger.arg[1] = 0; // angle offset
+					trigger.arg[2] = 0; // flags
+					SetSpotTag(nextSpot, trigger.arg[0]);
+				}
+			}
 		}
 	}
 }
