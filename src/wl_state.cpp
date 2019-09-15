@@ -1,5 +1,6 @@
 // WL_STATE.C
 
+#include <sstream>
 #include "wl_def.h"
 #include "id_ca.h"
 #include "id_sd.h"
@@ -828,8 +829,23 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		if (! (ob->flags & FL_ATTACKMODE) )
 			FirstSighting (ob, ob->SeeState);             // put into combat mode
 
+		const Frame *painstate = NULL;
 		if(ob->PainState && pr_damagemobj() < ob->painchance)
-			ob->SetState(ob->PainState);
+			painstate = ob->PainState;
+
+		if (painstate)
+		{
+			const Frame *dmgpainstate = NULL;
+
+			std::stringstream ss;
+			ss << "Pain_" << std::string(damagetype->GetName().GetChars());
+			dmgpainstate = ob->FindState(ss.str().c_str());
+			if (dmgpainstate)
+				painstate = dmgpainstate;
+		}
+
+		if (painstate)
+			ob->SetState(painstate);
 	}
 }
 
