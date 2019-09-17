@@ -150,6 +150,7 @@ actor CustomInventory : Inventory native
 actor Damage : Inventory native
 {
 	damage.noxdeath 0
+	damage.squishing 0
 }
 
 actor ExtraLifeItem : Inventory native
