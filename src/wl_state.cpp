@@ -833,7 +833,7 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		if(ob->PainState && pr_damagemobj() < ob->painchance)
 			painstate = ob->PainState;
 
-		if (painstate)
+		if (painstate && damagetype)
 		{
 			const Frame *dmgpainstate = NULL;
 
