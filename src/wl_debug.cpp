@@ -360,8 +360,6 @@ int DebugKeys (void)
 	}
 	else if (Keyboard[sc_O])
 	{
-		players[0].mo->PrintInventory();
-
 		am_cheat ^= 1;
 		US_CenterWindow (18,3);
 		if (am_cheat)

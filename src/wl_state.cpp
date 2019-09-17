@@ -820,8 +820,8 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		{
 			ob->killerx = attacker->x;
 			ob->killery = attacker->y;
+			ob->killerdamagetype = damagetype;
 		}
-		ob->killerdamagetype = damagetype;
 		ob->Die();
 	}
 	else
