@@ -41,8 +41,6 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		return; // view obscured by walls
 	if(y0 <= 0) y0 = 1; // don't let division by zero
 
-	lasttex.SetInvalid();
-
 	const unsigned int mapwidth = map->GetHeader().width;
 	const unsigned int mapheight = map->GetHeader().height;
 
@@ -86,6 +84,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		const int shade = LIGHT2SHADE(gLevelLight + r_extralight);
 		const int tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 		curshades = &NormalLight.Maps[GETPALOOKUP(tz, shade)<<8];
+
+		lasttex.SetInvalid();
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
