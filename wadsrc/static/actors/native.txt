@@ -149,6 +149,7 @@ actor CustomInventory : Inventory native
 
 actor Damage : Inventory native
 {
+	damage.ignorearmor 0
 	damage.noxdeath 0
 }
 

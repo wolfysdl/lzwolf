@@ -358,6 +358,12 @@ HANDLE_PROPERTY(icon)
 	((AInventory *)defaults)->icon = TexMan.CheckForTexture(icon, FTexture::TEX_MiscPatch);
 }
 
+HANDLE_PROPERTY(ignorearmor)
+{
+	INT_PARAM(ignorearmor, 0);
+	((ADamage *)defaults)->ignorearmor = ignorearmor?true:false;
+}
+
 HANDLE_PROPERTY(interhubamount)
 {
 	INT_PARAM(amt, 0);
@@ -410,6 +416,13 @@ HANDLE_PROPERTY(movebob)
 	cls->Meta.SetMetaFixed(APMETA_MoveBob, strength);
 }
 
+HANDLE_PROPERTY(noxdeath)
+{
+	INT_PARAM(noxdeath, 0);
+	((ADamage *)defaults)->noxdeath = noxdeath?true:false;
+}
+
+
 HANDLE_PROPERTY(painchance)
 {
 	INT_PARAM(chance, 0);
@@ -419,12 +432,6 @@ HANDLE_PROPERTY(painchance)
 	else if(chance < 0)
 		chance = 0;
 	defaults->painchance = chance;
-}
-
-HANDLE_PROPERTY(noxdeath)
-{
-	INT_PARAM(noxdeath, 0);
-	((ADamage *)defaults)->noxdeath = noxdeath?true:false;
 }
 
 HANDLE_PROPERTY(overheadicon)
@@ -666,6 +673,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(health, Actor, I_IIIIIIII),
 	DEFINE_PROP(height, Actor, I),
 	DEFINE_PROP(icon, Inventory, S),
+	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
 	DEFINE_PROP(maxamount, Inventory, I),
 	DEFINE_PROP_PREFIX(maxhealth, PlayerPawn, Player, I),

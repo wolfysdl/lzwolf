@@ -116,6 +116,7 @@ class ADamage : public AInventory
 	public:
 		const ClassDef	*GetDamageType() const;
 
+		bool			ignorearmor;
 		bool			noxdeath;
 
 	protected:

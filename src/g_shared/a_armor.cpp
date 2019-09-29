@@ -6,6 +6,7 @@
 #include "g_mapinfo.h"
 #include "thinker.h"
 #include "thingdef/thingdef.h"
+#include "wl_agent.h"
 
 
 IMPLEMENT_CLASS (Armor)
@@ -116,8 +117,21 @@ bool ABasicArmor::HandlePickup (AInventory *item, bool &good)
 void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 {
 	int saved;
+	const ClassDef *dmgcls = NULL;
+	ADamage *damageinv = NULL;
+	bool ignoreArmor = false;
+	
+	dmgcls = ClassDef::FindClassTentative(damageType, NATIVE_CLASS(Damage));
+	if (dmgcls)
+	{
+		damageinv = static_cast<ADamage *>(players[0].mo->FindInventory(dmgcls));
+		if (damageinv && damageinv->ignorearmor)
+		{
+			ignoreArmor = true;
+		}
+	}
 
-	if (!DamageTypeDefinition::IgnoreArmor(damageType))
+	if (!ignoreArmor)
 	{
 		int full = MAX(0, MaxFullAbsorb - AbsorbCount);
 		if (damage < full)
@@ -133,14 +147,14 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 			}
 		}
 
-		if (Amount < saved)
+		if (amount < (unsigned)saved)
 		{
-			saved = Amount;
+			saved = amount;
 		}
 		newdamage -= saved;
-		Amount -= saved;
+		amount -= saved;
 		AbsorbCount += saved;
-		if (Amount == 0)
+		if (amount == 0)
 		{
 			// The armor has become useless
 			SavePercent = 0;
@@ -148,7 +162,7 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 			// Now see if the player has some more armor in their inventory
 			// and use it if so. As in Strife, the best armor is used up first.
 			ABasicArmorPickup *best = NULL;
-			AInventory *probe = Owner->Inventory;
+			AInventory *probe = owner->inventory;
 			while (probe != NULL)
 			{
 				if (probe->IsKindOf (RUNTIME_CLASS(ABasicArmorPickup)))
@@ -159,11 +173,11 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 						best = inInv;
 					}
 				}
-				probe = probe->Inventory;
+				probe = probe->inventory;
 			}
 			if (best != NULL)
 			{
-				Owner->UseInventory (best);
+				owner->UseInventory (best);
 			}
 		}
 		damage = newdamage;
