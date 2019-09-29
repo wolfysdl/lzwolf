@@ -228,7 +228,7 @@ public:
 	virtual void Serialize (FArchive &arc);
 	virtual void Tick ();
 	virtual AInventory *CreateCopy (AActor *other);
-	virtual bool HandlePickup (AInventory *item);
+	virtual bool HandlePickup (AInventory *item, bool &good);
 	virtual void AbsorbDamage (int damage, FName damageType, int &newdamage);
 
 	int AbsorbCount;

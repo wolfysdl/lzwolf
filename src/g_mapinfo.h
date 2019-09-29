@@ -260,6 +260,31 @@ public:
 	static ClusterInfo &Find(unsigned int index);
 };
 
+enum ESkillProperty
+{
+	SKILLP_AmmoFactor,
+	SKILLP_DropAmmoFactor,
+	SKILLP_DamageFactor,
+	SKILLP_FastMonsters,
+	SKILLP_Respawn,
+	SKILLP_RespawnLimit,
+	SKILLP_Aggressiveness,
+	SKILLP_DisableCheats,
+	SKILLP_AutoUseHealth,
+	SKILLP_SpawnFilter,
+	SKILLP_EasyBossBrain,
+	SKILLP_ACSReturn,
+	SKILLP_MonsterHealth,
+	SKILLP_FriendlyHealth,
+	SKILLP_NoPain,
+	SKILLP_ArmorFactor,
+	SKILLP_HealthFactor,
+	SKILLP_EasyKey,
+	SKILLP_SlowMonsters,
+	SKILLP_Infight,
+};
+int G_SkillProperty(ESkillProperty prop);
+
 class SkillInfo
 {
 public:

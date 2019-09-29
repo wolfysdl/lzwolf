@@ -1084,6 +1084,93 @@ protected:
 	}
 };
 
+//==========================================================================
+//
+//
+//
+//==========================================================================
+
+int G_SkillProperty(ESkillProperty prop)
+{
+	if (AllSkills.Size() > 0)
+	{
+		switch(prop)
+		{
+		case SKILLP_AmmoFactor:
+			if (dmflags2 & DF2_YES_DOUBLEAMMO)
+			{
+				return AllSkills[gameskill].DoubleAmmoFactor;
+			}
+			return AllSkills[gameskill].AmmoFactor;
+
+		case SKILLP_DropAmmoFactor:
+			return AllSkills[gameskill].DropAmmoFactor;
+
+		case SKILLP_DamageFactor:
+			return AllSkills[gameskill].DamageFactor;
+
+		case SKILLP_FastMonsters:
+			return AllSkills[gameskill].FastMonsters  || (dmflags & DF_FAST_MONSTERS);
+
+		case SKILLP_SlowMonsters:
+			return AllSkills[gameskill].SlowMonsters;
+
+		case SKILLP_Respawn:
+			if (dmflags & DF_MONSTERS_RESPAWN && AllSkills[gameskill].RespawnCounter==0) 
+				return TICRATE * gameinfo.defaultrespawntime;
+			return AllSkills[gameskill].RespawnCounter;
+
+		case SKILLP_RespawnLimit:
+			return AllSkills[gameskill].RespawnLimit;
+
+		case SKILLP_Aggressiveness:
+			return AllSkills[gameskill].Aggressiveness;
+
+		case SKILLP_DisableCheats:
+			return AllSkills[gameskill].DisableCheats;
+
+		case SKILLP_AutoUseHealth:
+			return AllSkills[gameskill].AutoUseHealth;
+
+		case SKILLP_EasyBossBrain:
+			return AllSkills[gameskill].EasyBossBrain;
+
+		case SKILLP_EasyKey:
+			return AllSkills[gameskill].EasyKey;
+
+		case SKILLP_SpawnFilter:
+			return AllSkills[gameskill].SpawnFilter;
+
+		case SKILLP_ACSReturn:
+			return AllSkills[gameskill].ACSReturn;
+		
+		case SKILLP_MonsterHealth:
+			return AllSkills[gameskill].MonsterHealth;
+
+		case SKILLP_FriendlyHealth:
+			return AllSkills[gameskill].FriendlyHealth;
+
+		case SKILLP_NoPain:			
+			return AllSkills[gameskill].NoPain;	
+
+		case SKILLP_ArmorFactor:
+			return AllSkills[gameskill].ArmorFactor;
+
+		case SKILLP_HealthFactor:
+			return AllSkills[gameskill].HealthFactor;
+
+		case SKILLP_Infight:
+			// This property also needs to consider the level flags for the same info.
+			if (level.flags2 & LEVEL2_TOTALINFIGHTING) return 1;
+			if (level.flags2 & LEVEL2_NOINFIGHTING) return -1;	
+			if (AllSkills[gameskill].Infighting == LEVEL2_TOTALINFIGHTING) return 1;
+			if (AllSkills[gameskill].Infighting == LEVEL2_NOINFIGHTING) return -1;
+			return infighting;
+		}
+	}
+	return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 class IntermissionBlockParser : public MapInfoBlockParser

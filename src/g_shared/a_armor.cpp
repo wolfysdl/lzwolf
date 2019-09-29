@@ -62,10 +62,11 @@ AInventory *ABasicArmor::CreateCopy (AActor *other)
 {
 	// BasicArmor that is in use is stored in the inventory as BasicArmor.
 	// BasicArmor that is in reserve is not.
-	ABasicArmor *copy = Spawn<ABasicArmor> (0, 0, 0, NO_REPLACE);
+	const ClassDef *cls = ClassDef::FindClass("ABasicArmor");
+	ABasicArmor *copy = static_cast<ABasicArmor *>(AActor::Spawn(cls, 0, 0, 0, 0));
 	copy->SavePercent = SavePercent != 0 ? SavePercent : FRACUNIT/3;
-	copy->Amount = Amount;
-	copy->MaxAmount = MaxAmount;
+	copy->amount = amount;
+	copy->maxamount = maxamount;
 	copy->icon = icon;
 	copy->BonusCount = BonusCount;
 	copy->ArmorType = ArmorType;
@@ -80,28 +81,28 @@ AInventory *ABasicArmor::CreateCopy (AActor *other)
 //
 //===========================================================================
 
-bool ABasicArmor::HandlePickup (AInventory *item)
+bool ABasicArmor::HandlePickup (AInventory *item, bool &good)
 {
 	if (item->GetClass() == RUNTIME_CLASS(ABasicArmor))
 	{
 		// You shouldn't be picking up BasicArmor anyway.
 		return true;
 	}
-	if (item->IsKindOf(RUNTIME_CLASS(ABasicArmorBonus)) && !(item->ItemFlags & IF_IGNORESKILL))
+	if (item->IsKindOf(RUNTIME_CLASS(ABasicArmorBonus)) && !(item->itemFlags & IF_IGNORESKILL))
 	{
 		ABasicArmorBonus *armor = static_cast<ABasicArmorBonus*>(item);
 
 		armor->SaveAmount = FixedMul(armor->SaveAmount, G_SkillProperty(SKILLP_ArmorFactor));
 	}
-	else if (item->IsKindOf(RUNTIME_CLASS(ABasicArmorPickup)) && !(item->ItemFlags & IF_IGNORESKILL))
+	else if (item->IsKindOf(RUNTIME_CLASS(ABasicArmorPickup)) && !(item->itemFlags & IF_IGNORESKILL))
 	{
 		ABasicArmorPickup *armor = static_cast<ABasicArmorPickup*>(item);
 
 		armor->SaveAmount = FixedMul(armor->SaveAmount, G_SkillProperty(SKILLP_ArmorFactor));
 	}
-	if (Inventory != NULL)
+	if (inventory != NULL)
 	{
-		return Inventory->HandlePickup (item);
+		return inventory->HandlePickup (item, good);
 	}
 	return false;
 }
@@ -214,7 +215,7 @@ AInventory *ABasicArmorPickup::CreateCopy (AActor *other)
 {
 	ABasicArmorPickup *copy = static_cast<ABasicArmorPickup *> (Super::CreateCopy (other));
 
-	if (!(ItemFlags & IF_IGNORESKILL))
+	if (!(itemFlags & IF_IGNORESKILL))
 	{
 		SaveAmount = FixedMul(SaveAmount, G_SkillProperty(SKILLP_ArmorFactor));
 	}
@@ -296,7 +297,7 @@ AInventory *ABasicArmorBonus::CreateCopy (AActor *other)
 {
 	ABasicArmorBonus *copy = static_cast<ABasicArmorBonus *> (Super::CreateCopy (other));
 
-	if (!(ItemFlags & IF_IGNORESKILL))
+	if (!(itemFlags & IF_IGNORESKILL))
 	{
 		SaveAmount = FixedMul(SaveAmount, G_SkillProperty(SKILLP_ArmorFactor));
 	}
