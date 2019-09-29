@@ -59,6 +59,9 @@ public:
 
 	int		TitleTime;
 	FString	BorderFlat;
+	FString ArmorIcon1;
+	FString ArmorIcon2;
+	fixed   Armor2Percent;
 	FString GameColormap;
 	FString	GamePalette;
 	FString	TitleMusic;

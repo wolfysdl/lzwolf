@@ -593,6 +593,19 @@ protected:
 			ParseColorAssignment(gameinfo.AdvisoryColor);
 		else if(key.CompareNoCase("advisorypic") == 0)
 			ParseStringAssignment(gameinfo.AdvisoryPic);
+		else if(nextKey.CompareNoCase("armoricons") == 0)
+		{
+			sc.MustGetToken(TK_StringConst);
+			gameinfo.ArmorIcon1 = sc.String;
+			if (sc.CheckToken(','))
+			{
+				sc.MustGetToken(TK_FloatConst);
+				gameinfo.Armor2Percent = FLOAT2FIXED(sc.Float);
+				sc.MustGetToken(',');
+				sc.MustGetToken(TK_StringConst);
+				gameinfo.ArmorIcon2 = sc.String;
+			}
+		}
 		else if(key.CompareNoCase("border") == 0)
 		{
 			sc.MustGetToken('=');
