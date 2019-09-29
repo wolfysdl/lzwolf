@@ -159,6 +159,7 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 			// The armor has become useless
 			SavePercent = 0;
 			ArmorType = NAME_None; // Not NAME_BasicArmor.
+#ifdef NOTYET
 			// Now see if the player has some more armor in their inventory
 			// and use it if so. As in Strife, the best armor is used up first.
 			ABasicArmorPickup *best = NULL;
@@ -179,6 +180,7 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 			{
 				owner->UseInventory (best);
 			}
+#endif
 		}
 		damage = newdamage;
 	}
@@ -200,9 +202,9 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 			}
 		}
 	}
-	if (Inventory != NULL)
+	if (inventory != NULL)
 	{
-		Inventory->AbsorbDamage (damage, damageType, newdamage);
+		inventory->AbsorbDamage (damage, damageType, newdamage);
 	}
 }
 
