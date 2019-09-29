@@ -252,36 +252,35 @@ AInventory *ABasicArmorPickup::CreateCopy (AActor *other)
 
 bool ABasicArmorPickup::Use (bool pickup)
 {
-	const ClassDef *cls = ClassDef::FindClassTentative("ABasicArmor", NATIVE_CLASS(BasicArmor));
-	ABasicArmor *armor = static_cast<ABasicArmor *>(owner->FindInventory(cls));
+	ABasicArmor *armor = owner->FindInventory<ABasicArmor> ();
 
 	if (armor == NULL)
 	{
 		armor = static_cast<ABasicArmor *>(AActor::Spawn (cls,0,0,0,0));
 		armor->BecomeItem ();
-		Owner->AddInventory (armor);
+		owner->AddInventory (armor);
 	}
 	else
 	{
 		// If you already have more armor than this item gives you, you can't
 		// use it.
-		if (armor->Amount >= SaveAmount + armor->BonusCount)
+		if ((int)armor->amount >= SaveAmount + armor->BonusCount)
 		{
 			return false;
 		}
 		// Don't use it if you're picking it up and already have some.
-		if (pickup && armor->Amount > 0 && MaxAmount > 0)
+		if (pickup && armor->amount > 0 && maxamount > 0)
 		{
 			return false;
 		}
 	}
 	armor->SavePercent = SavePercent;
-	armor->Amount = SaveAmount + armor->BonusCount;
-	armor->MaxAmount = SaveAmount;
+	armor->amount = SaveAmount + armor->BonusCount;
+	armor->maxamount = SaveAmount;
 	armor->icon = icon;
 	armor->MaxAbsorb = MaxAbsorb;
 	armor->MaxFullAbsorb = MaxFullAbsorb;
-	armor->ArmorType = this->GetClass()->TypeName;
+	armor->ArmorType = this->GetClass()->GetName();
 	armor->ActualSaveAmount = SaveAmount;
 	return true;
 }
@@ -335,7 +334,7 @@ AInventory *ABasicArmorBonus::CreateCopy (AActor *other)
 
 bool ABasicArmorBonus::Use (bool pickup)
 {
-	ABasicArmor *armor = Owner->FindInventory<ABasicArmor> ();
+	ABasicArmor *armor = owner->FindInventory<ABasicArmor> ();
 	bool result = false;
 
 	if (armor == NULL)

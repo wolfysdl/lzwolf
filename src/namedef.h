@@ -30,6 +30,7 @@ xx(GenericFreezeDeath)
 xx(Path)
 xx(Hide)
 xx(RadiusWake)
+xx(Held)
 
 // Compatible death names for the decorate parser.
 xx(XDeath)

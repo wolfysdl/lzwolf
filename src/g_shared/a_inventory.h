@@ -47,6 +47,7 @@ class AInventory : public AActor
 	HAS_OBJECT_POINTERS
 
 	public:
+		virtual void	BecomeItem ();
 		virtual void	AttachToOwner(AActor *owner);
 		bool			CallTryPickup(AActor *toucher);
 		virtual void	DetachFromOwner();

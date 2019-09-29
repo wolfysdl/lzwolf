@@ -48,6 +48,19 @@ IMPLEMENT_POINTY_CLASS(Inventory)
 	DECLARE_POINTER(owner)
 END_POINTERS
 
+//===========================================================================
+//
+// AInventory :: BecomeItem
+//
+// Lets this actor know that it's about to be placed in an inventory.
+//
+//===========================================================================
+
+void AInventory::BecomeItem ()
+{
+	SetState (FindState(NAME_Held));
+}
+
 void AInventory::AttachToOwner(AActor *owner)
 {
 	this->owner = owner;

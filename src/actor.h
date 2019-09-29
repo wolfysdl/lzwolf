@@ -120,6 +120,10 @@ class AActor : public Thinker,
 		virtual void	Die();
 		void			EnterZone(const MapZone *zone);
 		AInventory		*FindInventory(const ClassDef *cls);
+		template<class T> T *FindInventory ()
+		{
+			return static_cast<T *> (FindInventory (RUNTIME_CLASS(T)));
+		}
 		const Frame		*FindState(const FName &name) const;
 		static void		FinishSpawningActors();
 		int				GetDamage();
