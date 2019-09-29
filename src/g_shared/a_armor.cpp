@@ -252,11 +252,12 @@ AInventory *ABasicArmorPickup::CreateCopy (AActor *other)
 
 bool ABasicArmorPickup::Use (bool pickup)
 {
-	ABasicArmor *armor = Owner->FindInventory<ABasicArmor> ();
+	const ClassDef *cls = ClassDef::FindClassTentative("ABasicArmor", NATIVE_CLASS(BasicArmor));
+	ABasicArmor *armor = static_cast<ABasicArmor *>(owner->FindInventory(cls));
 
 	if (armor == NULL)
 	{
-		armor = Spawn<ABasicArmor> (0,0,0, NO_REPLACE);
+		armor = static_cast<ABasicArmor *>(AActor::Spawn (cls,0,0,0,0));
 		armor->BecomeItem ();
 		Owner->AddInventory (armor);
 	}
