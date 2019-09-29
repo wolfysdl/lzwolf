@@ -1000,7 +1000,7 @@ static TMap<FName, unsigned int> skillIds;
 
 SkillInfo::SkillInfo() : DamageFactor(FRACUNIT), PlayerDamageFactor(FRACUNIT),
 	SpawnFilter(0), MapFilter(0), FastMonsters(false), QuizHints(false), LivesCount(3),
-	ScoreMultiplier(FRACUNIT)
+	ScoreMultiplier(FRACUNIT), ArmorFactor(FRACUNIT)
 {
 }
 
@@ -1079,6 +1079,8 @@ protected:
             ParseIntAssignment(skill->LivesCount);
         else if (key.CompareNoCase("scoremultiplier") == 0)
             ParseFixedAssignment(skill->ScoreMultiplier);
+        else if (key.CompareNoCase("armorfactor") == 0)
+            ParseFixedAssignment(skill->ArmorFactor);
 		else
 			return false;
 		return true;

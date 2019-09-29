@@ -262,26 +262,25 @@ public:
 
 enum ESkillProperty
 {
-	SKILLP_AmmoFactor,
-	SKILLP_DropAmmoFactor,
+	//SKILLP_AmmoFactor,
+	//SKILLP_DropAmmoFactor,
 	SKILLP_DamageFactor,
 	SKILLP_FastMonsters,
-	SKILLP_Respawn,
-	SKILLP_RespawnLimit,
-	SKILLP_Aggressiveness,
-	SKILLP_DisableCheats,
-	SKILLP_AutoUseHealth,
+	//SKILLP_SlowMonsters,
+	//SKILLP_Respawn,
+	//SKILLP_RespawnLimit,
+	//SKILLP_Aggressiveness,
+	//SKILLP_DisableCheats,
+	//SKILLP_AutoUseHealth,
+	//SKILLP_EasyBossBrain,
+	//SKILLP_EasyKey,
 	SKILLP_SpawnFilter,
-	SKILLP_EasyBossBrain,
-	SKILLP_ACSReturn,
-	SKILLP_MonsterHealth,
-	SKILLP_FriendlyHealth,
-	SKILLP_NoPain,
+	//SKILLP_ACSReturn,
+	//SKILLP_MonsterHealth,
+	//SKILLP_FriendlyHealth,
+	//SKILLP_NoPain,
 	SKILLP_ArmorFactor,
-	SKILLP_HealthFactor,
-	SKILLP_EasyKey,
-	SKILLP_SlowMonsters,
-	SKILLP_Infight,
+	//SKILLP_HealthFactor,
 };
 int G_SkillProperty(ESkillProperty prop);
 
@@ -301,6 +300,7 @@ public:
 	bool QuizHints;
 	int LivesCount;
 	fixed ScoreMultiplier;
+	fixed ArmorFactor;
 
 	static unsigned int GetNumSkills();
 	static unsigned int GetSkillIndex(const SkillInfo &skill);
