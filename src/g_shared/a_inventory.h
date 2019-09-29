@@ -55,6 +55,7 @@ class AInventory : public AActor
 		void			Serialize(FArchive &arc);
 		void			Touch(AActor *toucher);
 		virtual bool	Use();
+		virtual void	AbsorbDamage (int damage, FName damageType, int &newdamage);
 
 		ItemFlags		itemFlags;
 		TObjPtr<AActor>	owner;
@@ -64,6 +65,7 @@ class AInventory : public AActor
 		unsigned int	maxamount;
 		unsigned int	interhubamount;
 		FTextureID		icon;
+		int				DropTime;				// Countdown after dropping
 	protected:
 		virtual AInventory	*CreateCopy(AActor *holder);
 		void				GoAwayAndDie();

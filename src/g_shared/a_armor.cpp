@@ -7,6 +7,7 @@
 #include "thinker.h"
 #include "thingdef/thingdef.h"
 #include "wl_agent.h"
+#include "wl_state.h"
 
 
 IMPLEMENT_CLASS (Armor)
@@ -186,20 +187,14 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 	}
 
 	// Once the armor has absorbed its part of the damage, then apply its damage factor, if any, to the player
-	if ((damage > 0) && (ArmorType != NAME_None)) // BasicArmor is not going to have any damage factor, so skip it.
+	if (damage > 0)
 	{
-		// This code is taken and adapted from APowerProtection::ModifyDamage().
-		// The differences include not using a default value, and of course the way
-		// the damage factor info is obtained.
-		const fixed_t *pdf = NULL;
-		DmgFactors *df = PClass::FindClass(ArmorType)->ActorInfo->DamageFactors;
-		if (df != NULL && df->CountUsed() != 0)
+		const ClassDef *armorcls = ClassDef::FindClassTentative(ArmorType, NATIVE_CLASS(Armor));
+		if (armorcls)
 		{
-			pdf = df->CheckFactor(damageType);
-			if (pdf != NULL)
-			{
-				damage = newdamage = FixedMul(damage, *pdf);
-			}
+			AArmor *armorinv = static_cast<AArmor *>(players[0].mo->FindInventory(armorcls));
+			if (armorinv)
+				damage = newdamage = ApplyDamageResistance (armorinv, damage, dmgcls);
 		}
 	}
 	if (inventory != NULL)

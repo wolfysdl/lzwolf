@@ -351,7 +351,6 @@ class ClassDef
 
 		const size_t	*Pointers;		// object pointers defined by this class *only*
 		const size_t	*FlatPointers;	// object pointers defined by this class and all its superclasses; not initialized by default
-		FActorInfo		*ActorInfo;
 
 		DObject			*defaultInstance;
 		DObject			*(*ConstructNative)(const ClassDef *, void *);

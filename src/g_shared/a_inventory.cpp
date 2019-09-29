@@ -143,6 +143,25 @@ bool AInventory::HandlePickup(AInventory *item, bool &good)
 	return false;
 }
 
+//===========================================================================
+//
+// AInventory :: AbsorbDamage
+//
+// Allows inventory items (primarily armor) to reduce the amount of damage
+// taken. Damage is the amount of damage that would be done without armor,
+// and newdamage is the amount that should be done after the armor absorbs
+// it.
+//
+//===========================================================================
+
+void AInventory::AbsorbDamage (int damage, FName damageType, int &newdamage)
+{
+	if (Inventory != NULL)
+	{
+		Inventory->AbsorbDamage (damage, damageType, newdamage);
+	}
+}
+
 void AInventory::Serialize(FArchive &arc)
 {
 	arc << itemFlags
