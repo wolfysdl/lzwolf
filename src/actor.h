@@ -248,6 +248,19 @@ class AActor : public Thinker,
 		const MapZone	*soundZone;
 };
 
+// This could easily be a bool but then it'd be much harder to find later. ;)
+enum replace_t
+{
+	NO_REPLACE = 0,
+	ALLOW_REPLACE = 1
+};
+
+template<class T>
+inline T *Spawn (fixed x, fixed y, fixed z, replace_t replace)
+{
+	return static_cast<T *>(AActor::Spawn (RUNTIME_CLASS(T), x, y, z, replace));
+}
+
 // Old save compatibility
 // FIXME: Remove for 1.4
 class AActorProxy : public Thinker

@@ -169,9 +169,9 @@ bool AInventory::HandlePickup(AInventory *item, bool &good)
 
 void AInventory::AbsorbDamage (int damage, FName damageType, int &newdamage)
 {
-	if (Inventory != NULL)
+	if (inventory != NULL)
 	{
-		Inventory->AbsorbDamage (damage, damageType, newdamage);
+		inventory->AbsorbDamage (damage, damageType, newdamage);
 	}
 }
 

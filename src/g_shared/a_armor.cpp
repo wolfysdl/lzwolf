@@ -64,8 +64,7 @@ AInventory *ABasicArmor::CreateCopy (AActor *other)
 {
 	// BasicArmor that is in use is stored in the inventory as BasicArmor.
 	// BasicArmor that is in reserve is not.
-	const ClassDef *cls = ClassDef::FindClass("ABasicArmor");
-	ABasicArmor *copy = static_cast<ABasicArmor *>(AActor::Spawn(cls, 0, 0, 0, 0));
+	ABasicArmor *copy = ::Spawn<ABasicArmor>(0, 0, 0, NO_REPLACE);
 	copy->SavePercent = SavePercent != 0 ? SavePercent : FRACUNIT/3;
 	copy->amount = amount;
 	copy->maxamount = maxamount;
@@ -256,7 +255,7 @@ bool ABasicArmorPickup::Use (bool pickup)
 
 	if (armor == NULL)
 	{
-		armor = static_cast<ABasicArmor *>(AActor::Spawn (cls,0,0,0,0));
+		armor = ::Spawn<ABasicArmor> (0,0,0,NO_REPLACE);
 		armor->BecomeItem ();
 		owner->AddInventory (armor);
 	}
@@ -339,11 +338,11 @@ bool ABasicArmorBonus::Use (bool pickup)
 
 	if (armor == NULL)
 	{
-		armor = Spawn<ABasicArmor> (0,0,0, NO_REPLACE);
+		armor = ::Spawn<ABasicArmor> (0,0,0,NO_REPLACE);
 		armor->BecomeItem ();
-		armor->Amount = 0;
-		armor->MaxAmount = MaxSaveAmount;
-		Owner->AddInventory (armor);
+		armor->amount = 0;
+		armor->maxamount = MaxSaveAmount;
+		owner->AddInventory (armor);
 	}
 
 	if (BonusCount > 0 && armor->BonusCount < BonusMax)
@@ -361,23 +360,23 @@ bool ABasicArmorBonus::Use (bool pickup)
 
 	// If you already have more armor than this item can give you, you can't
 	// use it.
-	if (armor->Amount >= MaxSaveAmount + armor->BonusCount)
+	if ((int)armor->amount >= MaxSaveAmount + armor->BonusCount)
 	{
 		return result;
 	}
 
-	if (armor->Amount <= 0)
+	if (armor->amount <= 0)
 	{ // Should never be less than 0, but might as well check anyway
-		armor->Amount = 0;
+		armor->amount = 0;
 		armor->icon = icon;
 		armor->SavePercent = SavePercent;
 		armor->MaxAbsorb = MaxAbsorb;
-		armor->ArmorType = this->GetClass()->TypeName;
+		armor->ArmorType = this->GetClass()->GetName();
 		armor->MaxFullAbsorb = MaxFullAbsorb;
 		armor->ActualSaveAmount = MaxSaveAmount;
 	}
 
-	armor->Amount = MIN(armor->Amount + saveAmount, MaxSaveAmount + armor->BonusCount);
-	armor->MaxAmount = MAX (armor->MaxAmount, MaxSaveAmount);
+	armor->amount = MIN(armor->amount + saveAmount, (unsigned)MaxSaveAmount + armor->BonusCount);
+	armor->maxamount = MAX (armor->maxamount, (unsigned)MaxSaveAmount);
 	return true;
 }
