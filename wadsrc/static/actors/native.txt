@@ -149,8 +149,8 @@ actor BasicArmor : Armor native
 
 actor BasicArmorBonus : Armor native
 {
-	//+inventory.AUTOACTIVATE
-	//+inventory.ALWAYSPICKUP
+	+inventory.AUTOACTIVATE
+	+inventory.ALWAYSPICKUP
 	inventory.maxamount 0
 	armor.savepercent 0.333333
 
@@ -158,7 +158,7 @@ actor BasicArmorBonus : Armor native
 
 actor BasicArmorPickup : Armor native
 {
-	//+inventory.AUTOACTIVATE
+	+inventory.AUTOACTIVATE
 	inventory.maxamount 0
 }
 
