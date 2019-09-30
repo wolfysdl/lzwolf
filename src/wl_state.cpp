@@ -789,7 +789,7 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 {
 	if (ob->player)
 	{
-		ob->player->TakeDamage(damage, attacker);
+		ob->player->TakeDamage(damage, attacker, damagetype);
 		return;
 	}
 

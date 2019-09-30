@@ -74,7 +74,7 @@ extern class player_t
 		void	SetPSprite(const Frame *frame, PSprite layer);
 		void	SetFOV(float newlyDesiredFOV);
 		void	AdjustFOV();
-		void	TakeDamage(int points, AActor *attacker);
+		void	TakeDamage(int points, AActor *attacker, const ClassDef  *damagetype);
 
 		enum State
 		{
