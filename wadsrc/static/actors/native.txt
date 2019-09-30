@@ -137,6 +137,31 @@ actor Ammo : Inventory native
 	inventory.pickupsound "misc/ammo_pkup"
 }
 
+actor Armor : Inventory native
+{
+	inventory.pickupsound "misc/armor_pkup"
+}
+
+actor BasicArmor : Armor native
+{
+	//+inventory.KEEPDEPLETED
+}
+
+actor BasicArmorBonus : Armor native
+{
+	//+inventory.AUTOACTIVATE
+	//+inventory.ALWAYSPICKUP
+	inventory.maxamount 0
+	armor.savepercent 0.333333
+
+}
+
+actor BasicArmorPickup : Armor native
+{
+	//+inventory.AUTOACTIVATE
+	inventory.maxamount 0
+}
+
 actor BackpackItem : Inventory native
 {
 }

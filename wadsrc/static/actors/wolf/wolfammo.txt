@@ -45,7 +45,7 @@ actor ClipBox2 : ClipBox 140
 	}
 }
 
-actor GreenArmor : BasicArmorPickup replaces Clip
+actor GreenArmor : BasicArmorPickup
 {
 	radius 20
 	height 16
@@ -53,9 +53,9 @@ actor GreenArmor : BasicArmorPickup replaces Clip
 	armor.saveamount 100
 	states
 	{
-	Spawn:
-		CLIP A 6
-		CLIP A 7 bright
-		loop
+		Spawn:
+			CLIP A 6
+			CLIP A 7 bright
+			loop
 	}
 }
