@@ -370,16 +370,72 @@ HANDLE_PROPERTY(interhubamount)
 	((AInventory *)defaults)->interhubamount = amt;
 }
 
+HANDLE_PROPERTY(maxabsorb)
+{
+	INT_PARAM(i, 0);
+
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->MaxAbsorb = i;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->MaxAbsorb = i;
+	}
+	else
+	{
+		I_Error("\"Armor.MaxAbsorb\" requires an actor of type \"Armor\"\n");
+	}
+}
+
 HANDLE_PROPERTY(maxamount)
 {
 	INT_PARAM(maxamt, 0);
 	((AInventory *)defaults)->maxamount = maxamt;
 }
 
+HANDLE_PROPERTY(maxbonus)
+{
+	INT_PARAM(amt, 0);
+	((ABasicArmorBonus *)defaults)->BonusCount = amt;
+}
+
+HANDLE_PROPERTY(maxbonusmax)
+{
+	INT_PARAM(amt, 0);
+	((ABasicArmorBonus *)defaults)->BonusMax = amt;
+}
+
+HANDLE_PROPERTY(maxfullabsorb)
+{
+	INT_PARAM(i, 0);
+
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->MaxFullAbsorb = i;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->MaxFullAbsorb = i;
+	}
+	else
+	{
+		I_Error("\"Armor.MaxFullAbsorb\" requires an actor of type \"Armor\"\n");
+	}
+}
+
 HANDLE_PROPERTY(maxhealth)
 {
 	INT_PARAM(maxhealth, 0);
 	((APlayerPawn *)defaults)->maxhealth = maxhealth;
+}
+
+HANDLE_PROPERTY(maxsaveamount)
+{
+	INT_PARAM(amt, 0);
+	((ABasicArmorBonus *)defaults)->MaxSaveAmount = amt;
 }
 
 HANDLE_PROPERTY(meleerange)
@@ -468,6 +524,45 @@ HANDLE_PROPERTY(radius)
 {
 	INT_PARAM(radius, 0);
 	defaults->radius = radius*FRACUNIT/64;
+}
+
+HANDLE_PROPERTY(saveamount)
+{
+	INT_PARAM(amt, 0);
+
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->SaveAmount=amt;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->SaveAmount=amt;
+	}
+	else
+	{
+		I_Error("\"Armor.SaveAmount\" requires an actor of type \"Armor\"");
+	}
+}
+
+HANDLE_PROPERTY(savepercent)
+{
+	FIXED_PARAM(i, 0);
+
+	i = clamp(i, 0, 100*FRACUNIT)/100;
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->SavePercent = i;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->SavePercent = i;
+	}
+	else
+	{
+		I_Error("\"Armor.SavePercent\" requires an actor of type \"Armor\"\n");
+	}
 }
 
 HANDLE_PROPERTY(scale)
@@ -675,8 +770,13 @@ extern const PropDef properties[] =
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
+	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),
+	DEFINE_PROP(maxbonus, BasicArmorBonus, I),
+	DEFINE_PROP(maxbonusmax, BasicArmorBonus, I),
+	DEFINE_PROP(maxfullabsorb, Armor, I),
 	DEFINE_PROP_PREFIX(maxhealth, PlayerPawn, Player, I),
+	DEFINE_PROP(maxsaveamount, BasicArmorBonus, I),
 	DEFINE_PROP(meleerange, Actor, I),
 	DEFINE_PROP(minmissilechance, Actor, I),
 	DEFINE_PROP(missilefrequency, Actor, F),
@@ -691,6 +791,8 @@ extern const PropDef properties[] =
 	DEFINE_PROP(PROJECTILE, Actor,),
 	DEFINE_PROP(projectilepassheight, Actor, F),
 	DEFINE_PROP(radius, Actor, I),
+	DEFINE_PROP(saveamount, Armor, I),
+	DEFINE_PROP(savepercent, Armor, F),
 	DEFINE_PROP(scale, Actor, F),
 	DEFINE_PROP(secretdeathsound, Actor, S),
 	DEFINE_PROP(seesound, Actor, S),
