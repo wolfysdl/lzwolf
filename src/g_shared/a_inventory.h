@@ -251,7 +251,7 @@ class ABasicArmorPickup : public AArmor
 public:
 	virtual void Serialize (FArchive &arc);
 	virtual AInventory *CreateCopy (AActor *other);
-	virtual bool Use (bool pickup);
+	virtual bool Use ();
 
 	fixed_t SavePercent;
 	int MaxAbsorb;
@@ -266,7 +266,7 @@ class ABasicArmorBonus : public AArmor
 public:
 	virtual void Serialize (FArchive &arc);
 	virtual AInventory *CreateCopy (AActor *other);
-	virtual bool Use (bool pickup);
+	virtual bool Use ();
 
 	fixed_t SavePercent;	// The default, for when you don't already have armor
 	int MaxSaveAmount;

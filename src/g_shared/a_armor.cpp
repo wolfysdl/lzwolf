@@ -249,7 +249,7 @@ AInventory *ABasicArmorPickup::CreateCopy (AActor *other)
 //
 //===========================================================================
 
-bool ABasicArmorPickup::Use (bool pickup)
+bool ABasicArmorPickup::Use ()
 {
 	ABasicArmor *armor = owner->FindInventory<ABasicArmor> ();
 
@@ -268,7 +268,7 @@ bool ABasicArmorPickup::Use (bool pickup)
 			return false;
 		}
 		// Don't use it if you're picking it up and already have some.
-		if (pickup && armor->amount > 0 && maxamount > 0)
+		if (armor->amount > 0 && maxamount > 0)
 		{
 			return false;
 		}
@@ -331,7 +331,7 @@ AInventory *ABasicArmorBonus::CreateCopy (AActor *other)
 //
 //===========================================================================
 
-bool ABasicArmorBonus::Use (bool pickup)
+bool ABasicArmorBonus::Use ()
 {
 	ABasicArmor *armor = owner->FindInventory<ABasicArmor> ();
 	bool result = false;
