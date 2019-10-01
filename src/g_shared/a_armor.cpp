@@ -153,6 +153,7 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 		}
 		newdamage -= saved;
 		amount -= saved;
+		printf("%d\n", amount);
 		AbsorbCount += saved;
 		if (amount == 0)
 		{
@@ -256,7 +257,7 @@ bool ABasicArmorPickup::Use ()
 	if (armor == NULL)
 	{
 		armor = ::Spawn<ABasicArmor> (0,0,0,NO_REPLACE);
-		armor->BecomeItem ();
+		//armor->BecomeItem ();
 		owner->AddInventory (armor);
 	}
 	else

@@ -722,7 +722,7 @@ things
 	{46,  Basket,            0, 0, 0}
 	{47,  Food,              0, 0, 0}
 	{48,  Medikit,           0, 0, 0}
-	{49,  GreenArmor,        0, 0, 0}
+	{49,  Clip,              0, 0, 0}
 	{50,  MachineGun,        0, 0, 0}
 	{51,  GatlingGunUpgrade, 0, 0, 0}
 	{52,  Cross,             0, 0, 0}
@@ -755,7 +755,7 @@ things
 	{112, Guard,             4, PATHING|HOLOWALL, 1}
 	{116, Officer,           4, HOLOWALL, 1}
 	{120, Officer,           4, PATHING|HOLOWALL, 1}
-	{124, DeadGuard,         0, HOLOWALL, 0}
+	{124, GreenArmor,        0, HOLOWALL, 0}
 	{125, Trans,             0, HOLOWALL, 0}
 	{126, WolfensteinSS,     4, HOLOWALL, 1}
 	{130, WolfensteinSS,     4, PATHING|HOLOWALL, 1}

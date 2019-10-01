@@ -208,26 +208,22 @@ namespace ActorSpawnID
 
 void AActor::AddInventory(AInventory *item)
 {
-	item->AttachToOwner(this);
-
-	if(inventory == NULL)
-		inventory = item;
-	else
+	// Check if it's already attached to an actor
+	if (item->owner != NULL)
 	{
-		AInventory *next = inventory;
-		do
-		{
-			if(next->inventory == NULL)
-			{
-				next->inventory = item;
+		// Is it attached to us?
+		if (item->owner == this)
+			return;
 
-				// Prevent the GC from cleaning this item
-				GC::WriteBarrier(item);
-				break;
-			}
-		}
-		while((next = next->inventory));
+		// No, then remove it from the other actor first
+		item->owner->RemoveInventory (item);
 	}
+
+	item->owner = this;
+	item->inventory = inventory;
+	inventory = item;
+
+	GC::WriteBarrier(item);
 }
 
 void AActor::ClearCounters()
@@ -705,21 +701,23 @@ void AActor::RemoveFromWorld()
 
 void AActor::RemoveInventory(AInventory *item)
 {
-	if(inventory == NULL)
-		return;
+	AInventory *inv, **invp;
 
-	AInventory **next = &inventory;
-	do
+	if (item != NULL && item->owner != NULL)	// can happen if the owner was destroyed by some action from an item's use state.
 	{
-		if(*next == item)
+		invp = &item->owner->inventory;
+		for (inv = *invp; inv != NULL; invp = &inv->inventory, inv = *invp)
 		{
-			*next = (*next)->inventory;
-			break;
+			if (inv == item)
+			{
+				*invp = item->inventory;
+				item->DetachFromOwner();
+				item->owner = NULL;
+				item->inventory = NULL;
+				break;
+			}
 		}
 	}
-	while(*next && (next = &(*next)->inventory));
-
-	item->DetachFromOwner();
 }
 
 /* When we spawn an actor we add them to this list. After the tic has finished

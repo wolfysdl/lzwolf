@@ -318,16 +318,16 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 		points = 1;
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
+	if (points > 0 && mo->inventory)
+	{
+		int newdam = points;
+		mo->inventory->AbsorbDamage(points,
+			damagetype ? damagetype->GetName() : FName(), newdam);
+		points = newdam;
+	}
+
 	if (!godmode)
 	{
-		if (points > 0 && mo->inventory)
-		{
-			int newdam = points;
-			mo->inventory->AbsorbDamage(points,
-				damagetype ? damagetype->GetName() : FName(), newdam);
-			points = newdam;
-		}
-
 		mo->health = health -= points;
 	}
 
