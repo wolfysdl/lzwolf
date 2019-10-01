@@ -153,7 +153,6 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 		}
 		newdamage -= saved;
 		amount -= saved;
-		printf("%d\n", amount);
 		AbsorbCount += saved;
 		if (amount == 0)
 		{
