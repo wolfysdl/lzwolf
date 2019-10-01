@@ -186,17 +186,6 @@ void ABasicArmor::AbsorbDamage (int damage, FName damageType, int &newdamage)
 		damage = newdamage;
 	}
 
-	// Once the armor has absorbed its part of the damage, then apply its damage factor, if any, to the player
-	if (damage > 0)
-	{
-		const ClassDef *armorcls = ClassDef::FindClassTentative(ArmorType, NATIVE_CLASS(Armor));
-		if (armorcls)
-		{
-			AArmor *armorinv = static_cast<AArmor *>(players[0].mo->FindInventory(armorcls));
-			if (armorinv)
-				damage = newdamage = ApplyDamageResistance (armorinv, damage, dmgcls);
-		}
-	}
 	if (inventory != NULL)
 	{
 		inventory->AbsorbDamage (damage, damageType, newdamage);
