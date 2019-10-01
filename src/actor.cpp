@@ -219,7 +219,7 @@ void AActor::AddInventory(AInventory *item)
 		item->owner->RemoveInventory (item);
 	}
 
-	item->owner = this;
+	item->AttachToOwner(this);
 	item->inventory = inventory;
 	inventory = item;
 
