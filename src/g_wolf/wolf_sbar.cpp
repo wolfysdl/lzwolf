@@ -37,22 +37,23 @@ struct LatchConfig
 };
 static struct StatusBarConfig_t
 {
-	LatchConfig Floor, Score, Lives, Health, Ammo;
+	LatchConfig Floor, Score, Lives, Health, Ammo, ArmorPoints;
 	LatchConfig Items;
 
 	// The following don't use the digits
 	LatchConfig Mugshot, Keys, Weapon, Armor;
 } StatusBarConfig = {
-	{1, 2, 16, 16},
-	{1, 6, 48, 16},
-	{1, 1, 112, 16},
-	{1, 3, 168, 16},
-	{1, 3, 208, 16},
-	{0, 2, 280, 16},
-	{1, 0, 136, 4},
-	{1, 0, 240, 4},
-	{1, 0, 256, 8},
-	{1, 0, 256, 8}
+	{1, 2, 16, 16},      // Floor
+	{1, 6, 48, 16},      // Score
+	{1, 1, 112, 16},     // Lives
+	{1, 3, 168, 16},     // Health
+	{1, 3, 208, 16},     // Ammo
+	{1, 3, 272, 16},     // ArmorPoints
+	{0, 2, 280, 16},     // Items
+	{1, 0, 136, 4},      // Mugshot
+	{1, 0, 240, 4},      // Keys
+	{1, 0, 256, 8},      // Weapon
+	{1, 0, 256, 8}       // Armor
 };
 
 class WolfStatusBar : public DBaseStatusBar
@@ -108,7 +109,7 @@ private:
 	static void StatusDrawFace(FTexture *pic);
 	static void StatusDrawPic(unsigned x, unsigned y, const char* pic);
 
-	FTextureID GetArmorIcon (void);
+	FTextureID GetArmorIcon (int &points);
 
 	void DrawAmmo();
 	void DrawFace();
@@ -120,6 +121,7 @@ private:
 	void DrawScore();
 	void DrawWeapon();
 	void DrawArmor();
+	void DrawArmorPoints();
 	void SetupStatusbar();
 
 	int facecount;
@@ -426,7 +428,7 @@ void WolfStatusBar::DrawScore (void)
 ==================
 */
 
-FTextureID WolfStatusBar::GetArmorIcon (void)
+FTextureID WolfStatusBar::GetArmorIcon (int &points)
 {
 	int ap = 0;
 	FTextureID icon = TexMan.GetTexture(NULL, FTexture::TEX_Null);
@@ -439,6 +441,7 @@ FTextureID WolfStatusBar::GetArmorIcon (void)
 		{
 			ap += barmor->amount;
 			icon = barmor->icon;
+			points = ap;
 		}
 	}
 
@@ -459,8 +462,7 @@ void WolfStatusBar::DrawWeapon (void)
 
 	if((viewsize == 21 && ingame) || !StatusBarConfig.Weapon.Enabled ||
 		players[ConsolePlayer].ReadyWeapon == NULL ||
-		players[ConsolePlayer].ReadyWeapon->icon.isNull() ||
-		(StatusBarConfig.Armor.Enabled && !(armorIcon = GetArmorIcon()).isNull())
+		players[ConsolePlayer].ReadyWeapon->icon.isNull()
 	)
 		return;
 
@@ -477,14 +479,36 @@ void WolfStatusBar::DrawWeapon (void)
 
 void WolfStatusBar::DrawArmor (void)
 {
+	int armorPoints = 0;
 	FTextureID armorIcon;
 
 	if((viewsize == 21 && ingame) || !StatusBarConfig.Armor.Enabled ||
-		(armorIcon = GetArmorIcon()).isNull()
+		(armorIcon = GetArmorIcon(armorPoints)).isNull()
 	)
 		return;
 
 	VWB_DrawGraphic(TexMan(armorIcon), StatusBarConfig.Armor.X, 200-(STATUSLINES-StatusBarConfig.Armor.Y));
+}
+
+/*
+==================
+=
+= DrawArmorPoints
+=
+==================
+*/
+
+void WolfStatusBar::DrawArmorPoints (void)
+{
+	int armorPoints = 0;
+	FTextureID armorIcon;
+
+	if((viewsize == 21 && ingame) || !StatusBarConfig.Armor.Enabled ||
+		(armorIcon = GetArmorIcon(armorPoints)).isNull()
+	)
+		return;
+
+	LatchNumber (StatusBarConfig.ArmorPoints.X,StatusBarConfig.ArmorPoints.Y,StatusBarConfig.ArmorPoints.Digits,armorPoints,mac);
 }
 
 /*
@@ -586,6 +610,7 @@ void WolfStatusBar::DrawStatusBar()
 	DrawKeys ();
 	DrawWeapon ();
 	DrawArmor ();
+	DrawArmorPoints ();
 	DrawScore ();
 	DrawItems ();
 
@@ -667,6 +692,11 @@ void WolfStatusBar::SetupStatusbar()
 			{
 				extrakey = key.Mid(5);
 				var = &StatusBarConfig.Armor;
+			}
+			else if(key.IndexOf("armorpoints") == 0)
+			{
+				extrakey = key.Mid(11);
+				var = &StatusBarConfig.ArmorPoints;
 			}
 			else
 				sc.ScriptMessage(Scanner::ERROR, "Unknown key '%s'.\n", key.GetChars());
