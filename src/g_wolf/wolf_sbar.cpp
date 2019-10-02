@@ -431,12 +431,15 @@ FTextureID WolfStatusBar::GetArmorIcon (void)
 	int ap = 0;
 	FTextureID icon = TexMan.GetTexture(NULL, FTexture::TEX_Null);
 
-	ABasicArmor *barmor = players[ConsolePlayer].mo->FindInventory<ABasicArmor>();
-
-	if (barmor && barmor->amount > 0)
+	if(players[ConsolePlayer].mo)
 	{
-		ap += barmor->amount;
-		icon = barmor->icon;
+		ABasicArmor *barmor = players[ConsolePlayer].mo->FindInventory<ABasicArmor>();
+
+		if (barmor && barmor->amount > 0)
+		{
+			ap += barmor->amount;
+			icon = barmor->icon;
+		}
 	}
 
 	return icon;

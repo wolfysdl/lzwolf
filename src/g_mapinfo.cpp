@@ -596,6 +596,7 @@ protected:
 			ParseStringAssignment(gameinfo.AdvisoryPic);
 		else if(key.CompareNoCase("armoricons") == 0)
 		{
+			sc.MustGetToken('=');
 			sc.MustGetToken(TK_StringConst);
 			gameinfo.ArmorIcon1 = sc->str;
 			if (sc.CheckToken(','))

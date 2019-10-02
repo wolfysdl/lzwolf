@@ -755,7 +755,7 @@ things
 	{112, Guard,             4, PATHING|HOLOWALL, 1}
 	{116, Officer,           4, HOLOWALL, 1}
 	{120, Officer,           4, PATHING|HOLOWALL, 1}
-	{124, GreenArmor,        0, HOLOWALL, 0}
+	{124, DeadGuard,         0, HOLOWALL, 0}
 	{125, Trans,             0, HOLOWALL, 0}
 	{126, WolfensteinSS,     4, HOLOWALL, 1}
 	{130, WolfensteinSS,     4, PATHING|HOLOWALL, 1}
