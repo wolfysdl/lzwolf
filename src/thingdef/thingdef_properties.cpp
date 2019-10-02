@@ -776,7 +776,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(maxbonusmax, BasicArmorBonus, I),
 	DEFINE_PROP(maxfullabsorb, Armor, I),
 	DEFINE_PROP_PREFIX(maxhealth, PlayerPawn, Player, I),
-	DEFINE_PROP(maxsaveamount, BasicArmorBonus, I),
+	DEFINE_PROP_PREFIX(maxsaveamount, BasicArmorBonus, Armor, I),
 	DEFINE_PROP(meleerange, Actor, I),
 	DEFINE_PROP(minmissilechance, Actor, I),
 	DEFINE_PROP(missilefrequency, Actor, F),
