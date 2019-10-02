@@ -48,6 +48,19 @@ IMPLEMENT_POINTY_CLASS(Inventory)
 	DECLARE_POINTER(owner)
 END_POINTERS
 
+//===========================================================================
+//
+// AInventory :: BecomeItem
+//
+// Lets this actor know that it's about to be placed in an inventory.
+//
+//===========================================================================
+
+void AInventory::BecomeItem ()
+{
+	SetState (FindState(NAME_Held));
+}
+
 void AInventory::AttachToOwner(AActor *owner)
 {
 	this->owner = owner;
@@ -141,6 +154,25 @@ bool AInventory::HandlePickup(AInventory *item, bool &good)
 	else if(inventory)
 		return inventory->HandlePickup(item, good);
 	return false;
+}
+
+//===========================================================================
+//
+// AInventory :: AbsorbDamage
+//
+// Allows inventory items (primarily armor) to reduce the amount of damage
+// taken. Damage is the amount of damage that would be done without armor,
+// and newdamage is the amount that should be done after the armor absorbs
+// it.
+//
+//===========================================================================
+
+void AInventory::AbsorbDamage (int damage, FName damageType, int &newdamage)
+{
+	if (inventory != NULL)
+	{
+		inventory->AbsorbDamage (damage, damageType, newdamage);
+	}
 }
 
 void AInventory::Serialize(FArchive &arc)

@@ -47,6 +47,7 @@ class AInventory : public AActor
 	HAS_OBJECT_POINTERS
 
 	public:
+		virtual void	BecomeItem ();
 		virtual void	AttachToOwner(AActor *owner);
 		bool			CallTryPickup(AActor *toucher);
 		virtual void	DetachFromOwner();
@@ -55,6 +56,7 @@ class AInventory : public AActor
 		void			Serialize(FArchive &arc);
 		void			Touch(AActor *toucher);
 		virtual bool	Use();
+		virtual void	AbsorbDamage (int damage, FName damageType, int &newdamage);
 
 		ItemFlags		itemFlags;
 		TObjPtr<AActor>	owner;
@@ -64,6 +66,7 @@ class AInventory : public AActor
 		unsigned int	maxamount;
 		unsigned int	interhubamount;
 		FTextureID		icon;
+		int				DropTime;				// Countdown after dropping
 	protected:
 		virtual AInventory	*CreateCopy(AActor *holder);
 		void				GoAwayAndDie();
@@ -116,6 +119,7 @@ class ADamage : public AInventory
 	public:
 		const ClassDef	*GetDamageType() const;
 
+		bool			ignorearmor;
 		bool			noxdeath;
 
 	protected:
@@ -210,6 +214,67 @@ class AWeapon : public AInventory
 
 	protected:
 		bool	UseForAmmo(AWeapon *owned);
+};
+
+// Armor absorbs some damage for the player.
+class AArmor : public AInventory
+{
+	DECLARE_CLASS (AArmor, AInventory)
+};
+
+// Basic armor absorbs a specific percent of the damage. You should
+// never pickup a BasicArmor. Instead, you pickup a BasicArmorPickup
+// or BasicArmorBonus and those gives you BasicArmor when it activates.
+class ABasicArmor : public AArmor
+{
+	DECLARE_CLASS (ABasicArmor, AArmor)
+public:
+	virtual void Serialize (FArchive &arc);
+	virtual void Tick ();
+	virtual AInventory *CreateCopy (AActor *other);
+	virtual bool HandlePickup (AInventory *item, bool &good);
+	virtual void AbsorbDamage (int damage, FName damageType, int &newdamage);
+
+	int AbsorbCount;
+	fixed_t SavePercent;
+	int MaxAbsorb;
+	int MaxFullAbsorb;
+	int BonusCount;
+	FNameNoInit ArmorType;
+	int ActualSaveAmount;
+};
+
+// BasicArmorPickup replaces the armor you have.
+class ABasicArmorPickup : public AArmor
+{
+	DECLARE_CLASS (ABasicArmorPickup, AArmor)
+public:
+	virtual void Serialize (FArchive &arc);
+	virtual AInventory *CreateCopy (AActor *other);
+	virtual bool Use ();
+
+	fixed_t SavePercent;
+	int MaxAbsorb;
+	int MaxFullAbsorb;
+	int SaveAmount;
+};
+
+// BasicArmorBonus adds to the armor you have.
+class ABasicArmorBonus : public AArmor
+{
+	DECLARE_CLASS (ABasicArmorBonus, AArmor)
+public:
+	virtual void Serialize (FArchive &arc);
+	virtual AInventory *CreateCopy (AActor *other);
+	virtual bool Use ();
+
+	fixed_t SavePercent;	// The default, for when you don't already have armor
+	int MaxSaveAmount;
+	int MaxAbsorb;
+	int MaxFullAbsorb;
+	int SaveAmount;
+	int BonusCount;
+	int BonusMax;
 };
 
 #endif

@@ -59,6 +59,9 @@ public:
 
 	int		TitleTime;
 	FString	BorderFlat;
+	FString ArmorIcon1;
+	FString ArmorIcon2;
+	fixed   Armor2Percent;
 	FString GameColormap;
 	FString	GamePalette;
 	FString	TitleMusic;
@@ -257,6 +260,30 @@ public:
 	static ClusterInfo &Find(unsigned int index);
 };
 
+enum ESkillProperty
+{
+	//SKILLP_AmmoFactor,
+	//SKILLP_DropAmmoFactor,
+	SKILLP_DamageFactor,
+	SKILLP_FastMonsters,
+	//SKILLP_SlowMonsters,
+	//SKILLP_Respawn,
+	//SKILLP_RespawnLimit,
+	//SKILLP_Aggressiveness,
+	//SKILLP_DisableCheats,
+	//SKILLP_AutoUseHealth,
+	//SKILLP_EasyBossBrain,
+	//SKILLP_EasyKey,
+	SKILLP_SpawnFilter,
+	//SKILLP_ACSReturn,
+	//SKILLP_MonsterHealth,
+	//SKILLP_FriendlyHealth,
+	//SKILLP_NoPain,
+	SKILLP_ArmorFactor,
+	//SKILLP_HealthFactor,
+};
+int G_SkillProperty(ESkillProperty prop);
+
 class SkillInfo
 {
 public:
@@ -273,6 +300,7 @@ public:
 	bool QuizHints;
 	int LivesCount;
 	fixed ScoreMultiplier;
+	fixed ArmorFactor;
 
 	static unsigned int GetNumSkills();
 	static unsigned int GetSkillIndex(const SkillInfo &skill);

@@ -46,6 +46,7 @@
 #include "g_shared/a_inventory.h"
 #include "g_shared/a_playerpawn.h"
 #include "thingdef/thingdef.h"
+#include "wl_game.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // MapInfoBlockParser
@@ -593,6 +594,20 @@ protected:
 			ParseColorAssignment(gameinfo.AdvisoryColor);
 		else if(key.CompareNoCase("advisorypic") == 0)
 			ParseStringAssignment(gameinfo.AdvisoryPic);
+		else if(key.CompareNoCase("armoricons") == 0)
+		{
+			sc.MustGetToken('=');
+			sc.MustGetToken(TK_StringConst);
+			gameinfo.ArmorIcon1 = sc->str;
+			if (sc.CheckToken(','))
+			{
+				sc.MustGetToken(TK_FloatConst);
+				gameinfo.Armor2Percent = FLOAT2FIXED(sc->decimal);
+				sc.MustGetToken(',');
+				sc.MustGetToken(TK_StringConst);
+				gameinfo.ArmorIcon2 = sc->str;
+			}
+		}
 		else if(key.CompareNoCase("border") == 0)
 		{
 			sc.MustGetToken('=');
@@ -986,7 +1001,7 @@ static TMap<FName, unsigned int> skillIds;
 
 SkillInfo::SkillInfo() : DamageFactor(FRACUNIT), PlayerDamageFactor(FRACUNIT),
 	SpawnFilter(0), MapFilter(0), FastMonsters(false), QuizHints(false), LivesCount(3),
-	ScoreMultiplier(FRACUNIT)
+	ScoreMultiplier(FRACUNIT), ArmorFactor(FRACUNIT)
 {
 }
 
@@ -1065,11 +1080,89 @@ protected:
             ParseIntAssignment(skill->LivesCount);
         else if (key.CompareNoCase("scoremultiplier") == 0)
             ParseFixedAssignment(skill->ScoreMultiplier);
+        else if (key.CompareNoCase("armorfactor") == 0)
+            ParseFixedAssignment(skill->ArmorFactor);
 		else
 			return false;
 		return true;
 	}
 };
+
+//==========================================================================
+//
+//
+//
+//==========================================================================
+
+int G_SkillProperty(ESkillProperty prop)
+{
+	short gameskill;
+	gameskill = SkillInfo::GetSkillIndex(*gamestate.difficulty);
+
+	if (skills.Size() > 0)
+	{
+		switch(prop)
+		{
+		//case SKILLP_AmmoFactor:
+		//	return skills[gameskill].AmmoFactor;
+
+		//case SKILLP_DropAmmoFactor:
+		//	return skills[gameskill].DropAmmoFactor;
+
+		case SKILLP_DamageFactor:
+			return skills[gameskill].DamageFactor;
+
+		case SKILLP_FastMonsters:
+			return skills[gameskill].FastMonsters;
+
+		//case SKILLP_SlowMonsters:
+		//	return skills[gameskill].SlowMonsters;
+
+		//case SKILLP_Respawn:
+		//	return skills[gameskill].RespawnCounter;
+
+		//case SKILLP_RespawnLimit:
+		//	return skills[gameskill].RespawnLimit;
+
+		//case SKILLP_Aggressiveness:
+		//	return skills[gameskill].Aggressiveness;
+
+		//case SKILLP_DisableCheats:
+		//	return skills[gameskill].DisableCheats;
+
+		//case SKILLP_AutoUseHealth:
+		//	return skills[gameskill].AutoUseHealth;
+
+		//case SKILLP_EasyBossBrain:
+		//	return skills[gameskill].EasyBossBrain;
+
+		//case SKILLP_EasyKey:
+		//	return skills[gameskill].EasyKey;
+
+		case SKILLP_SpawnFilter:
+			return skills[gameskill].SpawnFilter;
+
+		//case SKILLP_ACSReturn:
+		//	return skills[gameskill].ACSReturn;
+		
+		//case SKILLP_MonsterHealth:
+		//	return skills[gameskill].MonsterHealth;
+
+		//case SKILLP_FriendlyHealth:
+		//	return skills[gameskill].FriendlyHealth;
+
+		//case SKILLP_NoPain:			
+		//	return skills[gameskill].NoPain;	
+
+		case SKILLP_ArmorFactor:
+			return skills[gameskill].ArmorFactor;
+
+		//case SKILLP_HealthFactor:
+		//	return skills[gameskill].HealthFactor;
+		}
+	}
+	return 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

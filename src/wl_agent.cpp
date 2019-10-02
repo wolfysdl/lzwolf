@@ -305,7 +305,7 @@ void player_t::GivePoints (int32_t points)
 */
 
 static FRandom pr_damageplayer("PlayerTakeDamge");
-void player_t::TakeDamage (int points, AActor *attacker)
+void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damagetype)
 {
 	LastAttacker = attacker;
 
@@ -318,8 +318,18 @@ void player_t::TakeDamage (int points, AActor *attacker)
 		points = 1;
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
+	if (points > 0 && mo->inventory)
+	{
+		int newdam = points;
+		mo->inventory->AbsorbDamage(points,
+			damagetype ? damagetype->GetName() : FName(), newdam);
+		points = newdam;
+	}
+
 	if (!godmode)
+	{
 		mo->health = health -= points;
+	}
 
 	if (health<=0)
 	{

@@ -120,6 +120,10 @@ class AActor : public Thinker,
 		virtual void	Die();
 		void			EnterZone(const MapZone *zone);
 		AInventory		*FindInventory(const ClassDef *cls);
+		template<class T> T *FindInventory ()
+		{
+			return static_cast<T *> (FindInventory (RUNTIME_CLASS(T)));
+		}
 		const Frame		*FindState(const FName &name) const;
 		static void		FinishSpawningActors();
 		int				GetDamage();
@@ -243,6 +247,19 @@ class AActor : public Thinker,
 
 		const MapZone	*soundZone;
 };
+
+// This could easily be a bool but then it'd be much harder to find later. ;)
+enum replace_t
+{
+	NO_REPLACE = 0,
+	ALLOW_REPLACE = 1
+};
+
+template<class T>
+inline T *Spawn (fixed x, fixed y, fixed z, replace_t replace)
+{
+	return static_cast<T *>(AActor::Spawn (RUNTIME_CLASS(T), x, y, z, replace));
+}
 
 // Old save compatibility
 // FIXME: Remove for 1.4

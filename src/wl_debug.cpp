@@ -275,7 +275,7 @@ int DebugKeys (void)
 	if (Keyboard[sc_H])             // H = hurt self
 	{
 		IN_ClearKeysDown ();
-		players[0].TakeDamage (16,NULL);
+		players[0].TakeDamage (16,NULL,NULL);
 	}
 	else if (Keyboard[sc_I])        // I = item cheat
 	{
