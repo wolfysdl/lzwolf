@@ -1188,6 +1188,7 @@ void R_RenderView()
 {
 	CalcViewVariables();
 
+nextplane:
 //
 // follow the walls from there to the right, drawing as we go
 //
@@ -1220,12 +1221,8 @@ void R_RenderView()
 		DrawSnow(vbuf, vbufPitch);
 #endif
 
-	viewplane = viewplane->next;
-	if (viewplane != NULL)
-	{
-		R_RenderView ();
-		return;
-	}
+	if ((viewplane = viewplane->next) != NULL)
+		goto nextplane;
 	viewplane = &singleviewplane;
 
 	DrawPlayerWeapon ();    // draw player's hands
