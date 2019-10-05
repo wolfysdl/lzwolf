@@ -94,6 +94,14 @@ fixed   viewsin,viewcos;
 int viewshift = 0;
 fixed viewz = 32;
 
+struct viewplanenode
+{
+	unsigned int    num; // plane number
+	viewplanenode  *next;
+};
+viewplanenode singleviewplane = { 0, NULL };
+viewplanenode *viewplane = &singleviewplane;
+
 fixed gLevelVisibility = VISIBILITY_DEFAULT;
 fixed gLevelMaxLightVis = MAXLIGHTVIS_DEFAULT;
 int gLevelLight = LIGHTLEVEL_DEFAULT;
@@ -1187,10 +1195,10 @@ void R_RenderView()
 
 	WallRefresh ();
 
-	if (levelInfo->ParallaxSky.Size() > 0)
+	if (viewplane->next == NULL && levelInfo->ParallaxSky.Size() > 0)
 		DrawParallax(vbuf, vbufPitch);
 #if defined(USE_FEATUREFLAGS) && defined(USE_CLOUDSKY)
-	if(GetFeatureFlags() & FF_CLOUDSKY)
+	if(viewplane->next == NULL && (GetFeatureFlags() & FF_CLOUDSKY))
 		DrawClouds(vbuf, vbufPitch, min_wallheight);
 #endif
 	DrawFloorAndCeiling(vbuf, vbufPitch, min_wallheight);
@@ -1201,13 +1209,20 @@ void R_RenderView()
 	DrawScaleds();                  // draw scaled stuff
 
 #if defined(USE_FEATUREFLAGS) && defined(USE_RAIN)
-	if(GetFeatureFlags() & FF_RAIN)
+	if(viewplane->next == NULL && (GetFeatureFlags() & FF_RAIN))
 		DrawRain(vbuf, vbufPitch);
 #endif
 #if defined(USE_FEATUREFLAGS) && defined(USE_SNOW)
-	if(GetFeatureFlags() & FF_SNOW)
+	if(viewplane->next == NULL && (GetFeatureFlags() & FF_SNOW))
 		DrawSnow(vbuf, vbufPitch);
 #endif
+
+	viewplane = viewplane->next;
+	if (viewplane != NULL)
+	{
+		R_RenderView ();
+		return;
+	}
 
 	DrawPlayerWeapon ();    // draw player's hands
 
