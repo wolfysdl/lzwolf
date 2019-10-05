@@ -192,6 +192,7 @@ class AActor : public Thinker,
 		};
 #pragma pack(pop)
 		fixed z;
+		unsigned int viewplanenum;
 		fixed	velx, vely;
 
 		angle_t	angle;

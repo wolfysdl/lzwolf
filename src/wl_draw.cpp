@@ -49,7 +49,7 @@
 =============================================================================
 */
 
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight);
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight, unsigned int viewplanenum);
 
 const RatioInformation AspectCorrection[] =
 {
@@ -96,10 +96,11 @@ fixed viewz = 32;
 
 struct viewplanenode
 {
-	unsigned int    num; // plane number
+	unsigned int    num;         // plane number
+	fixed           heightoff;   // adjusts viewz
 	viewplanenode  *next;
 };
-viewplanenode singleviewplane = { 0, NULL };
+viewplanenode singleviewplane = { 0, 0, NULL };
 viewplanenode *viewplane = &singleviewplane;
 
 fixed gLevelVisibility = VISIBILITY_DEFAULT;
@@ -591,8 +592,10 @@ void DrawScaleds (void)
 
 		if (obj->sprite == SPR_NONE || (obj->flags & FL_STATUSBAR))
 			continue;
+		if (obj->viewplanenum != viewplane->num)
+			continue;
 
-		MapSpot spot = map->GetSpot(obj->tilex, obj->tiley, 0);
+		MapSpot spot = map->GetSpot(obj->tilex, obj->tiley, obj->viewplanenum);
 		MapSpot spots[8];
 		spots[0] = spot->GetAdjacent(MapTile::East);
 		spots[1] = spots[0] ? spots[0]->GetAdjacent(MapTile::North) : NULL;
@@ -697,7 +700,7 @@ void AsmRefresh()
 	static word xspot[2],yspot[2];
 	int32_t xstep=0,ystep=0;
 	longword xpartial=0,ypartial=0;
-	MapSpot focalspot = map->GetSpot(focaltx, focalty, 0);
+	MapSpot focalspot = map->GetSpot(focaltx, focalty, viewplane->num);
 	bool playerInPushwallBackTile = focalspot->pushAmount != 0;
 
 	for(pixx=0;pixx<viewwidth;pixx++)
@@ -812,7 +815,7 @@ vertentry:
 				break;
 			}
 			if(xspot[0]>=mapwidth || xspot[1]>=mapheight) break;
-			tilehit=map->GetSpot(xspot[0], xspot[1], 0);
+			tilehit=map->GetSpot(xspot[0], xspot[1], viewplane->num);
 			if(tilehit && tilehit->tile)
 			{
 				if(tilehit->tile->offsetVertical)
@@ -979,7 +982,7 @@ horizentry:
 				break;
 			}
 			if(yspot[0]>=mapwidth || yspot[1]>=mapheight) break;
-			tilehit=map->GetSpot(yspot[0], yspot[1], 0);
+			tilehit=map->GetSpot(yspot[0], yspot[1], viewplane->num);
 			if(tilehit && tilehit->tile)
 			{
 				if(tilehit->tile->offsetHorizontal)
@@ -1152,7 +1155,7 @@ void WallRefresh (void)
 	const fixed playerMovebob = players[ConsolePlayer].mo->GetClass()->Meta.GetMetaFixed(APMETA_MoveBob);
 	fixed curbob = gamestate.victoryflag ? 0 : FixedMul(FixedMul(players[ConsolePlayer].bob, playerMovebob)>>1, finesine[bobangle]);
 
-	viewz = curbob - players[ConsolePlayer].mo->viewheight;
+	viewz = curbob - players[ConsolePlayer].mo->viewheight + viewplane->heightoff;
 
 	AsmRefresh();
 	ScalePost ();                   // no more optimization on last post
@@ -1189,7 +1192,7 @@ void R_RenderView()
 // follow the walls from there to the right, drawing as we go
 //
 #if defined(USE_FEATUREFLAGS) && defined(USE_STARSKY)
-	if(GetFeatureFlags() & FF_STARSKY)
+	if(viewplane->next == NULL && (GetFeatureFlags() & FF_STARSKY))
 		DrawStarSky(vbuf, vbufPitch);
 #endif
 
@@ -1201,7 +1204,7 @@ void R_RenderView()
 	if(viewplane->next == NULL && (GetFeatureFlags() & FF_CLOUDSKY))
 		DrawClouds(vbuf, vbufPitch, min_wallheight);
 #endif
-	DrawFloorAndCeiling(vbuf, vbufPitch, min_wallheight);
+	DrawFloorAndCeiling(vbuf, vbufPitch, min_wallheight, viewplane->num);
 
 //
 // draw all the scaled images
@@ -1223,6 +1226,7 @@ void R_RenderView()
 		R_RenderView ();
 		return;
 	}
+	viewplane = &singleviewplane;
 
 	DrawPlayerWeapon ();    // draw player's hands
 

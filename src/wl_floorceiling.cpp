@@ -20,7 +20,7 @@ static inline bool R_PixIsTrans(byte col, const std::pair<bool, byte> &trans)
 	return trans.first && col == trans.second;
 }
 
-static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
+static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, unsigned int viewplanenum, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
 {
 	fixed dist;                                // distance to row projection
 	fixed tex_step;                            // global step per one screen pixel
@@ -98,7 +98,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 				{
 					oldmapx = curx;
 					oldmapy = cury;
-					const MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, 0);
+					const MapSpot spot = map->GetSpot(oldmapx%mapwidth, oldmapy%mapheight, viewplanenum);
 
 					if(spot->sector)
 					{
@@ -149,7 +149,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 // Textured Floor and Ceiling by DarkOne
 // With multi-textured floors and ceilings stored in lower and upper bytes of
 // according tile in third mapplane, respectively.
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight, unsigned int viewplanenum)
 {
 	const int halfheight = (viewheight >> 1) - viewshift;
 
@@ -159,6 +159,6 @@ void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
 	const int numParallax = levelInfo->ParallaxSky.Size();
 	std::pair<bool, byte> ceiltrans(numParallax > 0, skyceilcol);
 
-	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz);
-	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz+(map->GetPlane(0).depth<<FRACBITS), ceiltrans);
+	R_DrawPlane(vbuf, vbufPitch, min_wallheight, viewplanenum, halfheight, viewz);
+	R_DrawPlane(vbuf, vbufPitch, min_wallheight, viewplanenum, halfheight, viewz+(map->GetPlane(viewplanenum).depth<<FRACBITS), ceiltrans);
 }
