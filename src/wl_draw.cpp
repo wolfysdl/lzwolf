@@ -1,5 +1,6 @@
 // WL_DRAW.C
 
+#include <vector>
 #include "wl_def.h"
 #include "id_sd.h"
 #include "id_in.h"
@@ -99,8 +100,12 @@ struct viewplanenode
 	unsigned int    num;         // plane number
 	fixed           heightoff;   // adjusts viewz
 	viewplanenode  *next;
+
+	viewplanenode() : num(0), heightoff(0), next(NULL)
+	{
+	}
 };
-viewplanenode singleviewplane = { 0, 0, NULL };
+viewplanenode singleviewplane;
 viewplanenode *viewplane = &singleviewplane;
 
 fixed gLevelVisibility = VISIBILITY_DEFAULT;
@@ -1184,9 +1189,49 @@ void CalcViewVariables()
 
 //==========================================================================
 
+void InitViewPlane(std::vector<viewplanenode> &v)
+{
+	const unsigned int numplanes = map->NumPlanes();
+
+	v.clear();
+	v.resize(numplanes);
+
+	for(unsigned int p = 0;p < numplanes;++p)
+	{
+		const MapPlane &plane = map->GetPlane(p);
+		const unsigned int q = (numplanes - plane.vieworder - 1);
+		viewplanenode &node = v[q];
+		node.num = p;
+		node.heightoff = 0;
+		node.next = (q < numplanes - 1 ? &v[q+1] : NULL);
+	}
+
+	viewplane = &v[0];
+
+	// validate links
+	unsigned int p = 0;
+	viewplanenode *pnode = viewplane;
+	while (pnode)
+	{
+		p++;
+		pnode = pnode->next;
+	}
+	if (p != numplanes)
+	{
+		// problem with vieworder!
+		// fallback to single plane
+		v.clear();
+		viewplane = &singleviewplane;
+	}
+
+}
+
 void R_RenderView()
 {
 	CalcViewVariables();
+
+	std::vector<viewplanenode> vpnodes;
+	InitViewPlane(vpnodes);
 
 nextplane:
 //

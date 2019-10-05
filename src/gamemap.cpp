@@ -410,6 +410,7 @@ GameMap::Plane &GameMap::NewPlane()
 	newPlane.map = new Plane::Map[header.width*header.height];
 	for(unsigned int i = 0;i < header.width*header.height;++i)
 		newPlane.map[i].plane = &newPlane;
+	newPlane.vieworder = planes.Size()-1;
 	return newPlane;
 }
 

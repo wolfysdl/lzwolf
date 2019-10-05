@@ -465,6 +465,11 @@ class UWMFParser : public TextMapParser
 				sc.MustGetToken(TK_IntConst);
 				plane.depth = sc->number;
 			}
+			else CheckKey("vieworder")
+			{
+				sc.MustGetToken(TK_IntConst);
+				plane.vieworder = sc->number;
+			}
 
 			EndParseBlock
 		}
