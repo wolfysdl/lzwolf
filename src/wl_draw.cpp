@@ -99,9 +99,20 @@ struct viewplanenode
 {
 	unsigned int    num;         // plane number
 	fixed           heightoff;   // adjusts viewz
+	bool            nowalls;
+	bool            noscaleds;
+	bool            nosky;
+	bool            nofloorceil;
 	viewplanenode  *next;
 
-	viewplanenode() : num(0), heightoff(0), next(NULL)
+	viewplanenode() :
+		num(0),
+		heightoff(0),
+		nowalls(false),
+		noscaleds(false),
+		nosky(false),
+		nofloorceil(false),
+		next(NULL)
 	{
 	}
 };
@@ -391,6 +402,13 @@ void HitVertWall (void)
 {
 	if(!tilehit)
 		return;
+	
+	if (viewplane->nowalls)
+	{
+		wallheight[pixx] = CalcHeight();
+		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		return;
+	}
 
 	int texture;
 
@@ -465,6 +483,13 @@ void HitHorizWall (void)
 {
 	if(!tilehit)
 		return;
+
+	if (viewplane->nowalls)
+	{
+		wallheight[pixx] = CalcHeight();
+		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		return;
+	}
 
 	int texture;
 
@@ -1193,17 +1218,30 @@ void InitViewPlane(std::vector<viewplanenode> &v)
 {
 	const unsigned int numplanes = map->NumPlanes();
 
+	// viewplane 0   : sky only
+	// viewplane 1-N : other planes in specific order (no sky)
 	v.clear();
-	v.resize(numplanes);
+	v.resize(numplanes + 1);
 
 	for(unsigned int p = 0;p < numplanes;++p)
 	{
 		const MapPlane &plane = map->GetPlane(p);
 		const unsigned int q = (numplanes - plane.vieworder - 1);
-		viewplanenode &node = v[q];
+		viewplanenode &node = v[q+1];
 		node.num = p;
 		node.heightoff = 0;
-		node.next = (q < numplanes - 1 ? &v[q+1] : NULL);
+		node.nosky = true;
+		node.next = (q+2 < v.size() ? &v[q+2] : NULL);
+	}
+
+	{
+		viewplanenode &node = v[0];
+		node.num = 0;
+		node.heightoff = 0;
+		node.nowalls = true;
+		node.noscaleds = true;
+		node.nofloorceil = true;
+		node.next = &v[1];
 	}
 
 	viewplane = &v[0];
@@ -1216,7 +1254,7 @@ void InitViewPlane(std::vector<viewplanenode> &v)
 		p++;
 		pnode = pnode->next;
 	}
-	if (p != numplanes)
+	if (p != numplanes + 1)
 	{
 		// problem with vieworder!
 		// fallback to single plane
@@ -1231,31 +1269,48 @@ void R_RenderView()
 	CalcViewVariables();
 
 	std::vector<viewplanenode> vpnodes;
-	InitViewPlane(vpnodes);
+	if (map->NumPlanes() > 1)
+		InitViewPlane(vpnodes);
+
+	vpnodes.clear();
+	vpnodes.resize(3);
+	vpnodes[0].nowalls = vpnodes[0].noscaleds = vpnodes[0].nofloorceil = true;
+	vpnodes[0].next = &vpnodes[1];
+
+	vpnodes[1].nosky = true;
+	vpnodes[1].heightoff = 64*FRACUNIT;
+	vpnodes[1].next = &vpnodes[2];
+
+	vpnodes[2].nosky = true;
+	vpnodes[2].heightoff = 0;
+
+	viewplane = &vpnodes[0];
 
 nextplane:
 //
 // follow the walls from there to the right, drawing as we go
 //
 #if defined(USE_FEATUREFLAGS) && defined(USE_STARSKY)
-	if(viewplane->next == NULL && (GetFeatureFlags() & FF_STARSKY))
+	if(!viewplane->nosky && (GetFeatureFlags() & FF_STARSKY))
 		DrawStarSky(vbuf, vbufPitch);
 #endif
 
 	WallRefresh ();
 
-	if (viewplane->next == NULL && levelInfo->ParallaxSky.Size() > 0)
+	if (!viewplane->nosky && levelInfo->ParallaxSky.Size() > 0)
 		DrawParallax(vbuf, vbufPitch);
 #if defined(USE_FEATUREFLAGS) && defined(USE_CLOUDSKY)
-	if(viewplane->next == NULL && (GetFeatureFlags() & FF_CLOUDSKY))
+	if (!viewplane->nosky && (GetFeatureFlags() & FF_CLOUDSKY))
 		DrawClouds(vbuf, vbufPitch, min_wallheight);
 #endif
-	DrawFloorAndCeiling(vbuf, vbufPitch, min_wallheight, viewplane->num);
+	if (!viewplane->nofloorceil)
+		DrawFloorAndCeiling(vbuf, vbufPitch, min_wallheight, viewplane->num);
 
 //
 // draw all the scaled images
 //
-	DrawScaleds();                  // draw scaled stuff
+	if (!viewplane->noscaleds)
+		DrawScaleds();                  // draw scaled stuff
 
 #if defined(USE_FEATUREFLAGS) && defined(USE_RAIN)
 	if(viewplane->next == NULL && (GetFeatureFlags() & FF_RAIN))
