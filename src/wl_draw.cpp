@@ -283,6 +283,8 @@ void ScalePost()
 {
 	if(postsource == NULL)
 		return;
+	if (skywallheight[postx] == 0)
+		return;
 
 	int ywcount, yoffs, yw, yd, yendoffs;
 	byte col;
