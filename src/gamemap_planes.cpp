@@ -938,7 +938,17 @@ void GameMap::ReadMacData()
 void GameMap::ReadPlanesData()
 {
 	static const unsigned short UNIT = 64;
-	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
+	enum OldPlanes
+	{
+		Plane_Tiles,
+		Plane_Object,
+		Plane_Flats,
+		Plane_Info,
+		Plane_Tiles2,
+		Plane_Object2,
+		Plane_Flats2,
+		NUM_USABLE_PLANES
+	};
 
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
@@ -982,8 +992,11 @@ void GameMap::ReadPlanesData()
 	header.width = dimensions[0];
 	header.height = dimensions[1];
 
-	Plane &mapPlane = NewPlane();
-	mapPlane.depth = UNIT;
+	Plane &mapPlane1 = NewPlane();
+	mapPlane1.depth = UNIT;
+
+	Plane &mapPlane2 = (numPlanes > 4 ? NewPlane() : mapPlane1);
+	mapPlane2.depth = UNIT;
 
 	// We need to store the spots marked for ambush since it's stored in the
 	// tiles plane instead of the objects plane.
@@ -1002,7 +1015,7 @@ void GameMap::ReadPlanesData()
 	}
 	else
 		memset(infoplane.Get(), 0, size*2);
-
+	
 	FTextureID defaultCeiling = levelInfo->DefaultTexture[Sector::Ceiling];
 	FTextureID defaultFloor = levelInfo->DefaultTexture[Sector::Floor];
 
@@ -1020,7 +1033,10 @@ void GameMap::ReadPlanesData()
 				break;
 
 			case Plane_Tiles:
+			case Plane_Tiles2:
 			{
+				Plane &mapPlane = (plane < 3 ? mapPlane1 : mapPlane2);
+
 				WORD tileStart = xlat.GetTilePalette(tilePalette);
 				xlat.GetZonePalette(zonePalette);
 
@@ -1099,6 +1115,10 @@ void GameMap::ReadPlanesData()
 					}
 				}
 
+				// triggers and light levels are not affected by extra planes
+				if (plane > 3)
+					break;
+
 				TMap<WORD, Xlat::ModZone>::Iterator iter(changeTriggerSpots);
 				TMap<WORD, Xlat::ModZone>::Pair *pair;
 				while(iter.NextPair(pair))
@@ -1174,7 +1194,10 @@ void GameMap::ReadPlanesData()
 			}
 
 			case Plane_Object:
+			case Plane_Object2:
 			{
+				Plane &mapPlane = (plane < 3 ? mapPlane1 : mapPlane2);
+
 				bool canUseFlatColor = true;
 				bool gotFlatTextures = false;
 				unsigned int ambushSpot = 0;
@@ -1307,7 +1330,10 @@ void GameMap::ReadPlanesData()
 			}
 
 			case Plane_Flats:
+			case Plane_Flats2:
 			{
+				Plane &mapPlane = (plane < 3 ? mapPlane1 : mapPlane2);
+
 				// Look for all unique floor/ceiling texture combinations.
 				WORD type = sectorPalette.Size();
 				TMap<WORD, WORD> flatMap;
