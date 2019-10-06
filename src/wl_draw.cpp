@@ -1266,28 +1266,6 @@ void InitViewPlane(std::vector<viewplanenode> &v)
 
 }
 
-void InitTestViewPlane(std::vector<viewplanenode> &v)
-{
-	v.clear();
-	v.resize(3);
-
-	// sky
-	v[0].nowalls = v[0].noscaleds = v[0].nofloorceil = true;
-	v[0].next = &v[1];
-
-	// top plane
-	v[1].nosky = true;
-	v[1].heightoff = 64*FRACUNIT;
-	v[1].noscaleds = true;
-	v[1].next = &v[2];
-
-	// base plane
-	v[2].nosky = true;
-	v[2].heightoff = 0;
-
-	viewplane = &v[0];
-}
-
 void R_RenderView()
 {
 	CalcViewVariables();
@@ -1295,8 +1273,6 @@ void R_RenderView()
 	std::vector<viewplanenode> vpnodes;
 	if (map->NumPlanes() > 1)
 		InitViewPlane(vpnodes);
-
-	//InitTestViewPlane(vpnodes);
 
 nextplane:
 //

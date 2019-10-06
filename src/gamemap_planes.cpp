@@ -53,6 +53,7 @@ static const char* const FeatureFlagNames[] = {
 	"lightlevels",
 	"planedepth",
 	"zheights",
+	"planeviewdepth",
 	NULL
 };
 
@@ -81,7 +82,8 @@ public:
 		FF_GLOBALMETA = 1,
 		FF_LIGHTLEVELS = 2,
 		FF_PLANEDEPTH = 4,
-		FF_ZHEIGHTS = 8
+		FF_ZHEIGHTS = 8,
+		FF_PLANEVIEWDEPTH = 16,
 	};
 
 	struct ThingXlat
@@ -1230,6 +1232,14 @@ void GameMap::ReadPlanesData()
 							mapPlane.depth = UNIT*(oldplane[i]-0x1C2+9);
 						else // ROTT would error if this is invalid.
 							printf("Error: Map height specifier %X not in range!\n", oldplane[i]);
+						continue;
+					}
+
+					if(i == (header.width-1) && (FeatureFlags & Xlat::FF_PLANEVIEWDEPTH))
+					{
+						const int value = oldplane[i] & 0x7ff;
+						const int sign  = (oldplane[i] & 0x800) ? -1 : 1;
+						mapPlane.viewdepth = value * sign;
 						continue;
 					}
 
