@@ -512,7 +512,10 @@ void GameMap::SpawnThings() const
 			continue;
 
 		if(thing.type == SpecialThingNames[SMT_Player1Start])
-			SpawnPlayer(thing.x>>FRACBITS, thing.y>>FRACBITS, thing.angle);
+		{
+			if (thing.viewplanenum == 0)
+				SpawnPlayer(thing.x>>FRACBITS, thing.y>>FRACBITS, thing.angle);
+		}
 		else
 		{
 			static const ClassDef *unknownClass = ClassDef::FindClass("Unknown");
@@ -534,6 +537,7 @@ void GameMap::SpawnThings() const
 				actor->dir = dirtype(actor->angle/ANGLE_45);
 			if(thing.holo)
 				actor->flags &= ~(FL_SOLID);
+			actor->viewplanenum = thing.viewplanenum;
 
 			// Check for valid frames
 			if(!actor->state || !R_CheckSpriteValid(actor->sprite))

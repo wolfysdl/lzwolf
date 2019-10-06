@@ -1231,7 +1231,7 @@ void InitViewPlane(std::vector<viewplanenode> &v)
 		const unsigned int q = (numplanes - plane.vieworder - 1);
 		viewplanenode &node = v[q+1];
 		node.num = p;
-		node.heightoff = 0;
+		node.heightoff = p*64*FRACUNIT*2;
 		node.nosky = true;
 		node.next = (q+2 < v.size() ? &v[q+2] : NULL);
 	}
@@ -1296,7 +1296,7 @@ void R_RenderView()
 	if (map->NumPlanes() > 1)
 		InitViewPlane(vpnodes);
 
-	InitTestViewPlane(vpnodes);
+	//InitTestViewPlane(vpnodes);
 
 nextplane:
 //

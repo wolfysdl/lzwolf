@@ -1319,6 +1319,7 @@ void GameMap::ReadPlanesData()
 							else
 								thing.z = 0;
 							thing.ambush = (flags & Xlat::TF_AMBUSH) || ambushSpots[ambushSpot] == i;
+							thing.viewplanenum = (plane > 3 ? 1 : 0);
 
 							int thingnum = things.Push(thing);
 							if(flags & Xlat::TF_HOLOWALL)
