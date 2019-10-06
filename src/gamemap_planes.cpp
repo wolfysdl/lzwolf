@@ -32,6 +32,7 @@
 **
 */
 
+#include <vector>
 #include <climits>
 
 #include "doomerrors.h"
@@ -1019,6 +1020,10 @@ void GameMap::ReadPlanesData()
 	FTextureID defaultCeiling = levelInfo->DefaultTexture[Sector::Ceiling];
 	FTextureID defaultFloor = levelInfo->DefaultTexture[Sector::Floor];
 
+	TMap<WORD, WORD> flatMap;
+	WORD sectorPaletteSize = 0;
+	std::vector<WORD> flatplane1, flatplane2;
+
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
 		if(plane == 3) // Info plane is already read
@@ -1043,7 +1048,6 @@ void GameMap::ReadPlanesData()
 				TArray<WORD> fillSpots;
 				TMap<WORD, Xlat::ModZone> changeTriggerSpots;
 				
-
 				for(unsigned int i = 0;i < size;++i)
 				{
 					oldplane[i] = LittleShort(oldplane[i]);
@@ -1250,6 +1254,7 @@ void GameMap::ReadPlanesData()
 									defaultFloor = xlat.TranslateFlat(oldplane[i]&0xFF, Sector::Floor, levelInfo->DefaultTexture[Sector::Floor]);
 
 									sectorPalette.Resize(1);
+									sectorPaletteSize = 1;
 									continue;
 								}
 								break;
@@ -1332,11 +1337,8 @@ void GameMap::ReadPlanesData()
 			case Plane_Flats:
 			case Plane_Flats2:
 			{
-				Plane &mapPlane = (plane < 3 ? mapPlane1 : mapPlane2);
-
 				// Look for all unique floor/ceiling texture combinations.
-				WORD type = sectorPalette.Size();
-				TMap<WORD, WORD> flatMap;
+				WORD &type = sectorPaletteSize;
 				for(unsigned int i = 0;i < size;++i)
 				{
 					oldplane[i] = LittleShort(oldplane[i]);
@@ -1345,25 +1347,48 @@ void GameMap::ReadPlanesData()
 						flatMap[oldplane[i]] = type++;
 				}
 
-				// Check for parallax sky
-				bool lvlHasParallax = levelInfo->ParallaxSky.Size() > 0;
+				// Save plane data for link phase
+				std::vector<WORD> &flatplane = (plane < 3 ? flatplane1 : flatplane2);
+				std::copy(oldplane.Get(), oldplane.Get() + size, std::back_inserter(flatplane));
+				break;
+			}
+		}
+	}
 
-				// Build the palette.
-				sectorPalette.Resize(type);
-				TMap<WORD, WORD>::ConstIterator iter(flatMap);
-				TMap<WORD, WORD>::ConstPair *pair;
-				while(iter.NextPair(pair))
-				{
-					Sector &sect = sectorPalette[pair->Value];
-					sect.texture[Sector::Floor] = xlat.TranslateFlat(pair->Key&0xFF, Sector::Floor, defaultFloor);
+	{
+		// Check for parallax sky
+		bool lvlHasParallax = levelInfo->ParallaxSky.Size() > 0;
 
-					FTextureID ceilid = lvlHasParallax ? FNullTextureID() : defaultCeiling;
-					sect.texture[Sector::Ceiling] = xlat.TranslateFlat(pair->Key>>8, Sector::Ceiling, ceilid);
-				}
+		// Build the sector palette.
+		sectorPalette.Resize(sectorPaletteSize);
+		TMap<WORD, WORD>::ConstIterator iter(flatMap);
+		TMap<WORD, WORD>::ConstPair *pair;
+		while(iter.NextPair(pair))
+		{
+			Sector &sect = sectorPalette[pair->Value];
+			sect.texture[Sector::Floor] = xlat.TranslateFlat(pair->Key&0xFF, Sector::Floor, defaultFloor);
 
-				// Now link the sector data to map points!
+			FTextureID ceilid = lvlHasParallax ? FNullTextureID() : defaultCeiling;
+			sect.texture[Sector::Ceiling] = xlat.TranslateFlat(pair->Key>>8, Sector::Ceiling, ceilid);
+		}
+	}
+
+	// Now link the sector data to map points!
+	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
+	{
+		switch(plane)
+		{
+			default:
+				break;
+
+			case Plane_Flats:
+			case Plane_Flats2:
+			{
+				Plane &mapPlane = (plane < 3 ? mapPlane1 : mapPlane2);
+				std::vector<WORD> &flatplane = (plane < 3 ? flatplane1 : flatplane2);
+
 				for(unsigned int i = 0;i < size;++i)
-					mapPlane.map[i].sector = &sectorPalette[flatMap[oldplane[i]]];
+					mapPlane.map[i].sector = &sectorPalette[flatMap[flatplane[i]]];
 				break;
 			}
 		}
