@@ -146,6 +146,7 @@ class GameMap
 
 			unsigned int	depth;
 			unsigned int	vieworder;	// in reverse (0 is rendered last)
+			int             viewdepth;
 			struct Map
 			{
 				Map() : tile(NULL), sector(NULL), zone(NULL), visible(false),

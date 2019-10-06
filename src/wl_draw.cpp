@@ -1231,7 +1231,7 @@ void InitViewPlane(std::vector<viewplanenode> &v)
 		const unsigned int q = (numplanes - plane.vieworder - 1);
 		viewplanenode &node = v[q+1];
 		node.num = p;
-		node.heightoff = p*64*FRACUNIT*2;
+		node.heightoff = plane.viewdepth*FRACUNIT;
 		node.nosky = true;
 		node.next = (q+2 < v.size() ? &v[q+2] : NULL);
 	}
