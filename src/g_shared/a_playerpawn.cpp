@@ -43,6 +43,8 @@
 
 #include <climits>
 
+extern	fixed finesine[FINEANGLES+FINEANGLES/4];
+
 IMPLEMENT_CLASS(PlayerPawn)
 
 PointerIndexTable<AActor::DropList> APlayerPawn::startInventory;
@@ -212,6 +214,7 @@ void APlayerPawn::Tick()
 		return;
 
 	TickPSprites();
+	TickHeightAnim();
 
 	if(player - players == ConsolePlayer)
 	{
@@ -340,5 +343,20 @@ void APlayerPawn::TickPSprites()
 
 		if(player->psprite[layer].frame)
 			player->psprite[layer].frame->thinker(this, player->ReadyWeapon, player->psprite[layer].frame);
+	}
+}
+
+void APlayerPawn::TickHeightAnim()
+{
+	player_t::HeightAnim &ha = player->heightanim;
+
+	if (ha.ticcount > 0)
+	{
+		ha.ticcount--;
+
+		int ticspassed = ha.period - ha.ticcount;
+		const fixed t = FRACUNIT - ((finesine[ANG90 + ((ticspassed * ANG180) / ha.period)] + FRACUNIT) / 2);
+
+		viewheight = FixedMul(ha.startpos, FRACUNIT - t) + FixedMul(ha.endpos, t);
 	}
 }

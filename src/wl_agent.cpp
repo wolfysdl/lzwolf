@@ -957,6 +957,11 @@ void player_t::Serialize(FArchive &arc)
 			<< psprite[i].sy;
 	}
 
+	arc << heightanim.period
+		<< heightanim.ticcount
+		<< heightanim.startpos
+		<< heightanim.endpos;
+
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374729160)
 		arc << FOV << DesiredFOV;
 
@@ -1097,10 +1102,17 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 
 ACTION_FUNCTION(A_BeginHeightAnim)
 {
-	ACTION_PARAM_FIXED(accel, 0);
-	ACTION_PARAM_FIXED(vel, 1);
-	ACTION_PARAM_FIXED(lower, 2);
-	ACTION_PARAM_FIXED(upper, 3);
+	ACTION_PARAM_FIXED(newheight, 0);
+	ACTION_PARAM_INT(period, 1);
+
+	player_t *player = self->player;
+
+	player_t::HeightAnim &ha = player->heightanim;
+	ha.period = period;
+	ha.ticcount = period;
+	ha.startpos = player->mo->viewheight;
+	ha.endpos = newheight;
+	return true;
 }
 
 /*
