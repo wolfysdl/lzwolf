@@ -1095,6 +1095,14 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 
 //===========================================================================
 
+ACTION_FUNCTION(A_BeginHeightAnim)
+{
+	ACTION_PARAM_FIXED(accel, 0);
+	ACTION_PARAM_FIXED(vel, 1);
+	ACTION_PARAM_FIXED(lower, 2);
+	ACTION_PARAM_FIXED(upper, 3);
+}
+
 /*
 ===============
 =

@@ -67,10 +67,10 @@ actor Pistol : WolfWeapon
 			PISG A 1 A_WeaponReady
 			loop
 		Fire:
-			PISG B 3
+			PISG B 3 A_BeginHeightAnim(-16, -8, 8, 32)
 			PISG C 3 bright
 			PISG D 3 A_GunAttack
-			PISG E 3
+			PISG E 3 A_BeginHeightAnim(16, 8, 8, 32)
 			goto Ready
 	}
 }
