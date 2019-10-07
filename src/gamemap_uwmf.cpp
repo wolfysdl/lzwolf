@@ -144,6 +144,26 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.showSky = sc->boolean;
 	}
+	else CheckKey("blockraynorth")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.sideRayBlocked[MapTile::North] = sc->boolean;
+	}
+	else CheckKey("blockraysouth")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.sideRayBlocked[MapTile::South] = sc->boolean;
+	}
+	else CheckKey("blockrayeast")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.sideRayBlocked[MapTile::East] = sc->boolean;
+	}
+	else CheckKey("blockraywest")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.sideRayBlocked[MapTile::West] = sc->boolean;
+	}
 
 	EndParseBlock
 }

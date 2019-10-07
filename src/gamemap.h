@@ -117,6 +117,7 @@ class GameMap
 			{
 				overhead.SetInvalid();
 				sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
+				sideRayBlocked[0] = sideRayBlocked[1] = sideRayBlocked[2] = sideRayBlocked[3] = true;
 			}
 
 			enum Side { East, North, West, South };
@@ -130,6 +131,7 @@ class GameMap
 			unsigned int	mapped; // filter level for always visible
 			bool			dontOverlay;
 			bool			showSky;
+			bool			sideRayBlocked[4];
 		};
 		struct Sector
 		{

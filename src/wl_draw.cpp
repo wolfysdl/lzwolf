@@ -734,6 +734,7 @@ void AsmRefresh()
 	longword xpartial=0,ypartial=0;
 	MapSpot focalspot = map->GetSpot(focaltx, focalty, viewplane->num);
 	bool playerInPushwallBackTile = focalspot->pushAmount != 0;
+	MapTile::Side xtileside,ytileside;
 
 	for(pixx=0;pixx<viewwidth;pixx++)
 	{
@@ -748,6 +749,8 @@ void AsmRefresh()
 			ystep=-finetangent[angl];
 			xpartial=xpartialup;
 			ypartial=ypartialdown;
+			xtileside=MapTile::West;
+			ytileside=MapTile::South;
 		}
 		else if(angl<ANG180)
 		{
@@ -757,6 +760,8 @@ void AsmRefresh()
 			ystep=-finetangent[ANG180-1-angl];
 			xpartial=xpartialdown;
 			ypartial=ypartialdown;
+			xtileside=MapTile::East;
+			ytileside=MapTile::South;
 		}
 		else if(angl<ANG270)
 		{
@@ -766,6 +771,8 @@ void AsmRefresh()
 			ystep=finetangent[angl-ANG180];
 			xpartial=xpartialdown;
 			ypartial=ypartialup;
+			xtileside=MapTile::East;
+			ytileside=MapTile::North;
 		}
 		else if(angl<ANG360)
 		{
@@ -775,6 +782,8 @@ void AsmRefresh()
 			ystep=finetangent[ANG360-1-angl];
 			xpartial=xpartialup;
 			ypartial=ypartialup;
+			xtileside=MapTile::West;
+			ytileside=MapTile::North;
 		}
 		yintercept=FixedMul(ystep,xpartial)+viewy;
 		xtile=focaltx+xtilestep;
@@ -848,7 +857,7 @@ vertentry:
 			}
 			if(xspot[0]>=mapwidth || xspot[1]>=mapheight) break;
 			tilehit=map->GetSpot(xspot[0], xspot[1], viewplane->num);
-			if(tilehit && tilehit->tile)
+			if(tilehit && tilehit->tile && tilehit->tile->sideRayBlocked[xtileside])
 			{
 				if(tilehit->tile->offsetVertical)
 				{
@@ -1015,7 +1024,7 @@ horizentry:
 			}
 			if(yspot[0]>=mapwidth || yspot[1]>=mapheight) break;
 			tilehit=map->GetSpot(yspot[0], yspot[1], viewplane->num);
-			if(tilehit && tilehit->tile)
+			if(tilehit && tilehit->tile && tilehit->tile->sideRayBlocked[ytileside])
 			{
 				if(tilehit->tile->offsetHorizontal)
 				{
