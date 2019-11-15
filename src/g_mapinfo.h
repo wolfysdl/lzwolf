@@ -189,6 +189,7 @@ public:
 	bool			NoIntermission;
 	TArray<FTextureID>	ParallaxSky;
 	int             NumParallaxTiles;
+	int             Atmos[3];
 	FString			Intermission;
 
 	bool			DeathCam;
@@ -208,6 +209,11 @@ public:
 		int				Args[5];
 	};
 	TArray<SpecialAction>	SpecialActions;
+
+	void ClearAtmos()
+	{
+		Atmos[0] = Atmos[1] = Atmos[2] = 0;
+	}
 
 	static LevelInfo &Find(const char* level);
 	static LevelInfo &FindByNumber(unsigned int num);

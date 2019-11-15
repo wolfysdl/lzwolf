@@ -49,6 +49,9 @@ map "MAP01"
 	music = "GETTHEM"
 	cluster = 1
 	//parallaxsky = "GSTONEA1", "GSTONEA2", "GSTONEB1", "GSTONEB2", "GSTFLAG1", "GSTFLAG2", "GSTHTLR1", "GSTHTLR2", "BSTCELA1", "BSTCELA2", "GSTEAGL1", "GSTEAGL2", "BSTCELB1", "BSTCELB2", "BSTONEA1", "BSTONEA2"
+	//atmosstarsky = 1
+	//atmosrain = 1
+	//atmossnow = 1
 }
 
 map "MAP02"

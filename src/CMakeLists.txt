@@ -285,6 +285,7 @@ set(SOURCE_FILES
 	wl_menu.cpp
 	wl_net.cpp
 	wl_parallax.cpp
+	wl_atmos.cpp
 	wl_play.cpp
 	wl_state.cpp
 	wl_text.cpp

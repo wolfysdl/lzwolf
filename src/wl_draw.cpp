@@ -1180,10 +1180,8 @@ void R_RenderView()
 //
 // follow the walls from there to the right, drawing as we go
 //
-#if defined(USE_FEATUREFLAGS) && defined(USE_STARSKY)
-	if(GetFeatureFlags() & FF_STARSKY)
+	if (levelInfo->Atmos[0])
 		DrawStarSky(vbuf, vbufPitch);
-#endif
 
 	WallRefresh ();
 
@@ -1200,14 +1198,10 @@ void R_RenderView()
 //
 	DrawScaleds();                  // draw scaled stuff
 
-#if defined(USE_FEATUREFLAGS) && defined(USE_RAIN)
-	if(GetFeatureFlags() & FF_RAIN)
+	if (levelInfo->Atmos[1])
 		DrawRain(vbuf, vbufPitch);
-#endif
-#if defined(USE_FEATUREFLAGS) && defined(USE_SNOW)
-	if(GetFeatureFlags() & FF_SNOW)
+	if (levelInfo->Atmos[2])
 		DrawSnow(vbuf, vbufPitch);
-#endif
 
 	DrawPlayerWeapon ();    // draw player's hands
 

@@ -1,12 +1,16 @@
 #include "version.h"
 
-#if defined(USE_STARSKY) || defined(USE_RAIN) || defined(USE_SNOW)
-
 #include "wl_def.h"
+#include "wl_main.h"
+#include "wl_draw.h"
+#include "wl_agent.h"
+#include "wl_play.h"
+#include "id_ca.h"
 
-#if defined(USE_RAIN) || defined(USE_SNOW)
-	uint32_t rainpos = 0;
-#endif
+#define mapheight (map->GetHeader().height)
+#define mapwidth (map->GetHeader().width)
+
+uint32_t rainpos = 0;
 
 typedef struct {
 	int32_t x, y, z;
@@ -46,10 +50,6 @@ void Init3DPoints()
 	}
 }
 
-#endif
-
-#ifdef USE_STARSKY
-
 void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 {
 	int hvheight = viewheight >> 1;
@@ -86,7 +86,7 @@ void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 		i = 0;
 		if(xx < 0) i = -xx;
 		if(xx > viewwidth - 11) stopx = viewwidth - xx;
-		if(yy < 0) startj = -yy;
+		if(yy < 0) starty = -yy;
 		if(yy > viewheight - 11) stopy = viewheight - yy;
 		for(; i < stopx; i++)
 			for(int j = starty; j < stopy; j++)
@@ -94,20 +94,16 @@ void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 	}
 }
 
-#endif
-
-#ifdef USE_RAIN
-
 void DrawRain(byte *vbuf, uint32_t vbufPitch)
 {
-#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
+//#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
 	fixed dist;                                // distance to row projection
 	fixed tex_step;                            // global step per one screen pixel
 	fixed gu, gv, floorx, floory;              // global texture coordinates
-#endif
+//#endif
 
-	fixed px = (player->y + FixedMul(0x7900, viewsin)) >> 6;
-	fixed pz = (player->x - FixedMul(0x7900, viewcos)) >> 6;
+	fixed px = (players[0].camera->y + FixedMul(0x7900, viewsin)) >> 6;
+	fixed pz = (players[0].camera->x - FixedMul(0x7900, viewcos)) >> 6;
 	int32_t ax, az, x, y, z, xx, yy, height, actheight;
 	int shade;
 	int hvheight = viewheight >> 1;
@@ -136,18 +132,24 @@ void DrawRain(byte *vbuf, uint32_t vbufPitch)
 		if(actheight < (wallheight[xx] >> 3) && height < wallheight[xx]) continue;
 		if(xx >= 0 && xx < viewwidth && yy > 0 && yy < viewheight)
 		{
-#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
+//#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
 			// Find the rain's tile coordinate
 			// NOTE: This sometimes goes over the map edges.
 			dist = ((heightnumerator / ((height >> 3) + 1)) << 5);
 			gu =  viewx + FixedMul(dist, viewcos);
 			gv = -viewy + FixedMul(dist, viewsin);
-			floorx = (  gu >> TILESHIFT     ) & 63;
-			floory = (-(gv >> TILESHIFT) - 1) & 63;
+			floorx = (  gu >> TILESHIFT     ) % mapwidth;
+			floory = (-(gv >> TILESHIFT) - 1) % mapheight;
 
 			// Is there a ceiling tile?
-			if(MAPSPOT(floorx, floory, 2) >> 8) continue;
-#endif
+			const MapSpot spot = map->GetSpot(floorx, floory, 0);
+			if(spot->sector)
+			{
+				FTextureID curtex = spot->sector->texture[MapSector::Ceiling];
+				if (curtex.isValid())
+					continue;
+			}
+//#endif
 
 			vbuf[yy * vbufPitch + xx] = shade+15;
 			vbuf[(yy - 1) * vbufPitch + xx] = shade+16;
@@ -157,20 +159,16 @@ void DrawRain(byte *vbuf, uint32_t vbufPitch)
 	}
 }
 
-#endif
-
-#ifdef USE_SNOW
-
 void DrawSnow(byte *vbuf, uint32_t vbufPitch)
 {
-#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
+//#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
 	fixed dist;                                // distance to row projection
 	fixed tex_step;                            // global step per one screen pixel
 	fixed gu, gv, floorx, floory;              // global texture coordinates
-#endif
+//#endif
 
-	fixed px = (player->y + FixedMul(0x7900, viewsin)) >> 6;
-	fixed pz = (player->x - FixedMul(0x7900, viewcos)) >> 6;
+	fixed px = (players[0].camera->y + FixedMul(0x7900, viewsin)) >> 6;
+	fixed pz = (players[0].camera->x - FixedMul(0x7900, viewcos)) >> 6;
 	int32_t ax, az, x, y, z, xx, yy, height, actheight;
 	int shade;
 	int hvheight = viewheight >> 1;
@@ -199,18 +197,24 @@ void DrawSnow(byte *vbuf, uint32_t vbufPitch)
 		if(actheight < (wallheight[xx] >> 3) && height < wallheight[xx]) continue;
 		if(xx > 0 && xx < viewwidth && yy > 0 && yy < viewheight)
 		{
-#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
+//#if defined(USE_FLOORCEILINGTEX) && defined(FIXRAINSNOWLEAKS)
 			// Find the snow's tile coordinate
 			// NOTE: This sometimes goes over the map edges.
 			dist = ((heightnumerator / ((height >> 3) + 1)) << 5);
 			gu =  viewx + FixedMul(dist, viewcos);
 			gv = -viewy + FixedMul(dist, viewsin);
-			floorx = (  gu >> TILESHIFT     ) & 63;
-			floory = (-(gv >> TILESHIFT) - 1) & 63;
+			floorx = (  gu >> TILESHIFT     ) % mapwidth;
+			floory = (-(gv >> TILESHIFT) - 1) % mapheight;
 
 			// Is there a ceiling tile?
-			if(MAPSPOT(floorx, floory, 2) >> 8) continue;
-#endif
+			const MapSpot spot = map->GetSpot(floorx, floory, 0);
+			if(spot->sector)
+			{
+				FTextureID curtex = spot->sector->texture[MapSector::Ceiling];
+				if (curtex.isValid())
+					continue;
+			}
+//#endif
 
 			if(shade < 10)
 			{
@@ -224,5 +228,3 @@ void DrawSnow(byte *vbuf, uint32_t vbufPitch)
 		}
 	}
 }
-
-#endif
