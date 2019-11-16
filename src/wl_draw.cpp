@@ -1182,6 +1182,8 @@ void R_RenderView()
 //
 	if (levelInfo->Atmos[0])
 		DrawStarSky(vbuf, vbufPitch);
+	if (levelInfo->Atmos[3])
+		DrawHighQualityStarSky(vbuf, vbufPitch);
 
 	WallRefresh ();
 

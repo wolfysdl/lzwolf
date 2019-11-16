@@ -6,6 +6,10 @@
 #include "wl_agent.h"
 #include "wl_play.h"
 #include "id_ca.h"
+#include "id_vh.h"
+#include "g_mapinfo.h"
+#include "textures/textures.h"
+#include "v_video.h"
 
 #define mapheight (map->GetHeader().height)
 #define mapwidth (map->GetHeader().width)
@@ -50,6 +54,82 @@ void Init3DPoints()
 	}
 }
 
+void DrawHighQualityStarSky(byte *vbuf, uint32_t vbufPitch)
+{
+	int hvheight = viewheight >> 1;
+	int hvwidth = viewwidth >> 1;
+
+	byte *ptr = vbuf;
+	int i;
+	for(i = 0; i < hvheight; i++, ptr += vbufPitch)
+		memset(ptr, 0, viewwidth);
+
+	for(i = 0; i < MAXPOINTS; i++)
+	{
+		point3d_t *pt = &points[i];
+		int32_t x = pt->x * viewcos + pt->z * viewsin;
+		int32_t y = pt->y << 16;
+		int32_t z = (pt->z * viewcos - pt->x * viewsin) >> 8;
+		if(z <= 0) continue;
+		int shade = z >> 18;
+		if(shade > 15) continue;
+		int32_t xx = x / z + hvwidth;
+		int32_t yy = hvheight - y / z;
+		if(xx >= 1 && xx < viewwidth - 1 && yy >= 1 && yy < hvheight - 1)
+		{
+			vbuf[yy * vbufPitch + xx] = shade + 15;
+			if (15 - shade > 1)
+			{
+				shade = 15 - ((15 - shade) >> 1);
+				vbuf[yy * vbufPitch + xx + 1] =
+					vbuf[yy * vbufPitch + xx - 1] =
+					vbuf[(yy + 1) * vbufPitch + xx] =
+					vbuf[(yy - 1) * vbufPitch + xx] = shade + 15;
+			}
+		}
+	}
+
+	FTextureID picnum = TexMan.CheckForTexture ("FULLMOON", FTexture::TEX_Any);
+	if(!picnum.isValid())
+		return;
+	FTexture *picture = TexMan(picnum);
+
+	{
+		int pointInd = levelInfo->Atmos[3];
+		pointInd = (
+			pointInd == 1 || pointInd < 0 || pointInd >= MAXPOINTS) ? 10 : pointInd;
+
+		point3d_t *pt = &points[pointInd];
+		int32_t x = pt->x * viewcos + pt->z * viewsin;
+		int32_t y = pt->y << 16;
+		int32_t z = (pt->z * viewcos - pt->x * viewsin) >> 8;
+		if(z <= 0) return;
+		int32_t xx = x / z + hvwidth;
+		int32_t yy = hvheight - y / z;
+		xx += viewscreenx - 15;
+		yy += viewscreeny - 15;
+		if(xx + 30 >= 0 && xx < (int32_t)screenWidth &&
+			yy + 30 >= 0 && yy < (int32_t)screenHeight)
+		{
+			double x = xx, y = yy;
+
+			screen->Lock(false);
+			double wd = picture->GetScaledWidthDouble();
+			double hd = picture->GetScaledHeightDouble();
+
+			screen->DrawTexture(picture, x, y,
+				DTA_DestWidthF, wd,
+				DTA_DestHeightF, hd,
+				DTA_ClipLeft, viewscreenx,
+				DTA_ClipRight, viewscreenx + viewwidth,
+				DTA_ClipTop, viewscreeny,
+				DTA_ClipBottom, viewscreeny + viewheight,
+				TAG_DONE);
+			screen->Unlock();
+		}
+	}
+}
+
 void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 {
 	int hvheight = viewheight >> 1;
@@ -77,7 +157,8 @@ void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 
 	int32_t x = 16384 * viewcos + 16384 * viewsin;
 	int32_t z = (16384 * viewcos - 16384 * viewsin) >> 8;
-	if(z <= 0) return;
+	if(z <= 0)
+		return;
 	int32_t xx = x / z + hvwidth;
 	int32_t yy = hvheight - ((hvheight - (hvheight >> 3)) << 22) / z;
 	if(xx > -10 && xx < viewwidth)

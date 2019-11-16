@@ -586,6 +586,11 @@ protected:
 			mapInfo.ClearAtmos();
 			ParseIntAssignment(mapInfo.Atmos[2]);
 		}
+		else if(key.CompareNoCase("AtmosHqStarSky") == 0)
+		{
+			mapInfo.ClearAtmos();
+			ParseIntAssignment(mapInfo.Atmos[3]);
+		}
 		else if(key.CompareNoCase("Intermission") == 0)
 			ParseStringAssignment(mapInfo.Intermission);
 		else

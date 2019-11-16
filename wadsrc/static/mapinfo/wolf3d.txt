@@ -52,6 +52,7 @@ map "MAP01"
 	//atmosstarsky = 1
 	//atmosrain = 1
 	//atmossnow = 1
+	//atmoshqstarsky = 1
 }
 
 map "MAP02"
