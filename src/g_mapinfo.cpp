@@ -572,25 +572,13 @@ protected:
 		else if(key.CompareNoCase("NumParallaxTiles") == 0)
 			ParseIntAssignment(mapInfo.NumParallaxTiles);
 		else if(key.CompareNoCase("AtmosStarSky") == 0)
-		{
-			mapInfo.ClearAtmos();
 			ParseIntAssignment(mapInfo.Atmos[0]);
-		}
 		else if(key.CompareNoCase("AtmosRain") == 0)
-		{
-			mapInfo.ClearAtmos();
 			ParseIntAssignment(mapInfo.Atmos[1]);
-		}
 		else if(key.CompareNoCase("AtmosSnow") == 0)
-		{
-			mapInfo.ClearAtmos();
 			ParseIntAssignment(mapInfo.Atmos[2]);
-		}
 		else if(key.CompareNoCase("AtmosHqStarSky") == 0)
-		{
-			mapInfo.ClearAtmos();
 			ParseIntAssignment(mapInfo.Atmos[3]);
-		}
 		else if(key.CompareNoCase("Intermission") == 0)
 			ParseStringAssignment(mapInfo.Intermission);
 		else
