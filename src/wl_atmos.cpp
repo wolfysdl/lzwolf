@@ -199,7 +199,7 @@ void DrawRain(byte *vbuf, uint32_t vbufPitch)
 		az = pt->z + pz;
 		az = 0x1fff - (az & 0x3fff);
 		x = ax * viewcos + az * viewsin;
-		y = -(heightnumerator << 7) + ((((pt->y << 6) + rainpos) & 0x0ffff) << 11);
+		y = (((((pt->y << 6) + rainpos) & 0x0ffff) - 0x8000) << 11);
 		z = (az * viewcos - ax * viewsin) >> 8;
 		if(z <= 0) continue;
 		shade = z >> 17;
@@ -264,7 +264,7 @@ void DrawSnow(byte *vbuf, uint32_t vbufPitch)
 		az = pt->z + pz;
 		az = 0x1fff - (az & 0x3fff);
 		x = ax * viewcos + az * viewsin;
-		y = -(heightnumerator << 7) + ((((pt->y << 6) + rainpos) & 0x0ffff) << 11);
+		y = (((((pt->y << 6) + rainpos) & 0x0ffff) - 0x8000) << 11);
 		z = (az * viewcos - ax * viewsin) >> 8;
 		if(z <= 0) continue;
 		shade = z >> 17;
