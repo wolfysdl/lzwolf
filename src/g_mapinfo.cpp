@@ -581,6 +581,8 @@ protected:
 			ParseIntAssignment(mapInfo.Atmos[3]);
 		else if(key.CompareNoCase("Intermission") == 0)
 			ParseStringAssignment(mapInfo.Intermission);
+		else if(key.CompareNoCase("Colormap") == 0)
+			ParseStringAssignment(mapInfo.Colormap);
 		else
 			return false;
 		return true;

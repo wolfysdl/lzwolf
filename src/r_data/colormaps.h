@@ -3,7 +3,7 @@
 
 #include "v_palette.h"
 
-void R_InitColormaps ();
+void R_InitColormaps (const char *level_colormap_name = NULL);
 void R_DeinitColormaps ();
 
 DWORD R_ColormapNumForName(const char *name);	// killough 4/4/98

@@ -191,6 +191,7 @@ public:
 	int             NumParallaxTiles;
 	int             Atmos[4];
 	FString			Intermission;
+	FString			Colormap;
 
 	bool			DeathCam;
 	bool			SecretDeathSounds;

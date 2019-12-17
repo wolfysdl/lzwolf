@@ -23,6 +23,7 @@
 #include "wl_inter.h"
 #include "wl_net.h"
 #include "wl_play.h"
+#include "r_data/colormaps.h"
 #include "g_mapinfo.h"
 #include "a_inventory.h"
 #include "am_map.h"
@@ -1074,6 +1075,8 @@ void PlayLoop (void)
 	if (ShadowingEnabled)
 		DebugOk = 1;
 #endif
+
+	R_InitColormaps(levelInfo->Colormap);
 
 	playstate = ex_stillplaying;
 	ResetTimeCount();

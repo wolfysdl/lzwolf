@@ -32,6 +32,7 @@
 **
 */
 
+#include <string>
 #include <stddef.h>
 #include <string.h>
 #include <math.h>
@@ -76,7 +77,7 @@ struct FakeCmap
 TArray<FakeCmap> fakecmaps;
 BYTE *realcolormaps;
 size_t numfakecmaps;
-
+std::string colormap_name;
 
 
 TArray<FSpecialColormap> SpecialColormaps;
@@ -504,11 +505,18 @@ void R_DeinitColormaps ()
 //
 //==========================================================================
 
-void R_InitColormaps ()
+void R_InitColormaps (const char *level_colormap_name)
 {
 	// [RH] Try and convert BOOM colormaps into blending values.
 	//		This is a really rough hack, but it's better than
 	//		not doing anything with them at all (right?)
+
+	const char* game_colormap_name = gameinfo.GameColormap;
+	const char* new_colormap_name = (level_colormap_name != NULL &&
+		level_colormap_name[0] != '\0' ? level_colormap_name :
+		game_colormap_name);
+	if (new_colormap_name == colormap_name)
+		return;
 
 	FakeCmap cm;
 
@@ -538,7 +546,8 @@ void R_InitColormaps ()
 		}
 	}
 	realcolormaps = new BYTE[256*NUMCOLORMAPS*fakecmaps.Size()];
-	R_SetDefaultColormap (gameinfo.GameColormap);
+	R_SetDefaultColormap (new_colormap_name);
+	colormap_name = new_colormap_name;
 
 	if (fakecmaps.Size() > 1)
 	{
