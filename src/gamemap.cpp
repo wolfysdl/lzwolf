@@ -59,16 +59,16 @@ const FName SpecialThingNames[SMT_NumThings] = {
 GameMap::GameMap(const FString &map) : map(map), valid(false), isUWMF(false),
 	file(NULL), zoneTraversed(NULL), zoneLinks(NULL)
 {
-	char fpath[64];
-	snprintf(fpath, sizeof(fpath), "maps/%s.uwmf", map.GetChars());
-	lumps[0] = new FileReader();
-	if (lumps[0]->Open(fpath))
-	{
-		isUWMF = true;
-		valid = true;
-		return;
-	}
-	delete lumps[0];
+	//char fpath[64];
+	//snprintf(fpath, sizeof(fpath), "maps/%s.uwmf", map.GetChars());
+	//lumps[0] = new FileReader();
+	//if (lumps[0]->Open(fpath))
+	//{
+	//	isUWMF = true;
+	//	valid = true;
+	//	return;
+	//}
+	//delete lumps[0];
 
 	lumps[0] = NULL;
 
