@@ -1,5 +1,6 @@
 // WL_PLAY.C
 
+#include <string>
 #include "c_cvars.h"
 #include "wl_def.h"
 #include "wl_menu.h"
@@ -163,6 +164,8 @@ memptr demobuffer;
 //
 unsigned int ConsolePlayer = 0;
 TicCmd_t control[MAXPLAYERS];
+
+std::string current_colormap;
 
 //===========================================================================
 
@@ -1076,7 +1079,23 @@ void PlayLoop (void)
 		DebugOk = 1;
 #endif
 
-	R_InitColormaps(levelInfo->Colormap);
+	if (!levelInfo->Colormap.IsEmpty())
+	{
+		const char* name = levelInfo->Colormap;
+		if (std::string(name) != current_colormap)
+		{
+			R_InitColormaps(name);
+			current_colormap = std::string(name);
+		}
+	}
+	else
+	{
+		if (!current_colormap.empty())
+		{
+			R_InitColormaps();
+			current_colormap.clear();
+		}
+	}
 
 	playstate = ex_stillplaying;
 	ResetTimeCount();
