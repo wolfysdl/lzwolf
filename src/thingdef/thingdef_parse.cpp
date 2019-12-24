@@ -389,7 +389,7 @@ void FDecorateParser::ParseActorProperty()
 		propertyName = sc->str;
 	}
 
-	if (!ClassDef::SetProperty(newClass, className, propertyName, sc))
+	if (!ClassDef::SetProperty(newClass, className, propertyName, sc, NULL, NULL))
 	{
 		do
 		{
