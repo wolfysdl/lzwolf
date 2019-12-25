@@ -591,7 +591,18 @@ void FDecorateParser::ParseActorStateAction(StateDefinition &thisState, int func
 					val.isExpression = false;
 
 					const Type *argType = funcInf->ArgType(argc);
-					if(argType == TypeHierarchy::staticTypes.GetType(TypeHierarchy::INT) ||
+					if(argType == TypeHierarchy::staticTypes.GetType(TypeHierarchy::AUTO))
+					{
+						sc.GetNextToken();
+						if(sc->token == TK_StringConst)
+						{
+							sc.state.str += '"';
+							SCString_InsertChar(sc.state.str, 0, '"');
+						}
+						val.useType = CallArguments::Value::VAL_STRING;
+						val.str = sc->str;
+					}
+					else if(argType == TypeHierarchy::staticTypes.GetType(TypeHierarchy::INT) ||
 						argType == TypeHierarchy::staticTypes.GetType(TypeHierarchy::FLOAT) ||
 						argType == TypeHierarchy::staticTypes.GetType(TypeHierarchy::BOOL))
 					{
