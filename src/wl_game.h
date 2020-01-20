@@ -22,14 +22,19 @@
 
 struct HubWorld
 {
-	HubWorld() :
-		curmapdata(0)
+	HubWorld()
 	{
 	}
 
-	bool thingKilled(int thingNum)
+	bool thingKilled(const std::string& mapname, int thingNum) const
 	{
-		return curmapdata->thingKilled(thingNum);
+		return (mapdata.find(mapname) != mapdata.end() ?
+			mapdata.find(mapname)->second.thingKilled(thingNum) : false);
+	}
+
+	void setThingKilled(const std::string& mapname, int thingNum)
+	{
+		mapdata[mapname].thingskilled[thingNum] = true;
 	}
 
 	struct MapData
@@ -41,7 +46,7 @@ struct HubWorld
 		{
 		}
 
-		bool thingKilled(int thingNum)
+		bool thingKilled(int thingNum) const
 		{
 			return thingskilled.find(thingNum) != thingskilled.end();
 		}
@@ -53,7 +58,6 @@ struct HubWorld
 	};
 
 	std::map< std::string, MapData >    mapdata;
-	MapData*                            curmapdata;
 };
 
 inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)

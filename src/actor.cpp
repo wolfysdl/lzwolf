@@ -272,7 +272,15 @@ void AActor::Die()
 	}
 
 	if(flags & FL_COUNTKILL)
+	{
 		gamestate.killcount++;
+
+		if(this->spawnThingNum.first)
+		{
+			gamestate.hubworld.setThingKilled(gamestate.mapname,
+			                                  this->spawnThingNum.second);
+		}
+	}
 	flags &= ~FL_SHOOTABLE;
 
 	if(flags & FL_MISSILE)
@@ -567,7 +575,8 @@ void AActor::Serialize(FArchive &arc)
 		<< hidden
 		<< player
 		<< inventory
-		<< soundZone;
+		<< soundZone
+		<< spawnThingNum;
 	if(GameSave::SaveProdVersion >= 0x001003FF && GameSave::SaveVersion >= 1459043051)
 		arc << target;
 	if(arc.IsLoading() && (GameSave::SaveProdVersion < 0x001002FF || GameSave::SaveVersion < 1382102747))
