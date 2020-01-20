@@ -510,6 +510,9 @@ void GameMap::SpawnThings() const
 		if(!thing.skill[gamestate.difficulty->SpawnFilter])
 			continue;
 
+		if(gamestate.hubworld.thingKilled(i))
+			continue;
+
 		if(thing.type == SpecialThingNames[SMT_Player1Start])
 			SpawnPlayer(thing.x>>FRACBITS, thing.y>>FRACBITS, thing.angle);
 		else
@@ -533,6 +536,7 @@ void GameMap::SpawnThings() const
 				actor->dir = dirtype(actor->angle/ANGLE_45);
 			if(thing.holo)
 				actor->flags &= ~(FL_SOLID);
+			actor->spawnThingNum = i;
 
 			// Check for valid frames
 			if(!actor->state || !R_CheckSpriteValid(actor->sprite))

@@ -22,6 +22,16 @@
 
 struct HubWorld
 {
+	HubWorld() :
+		curmapdata(0)
+	{
+	}
+
+	bool thingKilled(int thingNum)
+	{
+		return curmapdata->thingKilled(thingNum);
+	}
+
 	struct MapData
 	{
 		MapData() :
@@ -31,6 +41,11 @@ struct HubWorld
 		{
 		}
 
+		bool thingKilled(int thingNum)
+		{
+			return thingskilled.find(thingNum) != thingskilled.end();
+		}
+
 		short       secretcount;
 		short       treasurecount;
 		short       killcount;
@@ -38,6 +53,7 @@ struct HubWorld
 	};
 
 	std::map< std::string, MapData >    mapdata;
+	MapData*                            curmapdata;
 };
 
 inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
