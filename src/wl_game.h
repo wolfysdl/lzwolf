@@ -1,6 +1,7 @@
 #ifndef __WL_GAME_H__
 #define __WL_GAME_H__
 
+#include <map>
 #include "textures/textures.h"
 
 /*
@@ -10,6 +11,22 @@
 
 =============================================================================
 */
+
+//---------------
+//
+// Hub World structure
+//
+//---------------
+
+struct HubWorld
+{
+	struct MapData
+	{
+		std::map< int, bool >    thingskilled;
+	};
+
+	std::map< std::string, MapData >    mapdata;
+};
 
 //---------------
 //
@@ -30,6 +47,8 @@ extern struct gametype
 	int32_t     TimeCount;
 	bool        victoryflag;            // set during victory animations
 	bool		fullmap;
+
+	HubWorld    hubworld;
 } gamestate;
 
 extern  char            demoname[13];
