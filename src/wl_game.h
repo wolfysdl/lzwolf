@@ -2,7 +2,9 @@
 #define __WL_GAME_H__
 
 #include <map>
+#include <string>
 #include "textures/textures.h"
+#include "farchive.h"
 
 /*
 =============================================================================
@@ -22,11 +24,36 @@ struct HubWorld
 {
 	struct MapData
 	{
+		MapData() :
+			secretcount(0),
+			treasurecount(0),
+			killcount(0)
+		{
+		}
+
+		short       secretcount;
+		short       treasurecount;
+		short       killcount;
 		std::map< int, bool >    thingskilled;
 	};
 
 	std::map< std::string, MapData >    mapdata;
 };
+
+inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
+{
+	arc << mapdata.secretcount
+		<< mapdata.treasurecount
+		<< mapdata.killcount
+		<< mapdata.thingskilled;
+	return arc;
+}
+
+inline FArchive &operator<< (FArchive &arc, HubWorld &hubworld)
+{
+	arc << hubworld.mapdata;
+	return arc;
+}
 
 //---------------
 //
