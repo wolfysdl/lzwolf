@@ -1025,14 +1025,6 @@ restartgame:
 				if(dointermission)
 					VL_FadeOut(0, 255, RPART(levelInfo->ExitFadeColor), GPART(levelInfo->ExitFadeColor), BPART(levelInfo->ExitFadeColor), levelInfo->ExitFadeDuration);
 
-				HubWorld::MapData& hubmapdata =
-					gamestate.phubworld->getMapData(gamestate.mapname);
-				hubmapdata.ExitTileLoc = std::make_pair( players[0].mo->tilex,
-					                                     players[0].mo->tiley );
-				hubmapdata.ExitAngle = (short)(players[0].mo->angle / ANGLE_1);
-				hubmapdata.ExitAngle =
-					(((hubmapdata.ExitAngle + 45) / 90) * 90) % 360;
-
 				StartTravel ();
 				if(dointermission)
 					LevelCompleted ();              // do the intermission

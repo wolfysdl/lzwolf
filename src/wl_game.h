@@ -49,8 +49,7 @@ struct HubWorld
 			treasurecount(0),
 			killcount(0),
 			TimeCount(0),
-			LastInterBonus(0),
-			ExitAngle(0)
+			LastInterBonus(0)
 		{
 		}
 
@@ -64,8 +63,6 @@ struct HubWorld
 		short       killcount;
 		int32_t     TimeCount;
 		uint32_t    LastInterBonus;
-		std::pair< int, int > ExitTileLoc;
-		short       ExitAngle;
 		std::map< int, bool >    thingskilled;
 	};
 
@@ -84,8 +81,6 @@ inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
 		<< mapdata.killcount
 		<< mapdata.TimeCount
 		<< mapdata.LastInterBonus
-		<< mapdata.ExitTileLoc
-		<< mapdata.ExitAngle
 		<< mapdata.thingskilled;
 	return arc;
 }
