@@ -40,6 +40,7 @@
 ** releases even without a versioning system.
 */
 
+#include <vector>
 #include <stddef.h>
 #include <string.h>
 #include <zlib.h>
@@ -933,6 +934,32 @@ FArchive &FArchive::operator<< (FString &str)
 			Read (str2, size);
 			str2[size] = 0;
 			str = str2;
+		}
+	}
+	return *this;
+}
+
+FArchive &FArchive::operator<< (std::string &str)
+{
+	if (m_Storing)
+	{
+		WriteString (str.c_str());
+	}
+	else
+	{
+		DWORD size = ReadCount();
+
+		if (size == 0)
+		{
+			str = "";
+		}
+		else
+		{
+			std::vector<char> str2(size);
+			size--;
+			Read (&str2[0], size);
+			str2[size] = 0;
+			str = &str2[0];
 		}
 	}
 	return *this;

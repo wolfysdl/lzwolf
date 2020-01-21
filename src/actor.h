@@ -229,6 +229,7 @@ class AActor : public Thinker,
 		const ClassDef  *killerdamagetype;
 		int         picX, picY;
 		const ClassDef  *faction;
+		std::pair<bool,int> spawnThingNum;
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn

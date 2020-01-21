@@ -1,7 +1,10 @@
 #ifndef __WL_GAME_H__
 #define __WL_GAME_H__
 
+#include <map>
+#include <string>
 #include "textures/textures.h"
+#include "farchive.h"
 
 /*
 =============================================================================
@@ -10,6 +13,83 @@
 
 =============================================================================
 */
+
+//---------------
+//
+// Hub World structure
+//
+//---------------
+
+struct HubWorld
+{
+	HubWorld()
+	{
+	}
+
+	bool hasMap(const std::string& mapname) const
+	{
+		return mapdata.find(mapname) != mapdata.end();
+	}
+
+	bool thingKilled(const std::string& mapname, int thingNum) const
+	{
+		return (mapdata.find(mapname) != mapdata.end() ?
+			mapdata.find(mapname)->second.thingKilled(thingNum) : false);
+	}
+
+	void setThingKilled(const std::string& mapname, int thingNum)
+	{
+		mapdata[mapname].thingskilled[thingNum] = true;
+	}
+
+	uint32_t& getLastInterBonus(const std::string& mapname)
+	{
+		return mapdata[mapname].LastInterBonus;
+	}
+
+	struct MapData
+	{
+		MapData() :
+			secretcount(0),
+			treasurecount(0),
+			killcount(0),
+			TimeCount(0),
+			LastInterBonus(0)
+		{
+		}
+
+		bool thingKilled(int thingNum) const
+		{
+			return thingskilled.find(thingNum) != thingskilled.end();
+		}
+
+		short       secretcount;
+		short       treasurecount;
+		short       killcount;
+		int32_t     TimeCount;
+		uint32_t    LastInterBonus;
+		std::map< int, bool >    thingskilled;
+	};
+
+	std::map< std::string, MapData >    mapdata;
+};
+
+inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
+{
+	arc << mapdata.secretcount
+		<< mapdata.treasurecount
+		<< mapdata.killcount
+		<< mapdata.TimeCount
+		<< mapdata.LastInterBonus
+		<< mapdata.thingskilled;
+	return arc;
+}
+
+inline FArchive &operator<< (FArchive &arc, HubWorld &hubworld)
+{
+	arc << hubworld.mapdata;
+	return arc;
+}
 
 //---------------
 //
@@ -30,6 +110,8 @@ extern struct gametype
 	int32_t     TimeCount;
 	bool        victoryflag;            // set during victory animations
 	bool		fullmap;
+
+	HubWorld*   phubworld;
 } gamestate;
 
 extern  char            demoname[13];

@@ -197,7 +197,15 @@ void AInventory::Touch(AActor *toucher)
 		return;
 
 	if(flags & FL_COUNTITEM)
+	{
 		++gamestate.treasurecount;
+
+		if(this->spawnThingNum.first)
+		{
+			gamestate.phubworld->setThingKilled(gamestate.mapname,
+			                                    this->spawnThingNum.second);
+		}
+	}
 	if(flags & FL_COUNTSECRET)
 		++gamestate.secretcount;
 
