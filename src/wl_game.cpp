@@ -286,6 +286,18 @@ void SetupGameLevel (void)
 			= gamestate.treasurecount = 0;
 		LastAttacker = NULL;
 		players[0].killerobj = NULL;
+
+		// if revisiting this map for a second time then recover the kill stats
+		HubWorld::MapData *hubmapdata = 
+			(gamestate.phubworld->hasMap(gamestate.mapname) ?
+				&(gamestate.phubworld->mapdata.find(gamestate.mapname)->second) :
+				NULL);
+		if(hubmapdata != NULL)
+		{
+			gamestate.secretcount = hubmapdata->secretcount;
+			gamestate.killcount = hubmapdata->killcount;
+			gamestate.treasurecount = hubmapdata->treasurecount;
+		}
 	}
 
 	gamestate.faceframe.SetInvalid();

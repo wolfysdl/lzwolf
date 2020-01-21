@@ -504,8 +504,10 @@ void GameMap::SpawnThings() const
 	// Debug code - Show the number of things spawned at map start.
 	printf("Spawning %d things\n", things.Size());
 #endif
-	HubWorld::MapData *hubmapdata =
-		&gamestate.hubworld.mapdata[gamestate.mapname];
+	HubWorld::MapData *hubmapdata = 
+		(gamestate.phubworld->hasMap(gamestate.mapname) ?
+			&(gamestate.phubworld->mapdata.find(gamestate.mapname)->second) :
+			NULL);
 	
 	for(unsigned int i = 0;i < things.Size();++i)
 	{
@@ -513,7 +515,7 @@ void GameMap::SpawnThings() const
 		if(!thing.skill[gamestate.difficulty->SpawnFilter])
 			continue;
 
-		if(hubmapdata->thingKilled(i))
+		if(hubmapdata != NULL && hubmapdata->thingKilled(i))
 			continue;
 
 		if(thing.type == SpecialThingNames[SMT_Player1Start])

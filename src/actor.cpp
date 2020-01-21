@@ -277,8 +277,8 @@ void AActor::Die()
 
 		if(this->spawnThingNum.first)
 		{
-			gamestate.hubworld.setThingKilled(gamestate.mapname,
-			                                  this->spawnThingNum.second);
+			gamestate.phubworld->setThingKilled(gamestate.mapname,
+			                                    this->spawnThingNum.second);
 		}
 	}
 	flags &= ~FL_SHOOTABLE;

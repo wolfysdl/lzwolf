@@ -26,6 +26,11 @@ struct HubWorld
 	{
 	}
 
+	bool hasMap(const std::string& mapname) const
+	{
+		return mapdata.find(mapname) != mapdata.end();
+	}
+
 	bool thingKilled(const std::string& mapname, int thingNum) const
 	{
 		return (mapdata.find(mapname) != mapdata.end() ?
@@ -95,7 +100,7 @@ extern struct gametype
 	bool        victoryflag;            // set during victory animations
 	bool		fullmap;
 
-	HubWorld    hubworld;
+	HubWorld*   phubworld;
 } gamestate;
 
 extern  char            demoname[13];
