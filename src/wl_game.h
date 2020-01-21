@@ -42,12 +42,19 @@ struct HubWorld
 		mapdata[mapname].thingskilled[thingNum] = true;
 	}
 
+	uint32_t& getLastInterBonus(const std::string& mapname)
+	{
+		return mapdata[mapname].LastInterBonus;
+	}
+
 	struct MapData
 	{
 		MapData() :
 			secretcount(0),
 			treasurecount(0),
-			killcount(0)
+			killcount(0),
+			TimeCount(0),
+			LastInterBonus(0)
 		{
 		}
 
@@ -59,6 +66,8 @@ struct HubWorld
 		short       secretcount;
 		short       treasurecount;
 		short       killcount;
+		int32_t     TimeCount;
+		uint32_t    LastInterBonus;
 		std::map< int, bool >    thingskilled;
 	};
 
@@ -70,6 +79,8 @@ inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
 	arc << mapdata.secretcount
 		<< mapdata.treasurecount
 		<< mapdata.killcount
+		<< mapdata.TimeCount
+		<< mapdata.LastInterBonus
 		<< mapdata.thingskilled;
 	return arc;
 }

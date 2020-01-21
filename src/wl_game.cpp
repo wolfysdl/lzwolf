@@ -297,6 +297,7 @@ void SetupGameLevel (void)
 			gamestate.secretcount = hubmapdata->secretcount;
 			gamestate.killcount = hubmapdata->killcount;
 			gamestate.treasurecount = hubmapdata->treasurecount;
+			gamestate.TimeCount = hubmapdata->TimeCount;
 		}
 	}
 
