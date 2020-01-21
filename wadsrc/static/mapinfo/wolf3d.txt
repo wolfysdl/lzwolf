@@ -43,7 +43,7 @@ cluster 1
 map "MAP01"
 {
 	next = "MAP02"
-	secretnext = "MAP10"
+	secretnext = "MAP01"
 	floornumber = 1
 	par = 90
 	music = "GETTHEM"

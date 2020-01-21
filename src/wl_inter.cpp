@@ -434,7 +434,7 @@ static void InterDoNormal()
 	InterCountRatio(InterState.tr, 296, 112+32);
 
 	uint32_t& LastInterBonus =
-		gamestate.phubworld->getLastInterBonus(gamestate.mapname);
+		gamestate.phubworld->getMapData(gamestate.mapname).LastInterBonus;
 	if(InterState.bonus > LastInterBonus)
 	{
 		players[0].GivePoints (InterState.bonus - LastInterBonus);
@@ -503,7 +503,7 @@ static void InterDoGraphical()
 	InterCountRatio(InterState.sr, 232, 104+32);
 
 	uint32_t& LastInterBonus =
-		gamestate.phubworld->getLastInterBonus(gamestate.mapname);
+		gamestate.phubworld->getMapData(gamestate.mapname).LastInterBonus;
 	if(InterState.bonus > LastInterBonus)
 	{
 		players[0].GivePoints (InterState.bonus - LastInterBonus);
