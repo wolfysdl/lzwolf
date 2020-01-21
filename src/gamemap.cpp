@@ -518,8 +518,17 @@ void GameMap::SpawnThings() const
 		if(hubmapdata != NULL && hubmapdata->thingKilled(i))
 			continue;
 
-		if(thing.type == SpecialThingNames[SMT_Player1Start])
+		if(hubmapdata != NULL &&
+		   thing.type == SpecialThingNames[SMT_Player1Start])
+		{
+			SpawnPlayer(hubmapdata->ExitTileLoc.first,
+			            hubmapdata->ExitTileLoc.second,
+						(hubmapdata->ExitAngle + 180) % 360);
+		}
+		else if(thing.type == SpecialThingNames[SMT_Player1Start])
+		{
 			SpawnPlayer(thing.x>>FRACBITS, thing.y>>FRACBITS, thing.angle);
+		}
 		else
 		{
 			static const ClassDef *unknownClass = ClassDef::FindClass("Unknown");

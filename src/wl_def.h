@@ -146,6 +146,7 @@ typedef SDWORD int32;
 #define ANGLE_90		(ANGLE_45*2)
 #define ANGLE_180		(ANGLE_45*4)
 #define ANGLE_270		(ANGLE_45*6)
+#define ANGLE_360		(ANGLE_45*8)
 #define ANGLE_1			(ANGLE_45/45)
 #define ANGLE_60		(ANGLE_180/3)
 #define ANGLE_NEG(x)	(static_cast<angle_t>(0xFFFFFFFFu-x+1u))
