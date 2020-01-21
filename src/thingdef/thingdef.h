@@ -314,13 +314,16 @@ class ClassDef
 		MetaTable				Meta;
 
 		static bool	SetFlag(const ClassDef *newClass, AActor *instance, const FString &prefix, const FString &flagName, bool set);
+
+		static bool SetProperty(AActor* actor, const ClassDef *cls, const char* propName, const char *value);
+
 	protected:
 		friend class DObject;
 		friend class StateLabel;
 		friend class FDecorateParser;
 		static const size_t POINTER_END;
 
-		static bool SetProperty(ClassDef *newClass, const char* className, const char* propName, Scanner &sc);
+		static bool SetProperty(ClassDef *newClass, const char* className, const char* propName, Scanner &sc, AActor* actor, const ClassDef* cls);
 
 		static void AddGlobalSymbol(Symbol *sym);
 		void		BuildFlatPointers();

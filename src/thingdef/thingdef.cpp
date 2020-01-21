@@ -1069,8 +1069,18 @@ bool ClassDef::SetFlag(const ClassDef *newClass, AActor *instance, const FString
 	return false;
 }
 
-bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char* propName, Scanner &sc)
+bool ClassDef::SetProperty(AActor* actor, const ClassDef *cls, const char* propName, const char* value)
 {
+	Scanner sc( value, strlen(value) );
+	return ClassDef::SetProperty(/*newClass*/NULL, /*className*/NULL,
+		propName, sc, actor, cls);
+}
+
+bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char* propName, Scanner &sc, AActor* actor, const ClassDef* cls)
+{
+	if (!cls)
+		cls = newClass;
+
 	static unsigned int NUM_PROPERTIES = 0;
 	if(NUM_PROPERTIES == 0)
 	{
@@ -1087,9 +1097,17 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 		int ret = stricmp(properties[mid].name, propName);
 		if(ret == 0)
 		{
-			if(!newClass->IsDescendantOf(properties[mid].className) ||
-				stricmp(properties[mid].prefix, className) != 0)
+			if
+				(
+					!cls->IsDescendantOf(properties[mid].className) ||
+					(
+						className != NULL &&
+						stricmp(properties[mid].prefix, className) != 0
+					)
+				)
+			{
 				sc.ScriptMessage(Scanner::ERROR, "Property %s.%s not available in this scope.\n", properties[mid].className->name.GetChars(), propName);
+			}
 
 			PropertyParam* params = new PropertyParam[strlen(properties[mid].params)];
 			// Key:
@@ -1134,7 +1152,7 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								if(sc.CheckToken('('))
 								{
 									params[paramc].isExpression = true;
-									params[paramc].expr = ExpressionNode::ParseExpression(newClass, TypeHierarchy::staticTypes, sc, NULL);
+									params[paramc].expr = ExpressionNode::ParseExpression(cls, TypeHierarchy::staticTypes, sc, NULL);
 									sc.MustGetToken(')');
 									break;
 								}
@@ -1189,7 +1207,7 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 			if(!optional && *p != 0 && *p != '_')
 				sc.ScriptMessage(Scanner::ERROR, "Not enough parameters.");
 
-			properties[mid].handler(newClass, (AActor*)newClass->defaultInstance, paramc, params);
+			properties[mid].handler(newClass, actor ? actor : (AActor*)newClass->defaultInstance, paramc, params);
 
 			// Clean up
 			p = properties[mid].params;
