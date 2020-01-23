@@ -49,7 +49,11 @@ struct HubWorld
 			treasurecount(0),
 			killcount(0),
 			TimeCount(0),
-			LastInterBonus(0)
+			LastInterBonus(0),
+			counted_kr(false),
+			counted_sr(false),
+			counted_tr(false),
+			pass(0)
 		{
 		}
 
@@ -58,11 +62,30 @@ struct HubWorld
 			return thingskilled.find(thingNum) != thingskilled.end();
 		}
 
+		struct LevelPassRatios
+		{
+			LevelPassRatios() :
+				killratio(0),
+				secretsratio(0),
+				treasureratio(0)
+			{
+			}
+
+			unsigned int killratio;
+			unsigned int secretsratio;
+			unsigned int treasureratio;
+		};
+
 		short       secretcount;
 		short       treasurecount;
 		short       killcount;
 		int32_t     TimeCount;
 		uint32_t    LastInterBonus;
+		bool        counted_kr;
+		bool        counted_sr;
+		bool        counted_tr;
+		int         pass;
+		LevelPassRatios level_pass_ratios;
 		std::map< int, bool >    thingskilled;
 	};
 

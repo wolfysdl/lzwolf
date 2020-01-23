@@ -182,6 +182,7 @@ public:
 	int				ExitFadeColor;
 	unsigned int	ExitFadeDuration;
 	unsigned int	Par;
+	TArray<int>		HubPar;
 	FString			CompletionString;
 	FTextureID		HighScoresGraphic;
 	int				LevelBonus;

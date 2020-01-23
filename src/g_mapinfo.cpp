@@ -541,6 +541,8 @@ protected:
 			mapInfo.NoIntermission = true;
 		else if(key.CompareNoCase("Par") == 0)
 			ParseIntAssignment(mapInfo.Par);
+		else if(key.CompareNoCase("HubPar") == 0)
+			ParseIntArrayAssignment(mapInfo.HubPar);
 		else if(key.CompareNoCase("ResetHealth") == 0)
 			mapInfo.ResetHealth = true;
 		else if(key.CompareNoCase("ResetInventory") == 0)
