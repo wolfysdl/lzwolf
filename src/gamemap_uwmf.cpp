@@ -567,6 +567,18 @@ class UWMFParser : public TextMapParser
 				sc.MustGetToken(TK_BoolConst);
 				thing.skill[3] = sc->boolean;
 			}
+			else CheckKey("hubnospawn")
+			{
+				sc.MustGetToken(TK_IntConst);
+				if(sc->number >= 0 && sc->number < MapThing::MAXHUBPASSES)
+				{
+					thing.hubnospawn[sc->number] = true;
+				}
+				else
+				{
+					sc.ScriptMessage(Scanner::WARNING, "Invalid hub pass for hubnospawn property.\n");
+				}
+			}
 
 			EndParseBlock
 			gm->things.Push(thing);

@@ -515,8 +515,13 @@ void GameMap::SpawnThings() const
 		if(!thing.skill[gamestate.difficulty->SpawnFilter])
 			continue;
 
-		if(hubmapdata != NULL && hubmapdata->thingKilled(i))
-			continue;
+		if(hubmapdata != NULL)
+		{
+			if(hubmapdata->thingKilled(i))
+				continue;
+			if(thing.checkHubNoSpawn(hubmapdata->pass))
+				continue;
+		}
 
 		if(thing.type == SpecialThingNames[SMT_Player1Start])
 		{

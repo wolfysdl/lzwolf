@@ -69,10 +69,23 @@ class GameMap
 		};
 		struct Thing
 		{
+			enum
+			{
+				MAXHUBPASSES = 4,
+			};
+
 			Thing() : x(0), y(0), z(0), type(NAME_None), angle(0),
 				ambush(false), patrol(false), holo(false)
 			{
 				skill[0] = skill[1] = skill[2] = skill[3] = false;
+				for(int i = 0; i < MAXHUBPASSES; i++)
+					hubnospawn[i] = false;
+			}
+
+			bool checkHubNoSpawn(int pass) const
+			{
+				return pass >= 0 && pass < MAXHUBPASSES &&
+					hubnospawn[pass];
 			}
 
 			fixed			x, y, z;
@@ -82,6 +95,7 @@ class GameMap
 			bool			patrol;
 			bool			holo;
 			bool			skill[4];
+			bool			hubnospawn[MAXHUBPASSES];
 		};
 		struct Trigger
 		{

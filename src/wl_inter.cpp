@@ -567,7 +567,7 @@ void LevelCompleted (void)
 	InterState.bonus = 0;
 	InterState.acked = false;
 	InterState.Par = (hubmapdata.pass > 0 && (hubmapdata.pass-1) <
-		levelInfo->HubPar.Size() ?
+		(int)levelInfo->HubPar.Size() ?
 		levelInfo->HubPar[hubmapdata.pass-1] : levelInfo->Par);
 
 	hubmapdata.pass++;
