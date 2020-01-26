@@ -62,7 +62,11 @@ public:
 	{
 		TF_PATHING = 1,
 		TF_HOLOWALL = 2,
-		TF_AMBUSH = 4
+		TF_AMBUSH = 4,
+		TF_NOHUBSPAWN0 = 8,
+		TF_NOHUBSPAWN1 = 16,
+		TF_NOHUBSPAWN2 = 32,
+		TF_NOHUBSPAWN3 = 64,
 	};
 
 	enum
@@ -347,6 +351,11 @@ public:
 		thing.skill[0] = thing.skill[1] = type.minskill <= 1;
 		thing.skill[2] = type.minskill <= 2;
 		thing.skill[3] = type.minskill <= 3;
+
+		thing.hubnospawn[0] = !!(type.flags&Xlat::TF_NOHUBSPAWN0);
+		thing.hubnospawn[1] = !!(type.flags&Xlat::TF_NOHUBSPAWN1);
+		thing.hubnospawn[2] = !!(type.flags&Xlat::TF_NOHUBSPAWN2);
+		thing.hubnospawn[3] = !!(type.flags&Xlat::TF_NOHUBSPAWN3);
 		return tsFlags;
 	}
 
@@ -619,6 +628,14 @@ protected:
 							thing.flags |= TF_HOLOWALL;
 						else if(sc->str.CompareNoCase("AMBUSH") == 0)
 							thing.flags |= TF_AMBUSH;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN0") == 0)
+							thing.flags |= TF_NOHUBSPAWN0;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN1") == 0)
+							thing.flags |= TF_NOHUBSPAWN1;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN2") == 0)
+							thing.flags |= TF_NOHUBSPAWN2;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN3") == 0)
+							thing.flags |= TF_NOHUBSPAWN3;
 						else
 							sc.ScriptMessage(Scanner::ERROR, "Unknown flag '%s'.", sc->str.GetChars());
 					}
