@@ -65,7 +65,6 @@ struct HubWorld
 			killcount(0),
 			treasuretotal(0),
 			killtotal(0),
-			TimeCount(0),
 			LastInterBonus(0),
 			counted_kr(false),
 			counted_sr(false),
@@ -98,7 +97,6 @@ struct HubWorld
 		short       killcount;
 		short       treasuretotal;
 		short       killtotal;
-		int32_t     TimeCount;
 		uint32_t    LastInterBonus;
 		bool        counted_kr;
 		bool        counted_sr;
@@ -123,7 +121,6 @@ inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
 		<< mapdata.killcount
 		<< mapdata.treasuretotal
 		<< mapdata.killtotal
-		<< mapdata.TimeCount
 		<< mapdata.LastInterBonus
 		<< mapdata.thingskilled;
 	return arc;

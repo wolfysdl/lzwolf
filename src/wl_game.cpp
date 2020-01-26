@@ -300,8 +300,6 @@ void SetupGameLevel (void)
 
 			gamestate.killtotal = hubmapdata->killtotal;
 			gamestate.treasuretotal = hubmapdata->treasuretotal;
-
-			gamestate.TimeCount = hubmapdata->TimeCount;
 		}
 	}
 

@@ -550,6 +550,16 @@ void GameMap::SpawnThings() const
 				actor->flags &= ~(FL_SOLID);
 			actor->spawnThingNum = std::make_pair(true, i);
 
+			// you can score 100% kills/treasure again in this level if a new
+			// actor is spawned that counts towards the statistic
+			if(hubmapdata != NULL && hubmapdata->pass > 0)
+			{
+				if(actor->flags & FL_COUNTKILL)
+					hubmapdata->counted_kr = false;
+				if(actor->flags & FL_COUNTITEM)
+					hubmapdata->counted_tr = false;
+			}
+
 			// Check for valid frames
 			if(!actor->state || !R_CheckSpriteValid(actor->sprite))
 			{
