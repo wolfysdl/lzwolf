@@ -52,6 +52,7 @@ static const char* const FeatureFlagNames[] = {
 	"lightlevels",
 	"planedepth",
 	"zheights",
+	"hubnospawn",
 	NULL
 };
 
@@ -84,7 +85,8 @@ public:
 		FF_GLOBALMETA = 1,
 		FF_LIGHTLEVELS = 2,
 		FF_PLANEDEPTH = 4,
-		FF_ZHEIGHTS = 8
+		FF_ZHEIGHTS = 8,
+		FF_HUBNOSPAWN = 16,
 	};
 
 	struct ThingXlat
@@ -1307,6 +1309,14 @@ void GameMap::ReadPlanesData()
 							}
 							else
 								thing.z = 0;
+							if((FeatureFlags & Xlat::FF_HUBNOSPAWN) && (infoplane[i]&0xFF00) == 0xBB00)
+							{
+								for(int pass = 0; pass < MapThing::MAXHUBPASSES; ++pass)
+								{
+									bool& hubnospawn = thing.hubnospawn[pass];
+									hubnospawn = hubnospawn || !!(infoplane[i] & (WORD)(1 << pass));
+								}
+							}
 							thing.ambush = (flags & Xlat::TF_AMBUSH) || ambushSpots[ambushSpot] == i;
 
 							int thingnum = things.Push(thing);
