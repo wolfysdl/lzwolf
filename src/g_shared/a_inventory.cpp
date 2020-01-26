@@ -203,7 +203,8 @@ void AInventory::Touch(AActor *toucher)
 		if(this->spawnThingNum.first)
 		{
 			gamestate.phubworld->setThingKilled(gamestate.mapname,
-			                                    this->spawnThingNum.second);
+												this->spawnThingNum.second,
+												HubWorld::CountedType::TREASURE);
 		}
 	}
 	if(flags & FL_COUNTSECRET)

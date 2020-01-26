@@ -22,6 +22,16 @@
 
 struct HubWorld
 {
+	struct CountedType
+	{
+		enum e
+		{
+			KILLS,
+			TREASURE,
+			MAX,
+		};
+	};
+
 	HubWorld()
 	{
 	}
@@ -37,9 +47,14 @@ struct HubWorld
 			mapdata.find(mapname)->second.thingKilled(thingNum) : false);
 	}
 
-	void setThingKilled(const std::string& mapname, int thingNum)
+	void setThingKilled(const std::string& mapname, int thingNum,
+						CountedType::e countedType)
 	{
 		mapdata[mapname].thingskilled[thingNum] = true;
+
+		MapData& md = mapdata[mapname];
+		short* ptotals[CountedType::MAX] = { &md.killtotal, &md.treasuretotal };
+		++*ptotals[countedType];
 	}
 
 	struct MapData
@@ -48,6 +63,8 @@ struct HubWorld
 			secretcount(0),
 			treasurecount(0),
 			killcount(0),
+			treasuretotal(0),
+			killtotal(0),
 			TimeCount(0),
 			LastInterBonus(0),
 			counted_kr(false),
@@ -79,6 +96,8 @@ struct HubWorld
 		short       secretcount;
 		short       treasurecount;
 		short       killcount;
+		short       treasuretotal;
+		short       killtotal;
 		int32_t     TimeCount;
 		uint32_t    LastInterBonus;
 		bool        counted_kr;
@@ -102,6 +121,8 @@ inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
 	arc << mapdata.secretcount
 		<< mapdata.treasurecount
 		<< mapdata.killcount
+		<< mapdata.treasuretotal
+		<< mapdata.killtotal
 		<< mapdata.TimeCount
 		<< mapdata.LastInterBonus
 		<< mapdata.thingskilled;
