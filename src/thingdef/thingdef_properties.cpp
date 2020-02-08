@@ -628,6 +628,12 @@ HANDLE_PROPERTY(sighttime)
 		defaults->sightrandom = 0;
 }
 
+HANDLE_PROPERTY(silent)
+{
+	INT_PARAM(silent, 0);
+	((ADamage *)defaults)->silent = silent?true:false;
+}
+
 HANDLE_PROPERTY(slotnumber)
 {
 	INT_PARAM(slot, 0);
@@ -799,6 +805,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(selectionorder, Weapon, I),
 	DEFINE_PROP_PREFIX(sidemove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(sighttime, Actor, I_I),
+	DEFINE_PROP(silent, Damage, I),
 	DEFINE_PROP(slotnumber, Weapon, I),
 	DEFINE_PROP(slotpriority, Weapon, F),
 	DEFINE_PROP(speed, Actor, F_F),

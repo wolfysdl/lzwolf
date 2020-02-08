@@ -8,6 +8,7 @@
 #include "g_mapinfo.h"
 #include "m_random.h"
 #include "actor.h"
+#include "a_inventory.h"
 #include "thingdef/thingdef.h"
 #include "wl_agent.h"
 #include "wl_game.h"
@@ -793,7 +794,15 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		return;
 	}
 
-	madenoise = true;
+	ADamage *damageinv = NULL;
+	if (damagetype)
+	{
+		damageinv = static_cast<ADamage *>(
+			players[0].mo->FindInventory(damagetype));
+	}
+
+	if (!damageinv || !damageinv->silent)
+		madenoise = true;
 
 	//
 	// do double damage if shooting a non attack mode actor

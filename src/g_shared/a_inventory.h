@@ -121,6 +121,7 @@ class ADamage : public AInventory
 
 		bool			ignorearmor;
 		bool			noxdeath;
+		bool			silent;
 
 	protected:
 		AInventory		*CreateCopy(AActor *holder);
