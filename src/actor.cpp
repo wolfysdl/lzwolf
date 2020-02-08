@@ -480,7 +480,7 @@ void AActor::Init()
 
 	actors.Push(this);
 	if(!loadedgame)
-		Activate();
+		Thinker::Activate();
 
 	if(SpawnState)
 		SetState(SpawnState, true);
@@ -577,7 +577,8 @@ void AActor::Serialize(FArchive &arc)
 		<< player
 		<< inventory
 		<< soundZone
-		<< spawnThingNum;
+		<< spawnThingNum
+		<< activationtype;
 	if(GameSave::SaveProdVersion >= 0x001003FF && GameSave::SaveVersion >= 1459043051)
 		arc << target;
 	if(arc.IsLoading() && (GameSave::SaveProdVersion < 0x001002FF || GameSave::SaveVersion < 1382102747))
@@ -666,6 +667,14 @@ bool AActor::Teleport(fixed x, fixed y, angle_t angle, bool nofog)
 	return true;
 }
 
+void AActor::Activate (AActor *activator)
+{
+}
+
+void AActor::Deactivate (AActor *activator)
+{
+}
+
 void AActor::Tick()
 {
 	// If we just spawned we're not ready to be ticked yet
@@ -705,7 +714,7 @@ void AActor::RemoveFromWorld()
 {
 	actors.Remove(this);
 	if(IsThinking())
-		Deactivate();
+		Thinker::Deactivate();
 	LoopedAudio::stopSoundFrom (this->spawnid);
 }
 

@@ -159,6 +159,7 @@ set(SOURCE_FILES
 	g_blake/a_smartanim.cpp
 	g_blake/blake_sbar.cpp
 	g_shared/a_armor.cpp
+	g_shared/a_action.cpp
 	g_shared/a_deathcam.cpp
 	g_shared/a_inventory.cpp
 	g_shared/a_keys.cpp

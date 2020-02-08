@@ -1199,3 +1199,22 @@ FUNC(Change_Music)
 	StartMusic ();
 	return 1;
 }
+
+FUNC(Trigger_ThingSpecial)
+{
+	bool ret = false;
+
+	for(AActor::Iterator iter = AActor::GetIterator().Next();iter;)
+	{
+		AActor *check = iter;
+		iter.Next();
+
+		if(check->spot == spot)
+		{
+			if(P_ActivateThingSpecial(check, activator))
+				ret = true;
+		}
+	}
+
+	return ret;
+}
