@@ -6,6 +6,7 @@
 #include <unistd.h>
 #endif
 
+#include <algorithm>
 #include <math.h>
 #include "wl_def.h"
 #include "wl_menu.h"
