@@ -50,9 +50,8 @@ struct HubWorld
 	void setThingKilled(const std::string& mapname, int thingNum,
 						CountedType::e countedType)
 	{
-		mapdata[mapname].thingskilled[thingNum] = true;
-
-		MapData& md = mapdata[mapname];
+		MapData& md = pendingmapdata;
+		md.thingskilled[thingNum] = true;
 		short* ptotals[CountedType::MAX] = { &md.killtotal, &md.treasuretotal };
 		++*ptotals[countedType];
 	}
@@ -112,6 +111,7 @@ struct HubWorld
 	}
 
 	std::map< std::string, MapData >    mapdata;
+	MapData                             pendingmapdata;
 };
 
 inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
@@ -129,6 +129,7 @@ inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
 inline FArchive &operator<< (FArchive &arc, HubWorld &hubworld)
 {
 	arc << hubworld.mapdata;
+	arc << hubworld.pendingmapdata;
 	return arc;
 }
 

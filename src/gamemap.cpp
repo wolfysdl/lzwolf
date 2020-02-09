@@ -508,6 +508,8 @@ void GameMap::SpawnThings() const
 		(gamestate.phubworld->hasMap(gamestate.mapname) ?
 			&(gamestate.phubworld->mapdata.find(gamestate.mapname)->second) :
 			NULL);
+	if (hubmapdata)
+		gamestate.phubworld->pendingmapdata = *hubmapdata;
 	
 	for(unsigned int i = 0;i < things.Size();++i)
 	{

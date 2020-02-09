@@ -563,6 +563,7 @@ void LevelCompleted (void)
 
 	HubWorld::MapData& hubmapdata =
 		gamestate.phubworld->getMapData(gamestate.mapname);
+	hubmapdata = gamestate.phubworld->pendingmapdata;
 
 	InterState.bonus = 0;
 	InterState.acked = false;
