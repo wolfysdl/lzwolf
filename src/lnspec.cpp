@@ -1204,12 +1204,15 @@ FUNC(Trigger_ThingSpecial)
 {
 	bool ret = false;
 
+	int tilex = spot->GetX();
+	int tiley = spot->GetY();
+
 	for(AActor::Iterator iter = AActor::GetIterator().Next();iter;)
 	{
 		AActor *check = iter;
 		iter.Next();
 
-		if(check->spot == spot)
+		if(check->tilex == tilex && check->tiley == tiley)
 		{
 			if(P_ActivateThingSpecial(check, activator))
 				ret = true;
