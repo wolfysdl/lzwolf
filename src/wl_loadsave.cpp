@@ -183,6 +183,7 @@ public:
 							delete[] comment;
 						}
 
+						delete savePicture;
 						delete png;
 					}
 					if(file)
