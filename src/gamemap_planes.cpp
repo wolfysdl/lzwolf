@@ -52,6 +52,7 @@ static const char* const FeatureFlagNames[] = {
 	"lightlevels",
 	"planedepth",
 	"zheights",
+	"hubnospawn",
 	NULL
 };
 
@@ -62,7 +63,11 @@ public:
 	{
 		TF_PATHING = 1,
 		TF_HOLOWALL = 2,
-		TF_AMBUSH = 4
+		TF_AMBUSH = 4,
+		TF_NOHUBSPAWN0 = 8,
+		TF_NOHUBSPAWN1 = 16,
+		TF_NOHUBSPAWN2 = 32,
+		TF_NOHUBSPAWN3 = 64,
 	};
 
 	enum
@@ -80,7 +85,8 @@ public:
 		FF_GLOBALMETA = 1,
 		FF_LIGHTLEVELS = 2,
 		FF_PLANEDEPTH = 4,
-		FF_ZHEIGHTS = 8
+		FF_ZHEIGHTS = 8,
+		FF_HUBNOSPAWN = 16,
 	};
 
 	struct ThingXlat
@@ -347,6 +353,11 @@ public:
 		thing.skill[0] = thing.skill[1] = type.minskill <= 1;
 		thing.skill[2] = type.minskill <= 2;
 		thing.skill[3] = type.minskill <= 3;
+
+		thing.hubnospawn[0] = !!(type.flags&Xlat::TF_NOHUBSPAWN0);
+		thing.hubnospawn[1] = !!(type.flags&Xlat::TF_NOHUBSPAWN1);
+		thing.hubnospawn[2] = !!(type.flags&Xlat::TF_NOHUBSPAWN2);
+		thing.hubnospawn[3] = !!(type.flags&Xlat::TF_NOHUBSPAWN3);
 		return tsFlags;
 	}
 
@@ -619,6 +630,14 @@ protected:
 							thing.flags |= TF_HOLOWALL;
 						else if(sc->str.CompareNoCase("AMBUSH") == 0)
 							thing.flags |= TF_AMBUSH;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN0") == 0)
+							thing.flags |= TF_NOHUBSPAWN0;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN1") == 0)
+							thing.flags |= TF_NOHUBSPAWN1;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN2") == 0)
+							thing.flags |= TF_NOHUBSPAWN2;
+						else if(sc->str.CompareNoCase("NOHUBSPAWN3") == 0)
+							thing.flags |= TF_NOHUBSPAWN3;
 						else
 							sc.ScriptMessage(Scanner::ERROR, "Unknown flag '%s'.", sc->str.GetChars());
 					}
@@ -938,7 +957,7 @@ void GameMap::ReadMacData()
 void GameMap::ReadPlanesData()
 {
 	static const unsigned short UNIT = 64;
-	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, Plane_Info, NUM_USABLE_PLANES };
+	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
 
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
@@ -997,17 +1016,8 @@ void GameMap::ReadPlanesData()
 	if(numPlanes > 3)
 	{
 		lump->Seek(size*2*3, SEEK_CUR);
-
-		TUniquePtr<WORD[]> oldplane(new WORD[size]);
-		lump->Read(oldplane.Get(), size*2);
-
+		lump->Read(infoplane.Get(), size*2);
 		lump->Seek(18+nameLength, SEEK_SET);
-
-		for(unsigned int i = 0;i < size;++i)
-		{
-			oldplane[i] = LittleShort(oldplane[i]);
-			infoplane[i] = oldplane[i];
-		}
 	}
 	else
 		memset(infoplane.Get(), 0, size*2);
@@ -1017,9 +1027,11 @@ void GameMap::ReadPlanesData()
 
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
+		if(plane == 3) // Info plane is already read
+			continue;
+
 		TUniquePtr<WORD[]> oldplane(new WORD[size]);
-		if (plane < 3) // Info plane is already read
-			lump->Read(oldplane.Get(), size*2);
+		lump->Read(oldplane.Get(), size*2);
 
 		switch(plane)
 		{
@@ -1297,6 +1309,14 @@ void GameMap::ReadPlanesData()
 							}
 							else
 								thing.z = 0;
+							if((FeatureFlags & Xlat::FF_HUBNOSPAWN) && (infoplane[i]&0xFF00) == 0xBB00)
+							{
+								for(int pass = 0; pass < MapThing::MAXHUBPASSES; ++pass)
+								{
+									bool& hubnospawn = thing.hubnospawn[pass];
+									hubnospawn = hubnospawn || !!(infoplane[i] & (WORD)(1 << pass));
+								}
+							}
 							thing.ambush = (flags & Xlat::TF_AMBUSH) || ambushSpots[ambushSpot] == i;
 
 							int thingnum = things.Push(thing);
@@ -1347,25 +1367,6 @@ void GameMap::ReadPlanesData()
 					mapPlane.map[i].sector = &sectorPalette[flatMap[oldplane[i]]];
 				break;
 			}
-
-			case Plane_Info:
-			{
-				for(unsigned int i = 0;i < size;++i)
-				{
-					const WORD info = infoplane[i];
-					if (info)
-					{
-						unsigned int tag = (unsigned int)info;
-
-						int x, y;
-						x = i%header.width;
-						y = i/header.width;
-						MapSpot target = GetSpot(x, y, 0);
-						SetSpotTag(target, tag);
-					}
-				}
-				break;
-			}
 		}
 	}
 
@@ -1394,8 +1395,7 @@ void GameMap::ReadPlanesData()
 		Trigger &templateTrigger = triggers[i];
 
 		// Check the info plane and if set move the activation point to a switch ot touch plate
-		// TODO: why do we need this?
-		/*const WORD info = infoplane[templateTrigger.y*header.width + templateTrigger.x];
+		const WORD info = infoplane[templateTrigger.y*header.width + templateTrigger.x];
 		if(info)
 		{
 			MapSpot target = GetSpot(templateTrigger.x, templateTrigger.y, 0);
@@ -1419,7 +1419,7 @@ void GameMap::ReadPlanesData()
 				templateTrigger.playerUse = false;
 			}
 			templateTrigger.activate[0] = templateTrigger.activate[1] = templateTrigger.activate[2] = templateTrigger.activate[3] = true;
-		}*/
+		}
 
 		Trigger &trig = NewTrigger(templateTrigger.x, templateTrigger.y, templateTrigger.z);
 		trig = templateTrigger;

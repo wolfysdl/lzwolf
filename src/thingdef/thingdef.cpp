@@ -1070,8 +1070,91 @@ bool ClassDef::SetFlag(const ClassDef *newClass, AActor *instance, const FString
 	return false;
 }
 
-bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char* propName, Scanner &sc)
+//==========================================================================
+//
+// [MH] parses a morph style expression
+//
+//==========================================================================
+
+struct FParseValue
 {
+	const char *Name;
+	int Flag;
+};
+
+static int ParseFlagExpressionString(Scanner &sc, const FParseValue *vals)
+{
+	// May be given flags by number...
+	if (sc.CheckToken(TK_IntConst))
+	{
+		sc.MustGetToken(TK_IntConst);
+		return sc->number;
+	}
+
+	// ... else should be flags by name.
+	// NOTE: Later this should be removed and a normal expression used.
+	// The current DECORATE parser can't handle this though.
+	bool gotparen = sc.CheckToken('(');
+	int style = 0;
+	do
+	{
+		sc.MustGetToken(TK_Identifier);
+
+		int i;
+		for (i=0; vals[i].Name; i++)
+		{
+			if (strcmp(sc->str.GetChars(), vals[i].Name) == 0)
+				break;
+		}
+
+		if (vals[i].Name)
+			style |= vals[i].Flag;
+	}
+	while (sc.CheckToken('|'));
+	if (gotparen)
+	{
+		sc.MustGetToken(')');
+	}
+
+	return style;
+}
+
+static int ParseThingActivation (Scanner &sc)
+{
+ 	static const FParseValue activationstyles[]={
+
+		{ "THINGSPEC_Default",				THINGSPEC_Default},
+		{ "THINGSPEC_ThingActs",			THINGSPEC_ThingActs},
+		{ "THINGSPEC_ThingTargets",			THINGSPEC_ThingTargets},
+		{ "THINGSPEC_TriggerTargets",		THINGSPEC_TriggerTargets},
+		{ "THINGSPEC_MonsterTrigger",		THINGSPEC_MonsterTrigger},
+		{ "THINGSPEC_MissileTrigger",		THINGSPEC_MissileTrigger},
+		{ "THINGSPEC_ClearSpecial",			THINGSPEC_ClearSpecial},
+		{ "THINGSPEC_NoDeathSpecial",		THINGSPEC_NoDeathSpecial},
+		{ "THINGSPEC_TriggerActs",			THINGSPEC_TriggerActs},
+		{ "THINGSPEC_Activate",				THINGSPEC_Activate},
+		{ "THINGSPEC_Deactivate",			THINGSPEC_Deactivate},
+		{ "THINGSPEC_Switch",				THINGSPEC_Switch},
+		{ NULL, 0 }
+	};
+
+	return ParseFlagExpressionString(sc, activationstyles);
+}
+
+//==========================================================================
+
+bool ClassDef::SetProperty(AActor* actor, const ClassDef *cls, const char* propName, const char* value)
+{
+	Scanner sc( value, strlen(value) );
+	return ClassDef::SetProperty(/*newClass*/NULL, /*className*/NULL,
+		propName, sc, actor, cls);
+}
+
+bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char* propName, Scanner &sc, AActor* actor, const ClassDef* cls)
+{
+	if (!cls)
+		cls = newClass;
+
 	static unsigned int NUM_PROPERTIES = 0;
 	if(NUM_PROPERTIES == 0)
 	{
@@ -1088,9 +1171,17 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 		int ret = stricmp(properties[mid].name, propName);
 		if(ret == 0)
 		{
-			if(!newClass->IsDescendantOf(properties[mid].className) ||
-				stricmp(properties[mid].prefix, className) != 0)
+			if
+				(
+					!cls->IsDescendantOf(properties[mid].className) ||
+					(
+						className != NULL &&
+						stricmp(properties[mid].prefix, className) != 0
+					)
+				)
+			{
 				sc.ScriptMessage(Scanner::ERROR, "Property %s.%s not available in this scope.\n", properties[mid].className->name.GetChars(), propName);
+			}
 
 			PropertyParam* params = new PropertyParam[strlen(properties[mid].params)];
 			// Key:
@@ -1135,7 +1226,7 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								if(sc.CheckToken('('))
 								{
 									params[paramc].isExpression = true;
-									params[paramc].expr = ExpressionNode::ParseExpression(newClass, TypeHierarchy::staticTypes, sc, NULL);
+									params[paramc].expr = ExpressionNode::ParseExpression(cls, TypeHierarchy::staticTypes, sc, NULL);
 									sc.MustGetToken(')');
 									break;
 								}
@@ -1178,6 +1269,10 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								params[paramc].s = new char[sc->str.Len()+1];
 								strcpy(params[paramc].s, sc->str);
 								break;
+							case 'N':	// special case. An expression-aware parser will not need this.
+								params[paramc].isExpression = false;
+								params[paramc].i = ParseThingActivation(sc);
+								break;
 						}
 						paramc++;
 						p++;
@@ -1190,18 +1285,18 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 			if(!optional && *p != 0 && *p != '_')
 				sc.ScriptMessage(Scanner::ERROR, "Not enough parameters.");
 
-			properties[mid].handler(newClass, (AActor*)newClass->defaultInstance, paramc, params);
+			properties[mid].handler(newClass, actor ? actor : (AActor*)newClass->defaultInstance, paramc, params);
 
 			// Clean up
 			p = properties[mid].params;
-			unsigned int i = 0;
-			do
+			for (unsigned int i = 0; i < paramc; i++)
 			{
+				if(*p == 0)
+					break;
 				if(*p == 'S' || *p == 'K')
 					delete[] params[i].s;
-				i++;
+				p++;
 			}
-			while(*(++p) != 0 && i < paramc);
 			delete[] params;
 			return true;
 		}

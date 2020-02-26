@@ -1,5 +1,6 @@
 // WL_STATE.C
 
+#include <sstream>
 #include "wl_def.h"
 #include "id_ca.h"
 #include "id_sd.h"
@@ -7,6 +8,7 @@
 #include "g_mapinfo.h"
 #include "m_random.h"
 #include "actor.h"
+#include "a_inventory.h"
 #include "thingdef/thingdef.h"
 #include "wl_agent.h"
 #include "wl_game.h"
@@ -788,11 +790,19 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 {
 	if (ob->player)
 	{
-		ob->player->TakeDamage(damage, attacker);
+		ob->player->TakeDamage(damage, attacker, damagetype);
 		return;
 	}
 
-	madenoise = true;
+	ADamage *damageinv = NULL;
+	if (damagetype)
+	{
+		damageinv = static_cast<ADamage *>(
+			players[0].mo->FindInventory(damagetype));
+	}
+
+	if (!damageinv || !damageinv->silent)
+		madenoise = true;
 
 	//
 	// do double damage if shooting a non attack mode actor
@@ -819,8 +829,8 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		{
 			ob->killerx = attacker->x;
 			ob->killery = attacker->y;
+			ob->killerdamagetype = damagetype;
 		}
-		ob->killerdamagetype = damagetype;
 		ob->Die();
 	}
 	else
@@ -828,8 +838,23 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		if (! (ob->flags & FL_ATTACKMODE) )
 			FirstSighting (ob, ob->SeeState);             // put into combat mode
 
+		const Frame *painstate = NULL;
 		if(ob->PainState && pr_damagemobj() < ob->painchance)
-			ob->SetState(ob->PainState);
+			painstate = ob->PainState;
+
+		if (painstate && damagetype)
+		{
+			const Frame *dmgpainstate = NULL;
+
+			std::stringstream ss;
+			ss << "Pain_" << std::string(damagetype->GetName().GetChars());
+			dmgpainstate = ob->FindState(ss.str().c_str());
+			if (dmgpainstate)
+				painstate = dmgpainstate;
+		}
+
+		if (painstate)
+			ob->SetState(painstate);
 	}
 }
 

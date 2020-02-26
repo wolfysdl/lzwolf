@@ -90,6 +90,25 @@ namespace FilterposThrustSource
 	};
 }
 
+// Used to affect the logic for thing activation through death, USESPECIAL and BUMPSPECIAL
+// "thing" refers to what has the flag and the special, "trigger" refers to what used or bumped it
+enum EThingSpecialActivationType
+{
+	THINGSPEC_Default			= 0,		// Normal behavior: a player must be the trigger, and is the activator
+	THINGSPEC_ThingActs			= 1,		// The thing itself is the activator of the special
+	THINGSPEC_ThingTargets		= 1<<1,		// The thing changes its target to the trigger
+	THINGSPEC_TriggerTargets	= 1<<2,		// The trigger changes its target to the thing
+	THINGSPEC_MonsterTrigger	= 1<<3,		// The thing can be triggered by a monster
+	THINGSPEC_MissileTrigger	= 1<<4,		// The thing can be triggered by a projectile
+	THINGSPEC_ClearSpecial		= 1<<5,		// Clears special after successful activation
+	THINGSPEC_NoDeathSpecial	= 1<<6,		// Don't activate special on death
+	THINGSPEC_TriggerActs		= 1<<7,		// The trigger is the activator of the special
+											// (overrides LEVEL_ACTOWNSPECIAL Hexen hack)
+	THINGSPEC_Activate			= 1<<8,		// The thing is activated when triggered
+	THINGSPEC_Deactivate		= 1<<9,		// The thing is deactivated when triggered
+	THINGSPEC_Switch			= 1<<10,	// The thing is alternatively activated and deactivated when triggered
+};
+
 class player_t;
 class ClassDef;
 class AInventory;
@@ -182,6 +201,10 @@ class AActor : public Thinker,
 		virtual void	Die();
 		void			EnterZone(const MapZone *zone);
 		AInventory		*FindInventory(const ClassDef *cls);
+		template<class T> T *FindInventory ()
+		{
+			return static_cast<T *> (FindInventory (RUNTIME_CLASS(T)));
+		}
 		const Frame		*FindState(const FName &name) const;
 		static void		FinishSpawningActors();
 		int				GetDamage();
@@ -207,6 +230,10 @@ class AActor : public Thinker,
 		static AActor	*Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags);
 		int32_t			SpawnHealth() const;
 		bool			Teleport(fixed x, fixed y, angle_t angle, bool nofog=false);
+
+		virtual void    Activate (AActor *activator);
+		virtual void    Deactivate (AActor *activator);
+
 		virtual void	Tick();
 		virtual void	Touch(AActor *toucher) {}
 		void            ApplyFilterpos (FilterposWrap wrap);
@@ -315,6 +342,8 @@ class AActor : public Thinker,
 		};
 		TArray<FilterposWaveLastMove> filterposwaveLastMoves;
 		const ClassDef  *faction;
+		std::pair<bool,int> spawnThingNum;
+		int			activationtype;	// How the thing behaves when activated with USESPECIAL or BUMPSPECIAL
 
 		TObjPtr<AActor> target;
 		player_t	*player;	// Only valid with APlayerPawn
@@ -333,6 +362,19 @@ class AActor : public Thinker,
 
 		const MapZone	*soundZone;
 };
+
+// This could easily be a bool but then it'd be much harder to find later. ;)
+enum replace_t
+{
+	NO_REPLACE = 0,
+	ALLOW_REPLACE = 1
+};
+
+template<class T>
+inline T *Spawn (fixed x, fixed y, fixed z, replace_t replace)
+{
+	return static_cast<T *>(AActor::Spawn (RUNTIME_CLASS(T), x, y, z, replace));
+}
 
 // Old save compatibility
 // FIXME: Remove for 1.4

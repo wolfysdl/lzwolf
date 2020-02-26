@@ -74,6 +74,7 @@ class APlayerPawn : public AActor
 		void		SetupWeaponSlots();
 		void		Tick();
 		void		TickPSprites();
+		void		TickHeightAnim();
 
 		static PointerIndexTable<DropList> startInventory;
 

@@ -775,6 +775,16 @@ ACTION_FUNCTION(A_SetPicXY)
 	return true;
 }
 
+ACTION_FUNCTION(A_SetProperty)
+{
+	ACTION_PARAM_STRING(propName, 0);
+	ACTION_PARAM_STRING(value, 1);
+
+	ClassDef::SetProperty(self, self->GetClass(), propName, value.GetChars());
+
+	return true;
+}
+
 ACTION_FUNCTION(A_SetTics)
 {
 	ACTION_PARAM_DOUBLE(duration, 0);

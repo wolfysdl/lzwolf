@@ -504,14 +504,31 @@ void GameMap::SpawnThings() const
 	// Debug code - Show the number of things spawned at map start.
 	printf("Spawning %d things\n", things.Size());
 #endif
+	HubWorld::MapData *hubmapdata = 
+		(gamestate.phubworld->hasMap(gamestate.mapname) ?
+			&(gamestate.phubworld->mapdata.find(gamestate.mapname)->second) :
+			NULL);
+	if (hubmapdata)
+		gamestate.phubworld->pendingmapdata = *hubmapdata;
+	
 	for(unsigned int i = 0;i < things.Size();++i)
 	{
 		Thing &thing = things[i];
 		if(!thing.skill[gamestate.difficulty->SpawnFilter])
 			continue;
 
+		if(hubmapdata != NULL)
+		{
+			if(hubmapdata->thingKilled(i))
+				continue;
+			if(thing.checkHubNoSpawn(hubmapdata->pass))
+				continue;
+		}
+
 		if(thing.type == SpecialThingNames[SMT_Player1Start])
+		{
 			SpawnPlayer(thing.x>>FRACBITS, thing.y>>FRACBITS, thing.angle);
+		}
 		else
 		{
 			static const ClassDef *unknownClass = ClassDef::FindClass("Unknown");
@@ -533,6 +550,17 @@ void GameMap::SpawnThings() const
 				actor->dir = dirtype(actor->angle/ANGLE_45);
 			if(thing.holo)
 				actor->flags &= ~(FL_SOLID);
+			actor->spawnThingNum = std::make_pair(true, i);
+
+			// you can score 100% kills/treasure again in this level if a new
+			// actor is spawned that counts towards the statistic
+			if(hubmapdata != NULL && hubmapdata->pass > 0)
+			{
+				if(actor->flags & FL_COUNTKILL)
+					hubmapdata->counted_kr = false;
+				if(actor->flags & FL_COUNTITEM)
+					hubmapdata->counted_tr = false;
+			}
 
 			// Check for valid frames
 			if(!actor->state || !R_CheckSpriteValid(actor->sprite))

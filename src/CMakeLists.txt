@@ -158,6 +158,8 @@ list(APPEND HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/versiondefs.h)
 set(SOURCE_FILES
 	g_blake/a_smartanim.cpp
 	g_blake/blake_sbar.cpp
+	g_shared/a_armor.cpp
+	g_shared/a_action.cpp
 	g_shared/a_deathcam.cpp
 	g_shared/a_inventory.cpp
 	g_shared/a_keys.cpp
@@ -284,6 +286,7 @@ set(SOURCE_FILES
 	wl_menu.cpp
 	wl_net.cpp
 	wl_parallax.cpp
+	wl_atmos.cpp
 	wl_play.cpp
 	wl_state.cpp
 	wl_text.cpp

@@ -55,6 +55,13 @@ HANDLE_PROPERTY(actionns)
 	defaults->actionns = ns;
 }
 
+HANDLE_PROPERTY(activation)
+{
+	// How the thing behaves when activated by death, USESPECIAL or BUMPSPECIAL
+	INT_PARAM(val, 0);
+	defaults->activationtype = val;
+}
+
 HANDLE_PROPERTY(activesound)
 {
 	STRING_PARAM(snd, 0);
@@ -436,6 +443,12 @@ HANDLE_PROPERTY(icon)
 	((AInventory *)defaults)->icon = TexMan.CheckForTexture(icon, FTexture::TEX_MiscPatch);
 }
 
+HANDLE_PROPERTY(ignorearmor)
+{
+	INT_PARAM(ignorearmor, 0);
+	((ADamage *)defaults)->ignorearmor = ignorearmor?true:false;
+}
+
 HANDLE_PROPERTY(interhubamount)
 {
 	INT_PARAM(amt, 0);
@@ -451,16 +464,72 @@ HANDLE_PROPERTY(litfilter)
 		defaults->litfilter = ClassDef::FindClassTentative(type, NATIVE_CLASS(Lit));
 }
 
+HANDLE_PROPERTY(maxabsorb)
+{
+	INT_PARAM(i, 0);
+
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->MaxAbsorb = i;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->MaxAbsorb = i;
+	}
+	else
+	{
+		I_Error("\"Armor.MaxAbsorb\" requires an actor of type \"Armor\"\n");
+	}
+}
+
 HANDLE_PROPERTY(maxamount)
 {
 	INT_PARAM(maxamt, 0);
 	((AInventory *)defaults)->maxamount = maxamt;
 }
 
+HANDLE_PROPERTY(maxbonus)
+{
+	INT_PARAM(amt, 0);
+	((ABasicArmorBonus *)defaults)->BonusCount = amt;
+}
+
+HANDLE_PROPERTY(maxbonusmax)
+{
+	INT_PARAM(amt, 0);
+	((ABasicArmorBonus *)defaults)->BonusMax = amt;
+}
+
+HANDLE_PROPERTY(maxfullabsorb)
+{
+	INT_PARAM(i, 0);
+
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->MaxFullAbsorb = i;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->MaxFullAbsorb = i;
+	}
+	else
+	{
+		I_Error("\"Armor.MaxFullAbsorb\" requires an actor of type \"Armor\"\n");
+	}
+}
+
 HANDLE_PROPERTY(maxhealth)
 {
 	INT_PARAM(maxhealth, 0);
 	((APlayerPawn *)defaults)->maxhealth = maxhealth;
+}
+
+HANDLE_PROPERTY(maxsaveamount)
+{
+	INT_PARAM(amt, 0);
+	((ABasicArmorBonus *)defaults)->MaxSaveAmount = amt;
 }
 
 HANDLE_PROPERTY(meleerange)
@@ -497,6 +566,13 @@ HANDLE_PROPERTY(movebob)
 	cls->Meta.SetMetaFixed(APMETA_MoveBob, strength);
 }
 
+HANDLE_PROPERTY(noxdeath)
+{
+	INT_PARAM(noxdeath, 0);
+	((ADamage *)defaults)->noxdeath = noxdeath?true:false;
+}
+
+
 HANDLE_PROPERTY(painchance)
 {
 	INT_PARAM(chance, 0);
@@ -506,12 +582,6 @@ HANDLE_PROPERTY(painchance)
 	else if(chance < 0)
 		chance = 0;
 	defaults->painchance = chance;
-}
-
-HANDLE_PROPERTY(noxdeath)
-{
-	INT_PARAM(noxdeath, 0);
-	((ADamage *)defaults)->noxdeath = noxdeath?true:false;
 }
 
 HANDLE_PROPERTY(overheadicon)
@@ -548,6 +618,45 @@ HANDLE_PROPERTY(radius)
 {
 	INT_PARAM(radius, 0);
 	defaults->radius = radius*FRACUNIT/64;
+}
+
+HANDLE_PROPERTY(saveamount)
+{
+	INT_PARAM(amt, 0);
+
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->SaveAmount=amt;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->SaveAmount=amt;
+	}
+	else
+	{
+		I_Error("\"Armor.SaveAmount\" requires an actor of type \"Armor\"");
+	}
+}
+
+HANDLE_PROPERTY(savepercent)
+{
+	FIXED_PARAM(i, 0);
+
+	i = clamp(i, 0, 100*FRACUNIT)/100;
+	// Special case here because this property has to work for 2 unrelated classes
+	if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorPickup)))
+	{
+		((ABasicArmorPickup*)defaults)->SavePercent = i;
+	}
+	else if (cls->IsDescendantOf(RUNTIME_CLASS(ABasicArmorBonus)))
+	{
+		((ABasicArmorBonus*)defaults)->SavePercent = i;
+	}
+	else
+	{
+		I_Error("\"Armor.SavePercent\" requires an actor of type \"Armor\"\n");
+	}
 }
 
 HANDLE_PROPERTY(scale)
@@ -611,6 +720,12 @@ HANDLE_PROPERTY(sighttime)
 	}
 	else
 		defaults->sightrandom = 0;
+}
+
+HANDLE_PROPERTY(silent)
+{
+	INT_PARAM(silent, 0);
+	((ADamage *)defaults)->silent = silent?true:false;
 }
 
 HANDLE_PROPERTY(singlespawn)
@@ -730,6 +845,11 @@ HANDLE_PROPERTY(PROJECTILE)
 	defaults->flags |= FL_MISSILE;
 }
 
+HANDLE_PROPERTY(STATUSBAR)
+{
+	defaults->flags |= FL_STATUSBAR;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #define DEFINE_PROP_PREFIX(name, class, prefix, params) { A##class::__StaticClass, #prefix, #name, #params, __Handler_##name }
@@ -738,6 +858,7 @@ HANDLE_PROPERTY(PROJECTILE)
 extern const PropDef properties[] =
 {
 	DEFINE_PROP(actionns, Actor, S),
+	DEFINE_PROP(activation, Actor, N),
 	DEFINE_PROP(activesound, Actor, S),
 	DEFINE_PROP(ammogive1, Weapon, I),
 	DEFINE_PROP(ammogive2, Weapon, I),
@@ -773,10 +894,16 @@ extern const PropDef properties[] =
 	DEFINE_PROP(health, Actor, I_IIIIIIII),
 	DEFINE_PROP(height, Actor, I),
 	DEFINE_PROP(icon, Inventory, S),
+	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
 	DEFINE_PROP(litfilter, Actor, S),
+	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),
+	DEFINE_PROP(maxbonus, BasicArmorBonus, I),
+	DEFINE_PROP(maxbonusmax, BasicArmorBonus, I),
+	DEFINE_PROP(maxfullabsorb, Armor, I),
 	DEFINE_PROP_PREFIX(maxhealth, PlayerPawn, Player, I),
+	DEFINE_PROP_PREFIX(maxsaveamount, BasicArmorBonus, Armor, I),
 	DEFINE_PROP(meleerange, Actor, I),
 	DEFINE_PROP(minmissilechance, Actor, I),
 	DEFINE_PROP(missilefrequency, Actor, F),
@@ -791,17 +918,21 @@ extern const PropDef properties[] =
 	DEFINE_PROP(PROJECTILE, Actor,),
 	DEFINE_PROP(projectilepassheight, Actor, F),
 	DEFINE_PROP(radius, Actor, I),
+	DEFINE_PROP(saveamount, Armor, I),
+	DEFINE_PROP(savepercent, Armor, F),
 	DEFINE_PROP(scale, Actor, F),
 	DEFINE_PROP(secretdeathsound, Actor, S),
 	DEFINE_PROP(seesound, Actor, S),
 	DEFINE_PROP(selectionorder, Weapon, I),
 	DEFINE_PROP_PREFIX(sidemove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(sighttime, Actor, I_I),
+	DEFINE_PROP(silent, Damage, I),
 	DEFINE_PROP(singlespawn, Actor, I),
 	DEFINE_PROP(slotnumber, Weapon, I),
 	DEFINE_PROP(slotpriority, Weapon, F),
 	DEFINE_PROP(speed, Actor, F_F),
 	DEFINE_PROP_PREFIX(startitem, PlayerPawn, Player, S_I),
+	DEFINE_PROP(STATUSBAR, Actor,),
 	DEFINE_PROP_PREFIX(viewheight, PlayerPawn, Player, F),
 	DEFINE_PROP_PREFIX(weaponslot, PlayerPawn, Player, IS_SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS),
 	DEFINE_PROP(xscale, Actor, F),

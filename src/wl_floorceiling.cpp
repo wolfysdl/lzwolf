@@ -506,8 +506,6 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		return; // view obscured by walls
 	if(y0 <= 0) y0 = 1; // don't let division by zero
 
-	lasttex.SetInvalid();
-
 	const unsigned int mapwidth = map->GetHeader().width;
 	const unsigned int mapheight = map->GetHeader().height;
 
@@ -551,6 +549,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 		curshades = NormalLight.Maps;
 		Shading::NextY (y, 0, viewwidth);
+
+		lasttex.SetInvalid();
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{

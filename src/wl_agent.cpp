@@ -350,7 +350,7 @@ void player_t::GivePoints (int32_t points)
 */
 
 static FRandom pr_damageplayer("PlayerTakeDamge");
-void player_t::TakeDamage (int points, AActor *attacker)
+void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damagetype)
 {
 	LastAttacker = attacker;
 
@@ -363,8 +363,18 @@ void player_t::TakeDamage (int points, AActor *attacker)
 		points = 1;
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
+	if (points > 0 && mo->inventory)
+	{
+		int newdam = points;
+		mo->inventory->AbsorbDamage(points,
+			damagetype ? damagetype->GetName() : FName(), newdam);
+		points = newdam;
+	}
+
 	if (!godmode)
+	{
 		mo->health = health -= points;
+	}
 
 	if (health<=0)
 	{
@@ -992,6 +1002,11 @@ void player_t::Serialize(FArchive &arc)
 			<< psprite[i].sy;
 	}
 
+	arc << heightanim.period
+		<< heightanim.ticcount
+		<< heightanim.startpos
+		<< heightanim.endpos;
+
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374729160)
 		arc << FOV << DesiredFOV;
 
@@ -1129,6 +1144,21 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 
 
 //===========================================================================
+
+ACTION_FUNCTION(A_BeginHeightAnim)
+{
+	ACTION_PARAM_FIXED(newheight, 0);
+	ACTION_PARAM_INT(period, 1);
+
+	player_t *player = self->player;
+
+	player_t::HeightAnim &ha = player->heightanim;
+	ha.period = period;
+	ha.ticcount = period;
+	ha.startpos = player->mo->viewheight;
+	ha.endpos = newheight;
+	return true;
+}
 
 /*
 ===============

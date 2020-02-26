@@ -26,4 +26,6 @@ bool CheckSlidePass(unsigned int style, unsigned int intercept, unsigned int amo
 bool CheckLine (AActor *ob, AActor *ob2);
 bool CheckIsEnemyByFaction (AActor *ob, AActor *check);
 
+unsigned ApplyDamageResistance (AActor *ob, unsigned damage, const ClassDef  *damagetype);
+
 #endif

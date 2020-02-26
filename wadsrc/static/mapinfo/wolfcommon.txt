@@ -32,6 +32,7 @@ gameinfo
 	gamecolormap = "COLORMAP"
 	deathtransition = "Fizzle"
 	trackhighscores = true
+	//armoricons = "MACHGUN"
 }
 
 automap

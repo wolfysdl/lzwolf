@@ -74,7 +74,7 @@ extern class player_t
 		void	SetPSprite(const Frame *frame, PSprite layer);
 		void	SetFOV(float newlyDesiredFOV);
 		void	AdjustFOV();
-		void	TakeDamage(int points, AActor *attacker);
+		void	TakeDamage(int points, AActor *attacker, const ClassDef  *damagetype);
 
 		enum State
 		{
@@ -120,6 +120,20 @@ extern class player_t
 			fixed		sy;
 		} psprite[NUM_PSPRITES];
 		fixed			bob;
+		struct HeightAnim
+		{
+			short       period;
+			short       ticcount;
+			fixed       startpos, endpos;
+
+			HeightAnim() :
+				period(0),
+				ticcount(0),
+				startpos(0),
+				endpos(0)
+			{
+			}
+		} heightanim;
 
 		// Attackheld is similar to buttonheld[bt_attack] only it only gets set
 		// to true when an attack is registered. If the button is released and

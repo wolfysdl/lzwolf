@@ -216,26 +216,22 @@ namespace ActorSpawnID
 
 void AActor::AddInventory(AInventory *item)
 {
-	item->AttachToOwner(this);
-
-	if(inventory == NULL)
-		inventory = item;
-	else
+	// Check if it's already attached to an actor
+	if (item->owner != NULL)
 	{
-		AInventory *next = inventory;
-		do
-		{
-			if(next->inventory == NULL)
-			{
-				next->inventory = item;
+		// Is it attached to us?
+		if (item->owner == this)
+			return;
 
-				// Prevent the GC from cleaning this item
-				GC::WriteBarrier(item);
-				break;
-			}
-		}
-		while((next = next->inventory));
+		// No, then remove it from the other actor first
+		item->owner->RemoveInventory (item);
 	}
+
+	item->AttachToOwner(this);
+	item->inventory = inventory;
+	inventory = item;
+
+	GC::WriteBarrier(item);
 }
 
 void AActor::ClearCounters()
@@ -284,7 +280,16 @@ void AActor::Die()
 	}
 
 	if(flags & FL_COUNTKILL)
+	{
 		gamestate.killcount++;
+
+		if(this->spawnThingNum.first)
+		{
+			gamestate.phubworld->setThingKilled(gamestate.mapname,
+			                                    this->spawnThingNum.second,
+												HubWorld::CountedType::KILLS);
+		}
+	}
 	flags &= ~FL_SHOOTABLE;
 
 	if(flags & FL_MISSILE)
@@ -523,7 +528,7 @@ void AActor::Init()
 
 	actors.Push(this);
 	if(!loadedgame)
-		Activate();
+		Thinker::Activate();
 
 	if(SpawnState)
 		SetState(SpawnState, true);
@@ -625,7 +630,9 @@ void AActor::Serialize(FArchive &arc)
 		<< hidden
 		<< player
 		<< inventory
-		<< soundZone;
+		<< soundZone
+		<< spawnThingNum
+		<< activationtype;
 	if(GameSave::SaveProdVersion >= 0x001003FF && GameSave::SaveVersion >= 1459043051)
 		arc << target;
 	if(arc.IsLoading() && (GameSave::SaveProdVersion < 0x001002FF || GameSave::SaveVersion < 1382102747))
@@ -892,6 +899,14 @@ namespace FilterposApplier
 	}
 }
 
+void AActor::Activate (AActor *activator)
+{
+}
+
+void AActor::Deactivate (AActor *activator)
+{
+}
+
 void AActor::Tick()
 {
 	// If we just spawned we're not ready to be ticked yet
@@ -933,27 +948,29 @@ void AActor::RemoveFromWorld()
 {
 	actors.Remove(this);
 	if(IsThinking())
-		Deactivate();
+		Thinker::Deactivate();
 	LoopedAudio::stopSoundFrom (this->spawnid);
 }
 
 void AActor::RemoveInventory(AInventory *item)
 {
-	if(inventory == NULL)
-		return;
+	AInventory *inv, **invp;
 
-	AInventory **next = &inventory;
-	do
+	if (item != NULL && item->owner != NULL)	// can happen if the owner was destroyed by some action from an item's use state.
 	{
-		if(*next == item)
+		invp = &item->owner->inventory;
+		for (inv = *invp; inv != NULL; invp = &inv->inventory, inv = *invp)
 		{
-			*next = (*next)->inventory;
-			break;
+			if (inv == item)
+			{
+				*invp = item->inventory;
+				item->DetachFromOwner();
+				item->owner = NULL;
+				item->inventory = NULL;
+				break;
+			}
 		}
 	}
-	while(*next && (next = &(*next)->inventory));
-
-	item->DetachFromOwner();
 }
 
 /* When we spawn an actor we add them to this list. After the tic has finished

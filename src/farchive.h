@@ -36,6 +36,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <stdio.h>
 #include "dobject.h"
 #include "tarray.h"
@@ -189,6 +190,7 @@ virtual void Read (void *mem, unsigned int len);
 		FArchive& operator<< (char *&str);
 		FArchive& operator<< (FName &n);
 		FArchive& operator<< (FString &str);
+		FArchive& operator<< (std::string &str);
 		FArchive& SerializePointer (void *ptrbase, BYTE **ptr, DWORD elemSize);
 		FArchive& SerializeObject (DObject *&object, const ClassDef *type);
 		FArchive& WriteObject (DObject *obj);

@@ -2,6 +2,7 @@ actor FireDamage : Damage
 {
 }
 
-actor SquishDamage : Damage
+actor SilentDamage : Damage
 {
+	damage.silent 1
 }

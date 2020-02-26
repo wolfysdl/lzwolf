@@ -275,7 +275,7 @@ int DebugKeys (void)
 	if (Keyboard[sc_H])             // H = hurt self
 	{
 		IN_ClearKeysDown ();
-		players[0].TakeDamage (16,NULL);
+		players[0].TakeDamage (16,NULL,NULL);
 	}
 	else if (Keyboard[sc_I])        // I = item cheat
 	{
@@ -360,8 +360,6 @@ int DebugKeys (void)
 	}
 	else if (Keyboard[sc_O])
 	{
-		players[0].mo->PrintInventory();
-
 		am_cheat ^= 1;
 		US_CenterWindow (18,3);
 		if (am_cheat)

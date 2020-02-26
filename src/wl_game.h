@@ -2,7 +2,9 @@
 #define __WL_GAME_H__
 
 #include <map>
+#include <string>
 #include "textures/textures.h"
+#include "farchive.h"
 
 /*
 =============================================================================
@@ -11,6 +13,125 @@
 
 =============================================================================
 */
+
+//---------------
+//
+// Hub World structure
+//
+//---------------
+
+struct HubWorld
+{
+	struct CountedType
+	{
+		enum e
+		{
+			KILLS,
+			TREASURE,
+			MAX,
+		};
+	};
+
+	HubWorld()
+	{
+	}
+
+	bool hasMap(const std::string& mapname) const
+	{
+		return mapdata.find(mapname) != mapdata.end();
+	}
+
+	bool thingKilled(const std::string& mapname, int thingNum) const
+	{
+		return (mapdata.find(mapname) != mapdata.end() ?
+			mapdata.find(mapname)->second.thingKilled(thingNum) : false);
+	}
+
+	void setThingKilled(const std::string& mapname, int thingNum,
+						CountedType::e countedType)
+	{
+		MapData& md = pendingmapdata;
+		md.thingskilled[thingNum] = true;
+		short* ptotals[CountedType::MAX] = { &md.killtotal, &md.treasuretotal };
+		++*ptotals[countedType];
+	}
+
+	struct MapData
+	{
+		MapData() :
+			secretcount(0),
+			treasurecount(0),
+			killcount(0),
+			treasuretotal(0),
+			killtotal(0),
+			LastInterBonus(0),
+			counted_kr(false),
+			counted_sr(false),
+			counted_tr(false),
+			pass(0)
+		{
+		}
+
+		bool thingKilled(int thingNum) const
+		{
+			return thingskilled.find(thingNum) != thingskilled.end();
+		}
+
+		struct LevelPassRatios
+		{
+			LevelPassRatios() :
+				killratio(0),
+				secretsratio(0),
+				treasureratio(0)
+			{
+			}
+
+			unsigned int killratio;
+			unsigned int secretsratio;
+			unsigned int treasureratio;
+		};
+
+		short       secretcount;
+		short       treasurecount;
+		short       killcount;
+		short       treasuretotal;
+		short       killtotal;
+		uint32_t    LastInterBonus;
+		bool        counted_kr;
+		bool        counted_sr;
+		bool        counted_tr;
+		int         pass;
+		LevelPassRatios level_pass_ratios;
+		std::map< int, bool >    thingskilled;
+	};
+
+	MapData& getMapData(const std::string& mapname)
+	{
+		return mapdata[mapname];
+	}
+
+	std::map< std::string, MapData >    mapdata;
+	MapData                             pendingmapdata;
+};
+
+inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
+{
+	arc << mapdata.secretcount
+		<< mapdata.treasurecount
+		<< mapdata.killcount
+		<< mapdata.treasuretotal
+		<< mapdata.killtotal
+		<< mapdata.LastInterBonus
+		<< mapdata.thingskilled;
+	return arc;
+}
+
+inline FArchive &operator<< (FArchive &arc, HubWorld &hubworld)
+{
+	arc << hubworld.mapdata;
+	arc << hubworld.pendingmapdata;
+	return arc;
+}
 
 //---------------
 //
@@ -31,6 +152,8 @@ extern struct gametype
 	int32_t     TimeCount;
 	bool        victoryflag;            // set during victory animations
 	bool		fullmap;
+
+	HubWorld*   phubworld;
 } gamestate;
 
 extern  char            demoname[13];

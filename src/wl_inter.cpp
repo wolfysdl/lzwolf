@@ -101,6 +101,8 @@ static struct IntermissionState
 	uint32_t bonus;
 	bool acked;
 	bool graphical;
+	uint32_t hub_bonus;
+	unsigned int Par;
 } InterState;
 enum
 {
@@ -263,7 +265,8 @@ static void InterAddBonus(unsigned int bonus, bool count=false)
  * Displays a percentage ratio, counting up to the ratio.
  * Returns true if the intermission has been acked and should be skipped.
  */
-static void InterCountRatio(int ratio, unsigned int x, unsigned int y)
+static void InterCountRatio(int ratio, unsigned int x, unsigned int y,
+							bool& hub_counted)
 {
 	static const unsigned int VBLWAIT = 30;
 	static const unsigned int PERCENT100AMT = 10000;
@@ -277,7 +280,12 @@ static void InterCountRatio(int ratio, unsigned int x, unsigned int y)
 		if(!InterState.acked)
 			VW_WaitVBL (VBLWAIT);
 		SD_StopSound ();
-		InterAddBonus(PERCENT100AMT);
+
+		if(!hub_counted)
+			InterState.hub_bonus += PERCENT100AMT;
+		hub_counted = true;
+
+		InterAddBonus(PERCENT100AMT, false);
 		if(InterState.acked)
 			return;
 		SD_PlaySound ("misc/100percent");
@@ -405,7 +413,7 @@ static void InterDoNormal()
 	Write (29, 16, language["STR_RAT2SECRET"], true);
 	Write (29, 18, language["STR_RAT2TREASURE"], true);
 
-	InterWriteTime(levelInfo->Par, 26*8, 12*8);
+	InterWriteTime(InterState.Par, 26*8, 12*8);
 
 	//
 	// PRINT TIME
@@ -429,9 +437,15 @@ static void InterDoNormal()
 			BJ_Breathe ();
 	}
 
-	InterCountRatio(InterState.kr, 296, 112);
-	InterCountRatio(InterState.sr, 296, 112+16);
-	InterCountRatio(InterState.tr, 296, 112+32);
+	InterState.hub_bonus = InterState.bonus;
+
+	HubWorld::MapData& hubmapdata =
+		gamestate.phubworld->getMapData(gamestate.mapname);
+	InterCountRatio(InterState.kr, 296, 112, hubmapdata.counted_kr);
+	InterCountRatio(InterState.sr, 296, 112+16, hubmapdata.counted_sr);
+	InterCountRatio(InterState.tr, 296, 112+32, hubmapdata.counted_tr);
+
+	InterState.bonus = InterState.hub_bonus;
 
 	players[0].GivePoints (InterState.bonus);
 }
@@ -466,7 +480,7 @@ static void InterDoGraphical()
 	VWB_DrawGraphic(TexMan(GraphicalTexID[WI_TIME]), 88, 128);
 	VWB_DrawGraphic(TexMan(GraphicalTexID[WI_PAR]), 96, 112);
 
-	InterWriteTime(levelInfo->Par, 19*8, 14*8);
+	InterWriteTime(InterState.Par, 19*8, 14*8);
 
 	//
 	// PRINT TIME
@@ -492,9 +506,15 @@ static void InterDoGraphical()
 	Write (27, 15, "0%");
 	Write (27, 17, "0%");
 
-	InterCountRatio(InterState.kr, 232, 104);
-	InterCountRatio(InterState.tr, 232, 104+16);
-	InterCountRatio(InterState.sr, 232, 104+32);
+	InterState.hub_bonus = InterState.bonus;
+
+	HubWorld::MapData& hubmapdata =
+		gamestate.phubworld->getMapData(gamestate.mapname);
+	InterCountRatio(InterState.kr, 232, 104, hubmapdata.counted_kr);
+	InterCountRatio(InterState.tr, 232, 104+16, hubmapdata.counted_sr);
+	InterCountRatio(InterState.sr, 232, 104+32, hubmapdata.counted_tr);
+
+	InterState.bonus = InterState.hub_bonus;
 
 	players[0].GivePoints (InterState.bonus);
 
@@ -541,8 +561,17 @@ void LevelCompleted (void)
 {
 	DetermineIntermissionMode();
 
+	HubWorld::MapData& hubmapdata =
+		gamestate.phubworld->getMapData(gamestate.mapname);
+	hubmapdata = gamestate.phubworld->pendingmapdata;
+
 	InterState.bonus = 0;
 	InterState.acked = false;
+	InterState.Par = (hubmapdata.pass > 0 && (hubmapdata.pass-1) <
+		(int)levelInfo->HubPar.Size() ?
+		levelInfo->HubPar[hubmapdata.pass-1] : levelInfo->Par);
+
+	hubmapdata.pass++;
 
 	//
 	// FIGURE RATIOS OUT BEFOREHAND
@@ -556,19 +585,27 @@ void LevelCompleted (void)
 		InterState.tr = (gamestate.treasurecount * 100) / gamestate.treasuretotal;
 
 	InterState.timeleft = 0;
-	if ((unsigned)gamestate.TimeCount < levelInfo->Par * TICRATE)
-		InterState.timeleft = (int) (levelInfo->Par - gamestate.TimeCount/TICRATE);
+	if ((unsigned)gamestate.TimeCount < InterState.Par * TICRATE)
+		InterState.timeleft = (int) (InterState.Par - gamestate.TimeCount/TICRATE);
 
 	if(levelInfo->LevelBonus == -1 || levelInfo->ForceTally)
 	{
 		//
 		// SAVE RATIO INFORMATION FOR ENDGAME
 		//
-		LevelRatios.killratio += InterState.kr;
-		LevelRatios.secretsratio += InterState.sr;
-		LevelRatios.treasureratio += InterState.tr;
+		LevelRatios.killratio += InterState.kr -
+			hubmapdata.level_pass_ratios.killratio;
+		LevelRatios.secretsratio += InterState.sr -
+			hubmapdata.level_pass_ratios.secretsratio;
+		LevelRatios.treasureratio += InterState.tr -
+			hubmapdata.level_pass_ratios.treasureratio;
+
+		hubmapdata.level_pass_ratios.killratio = InterState.kr - 100;
+		hubmapdata.level_pass_ratios.secretsratio = InterState.sr - 100;
+		hubmapdata.level_pass_ratios.treasureratio = InterState.tr - 100;
+
 		LevelRatios.time += gamestate.TimeCount/TICRATE;
-		LevelRatios.par += levelInfo->Par;
+		LevelRatios.par += InterState.Par;
 		++LevelRatios.numLevels;
 	}
 

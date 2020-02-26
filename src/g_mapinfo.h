@@ -59,6 +59,9 @@ public:
 
 	int		TitleTime;
 	FString	BorderFlat;
+	FString ArmorIcon1;
+	FString ArmorIcon2;
+	fixed   Armor2Percent;
 	FString GameColormap;
 	FString	GamePalette;
 	FString	TitleMusic;
@@ -179,6 +182,7 @@ public:
 	int				ExitFadeColor;
 	unsigned int	ExitFadeDuration;
 	unsigned int	Par;
+	TArray<int>		HubPar;
 	FString			CompletionString;
 	FTextureID		HighScoresGraphic;
 	int				LevelBonus;
@@ -186,6 +190,7 @@ public:
 	bool			NoIntermission;
 	TArray<FTextureID>	ParallaxSky;
 	int             NumParallaxTiles;
+	int             Atmos[4];
 	FString			Intermission;
 
 	bool			DeathCam;
@@ -205,6 +210,11 @@ public:
 		int				Args[5];
 	};
 	TArray<SpecialAction>	SpecialActions;
+
+	void ClearAtmos()
+	{
+		Atmos[0] = Atmos[1] = Atmos[2] = Atmos[3] = 0;
+	}
 
 	static LevelInfo &Find(const char* level);
 	static LevelInfo &FindByNumber(unsigned int num);
@@ -257,6 +267,30 @@ public:
 	static ClusterInfo &Find(unsigned int index);
 };
 
+enum ESkillProperty
+{
+	//SKILLP_AmmoFactor,
+	//SKILLP_DropAmmoFactor,
+	SKILLP_DamageFactor,
+	SKILLP_FastMonsters,
+	//SKILLP_SlowMonsters,
+	//SKILLP_Respawn,
+	//SKILLP_RespawnLimit,
+	//SKILLP_Aggressiveness,
+	//SKILLP_DisableCheats,
+	//SKILLP_AutoUseHealth,
+	//SKILLP_EasyBossBrain,
+	//SKILLP_EasyKey,
+	SKILLP_SpawnFilter,
+	//SKILLP_ACSReturn,
+	//SKILLP_MonsterHealth,
+	//SKILLP_FriendlyHealth,
+	//SKILLP_NoPain,
+	SKILLP_ArmorFactor,
+	//SKILLP_HealthFactor,
+};
+int G_SkillProperty(ESkillProperty prop);
+
 class SkillInfo
 {
 public:
@@ -273,6 +307,7 @@ public:
 	bool QuizHints;
 	int LivesCount;
 	fixed ScoreMultiplier;
+	fixed ArmorFactor;
 
 	static unsigned int GetNumSkills();
 	static unsigned int GetSkillIndex(const SkillInfo &skill);

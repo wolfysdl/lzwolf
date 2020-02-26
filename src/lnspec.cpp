@@ -47,7 +47,6 @@
 #include "wl_game.h"
 #include "wl_loadsave.h"
 #include "wl_play.h"
-#include "wl_state.h"
 #include "g_mapinfo.h"
 #include "g_shared/a_keys.h"
 #include "thingdef/thingdef.h"
@@ -746,16 +745,13 @@ class EVPushwall : public Thinker
 			spot->pushDirection = MapTile::Side(direction);
 		}
 
-		static bool CheckSpotFree(MapSpot spot, bool nostop)
+		static bool CheckSpotFree(MapSpot spot)
 		{
 			if(spot->tile)
 			{
 				// Hit a wall so we're done.
 				return false;
 			}
-
-			const ClassDef *squishDamageClass = ClassDef::FindClassTentative("SquishDamage", NATIVE_CLASS(Damage));
-			ADamage *squishDamageInv = static_cast<ADamage *>(players[0].mo->FindInventory(squishDamageClass));
 
 			// Check for any blocking actors
 			AActor::Iterator iter = AActor::GetIterator();
@@ -769,15 +765,6 @@ class EVPushwall : public Thinker
 					if(actor->tilex+dirdeltax[actor->dir] == movex &&
 						actor->tiley+dirdeltay[actor->dir] == movey)
 					{
-						if (nostop && !actor->player && squishDamageInv)
-						{
-							if (actor->flags & FL_SHOOTABLE)
-							{
-								// Squish!
-								DamageActor(actor, NULL, 10000, squishDamageClass);
-							}
-							continue;
-						}
 						// Blocked!
 						return false;
 					}
@@ -820,7 +807,7 @@ class EVPushwall : public Thinker
 					#endif
 				}
 
-				if(!CheckSpotFree(moveTo, nostop))
+				if(!nostop && !CheckSpotFree(moveTo))
 				{
 					Destroy();
 					return;
@@ -1211,4 +1198,37 @@ FUNC(Change_Music)
 	map->ChangeMusic (args[0]);
 	StartMusic ();
 	return 1;
+}
+
+FUNC(Trigger_ThingSpecial)
+{
+	bool ret = false;
+	std::map< std::pair< int,int >, bool > locs;
+
+	if (args[0] != 0)
+	{
+		MapSpot spot = NULL;
+		while ((spot = map->GetSpotByTag(args[0], spot)))
+		{
+			locs[ std::make_pair(spot->GetX(), spot->GetY()) ] = true;
+		}
+	}
+	else
+	{
+		locs[ std::make_pair(spot->GetX(), spot->GetY()) ] = true;
+	}
+
+	for(AActor::Iterator iter = AActor::GetIterator().Next();iter;)
+	{
+		AActor *check = iter;
+		iter.Next();
+
+		if(locs.find(std::make_pair(check->tilex, check->tiley)) != locs.end())
+		{
+			if(P_ActivateThingSpecial(check, activator))
+				ret = true;
+		}
+	}
+
+	return ret;
 }

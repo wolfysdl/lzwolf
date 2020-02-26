@@ -143,12 +143,15 @@ void NewGame (int difficulty, const FString &map, bool displayBriefing, const Cl
 	if(!playerClass)
 		playerClass = ClassDef::FindClass(gameinfo.PlayerClasses[0]);
 
+	if(gamestate.phubworld != NULL)
+		delete gamestate.phubworld;
 	memset (&gamestate,0,sizeof(gamestate));
 	gamestate.difficulty = &SkillInfo::GetSkill(difficulty);
 	strncpy(gamestate.mapname, map, 8);
 	gamestate.mapname[8] = 0;
 	gamestate.playerClass = playerClass;
 	levelInfo = &LevelInfo::Find(map);
+	gamestate.phubworld = new HubWorld;
 
 	if(displayBriefing)
 		EnterText(levelInfo->Cluster);
@@ -232,9 +235,7 @@ void BuildTables (void)
 	}
 	memcpy(&finesine[FINEANGLES], finesine, FINEANGLES*sizeof(fixed)/4);
 
-#if defined(USE_STARSKY) || defined(USE_RAIN) || defined(USE_SNOW)
 	Init3DPoints();
-#endif
 }
 
 //===========================================================================

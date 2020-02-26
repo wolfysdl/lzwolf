@@ -54,12 +54,18 @@ actor Guard : WolfensteinMonster 11
 		Missile:
 			GARD FG 10 A_FaceTarget
 			GARD H 10 bright A_WolfAttack
+			//GARD H 10 bright A_SetProperty("faction", "Nazis")
 			goto See
 		Pain:
 			GARD I 5 A_JumpIf(health & 1, 1)
 			goto See
 			GARD J 5
 			goto See
+		//Pain_FireDamage:
+		//	GARD N 5 A_JumpIf(health & 1, 1)
+		//	goto See
+		//	GARD N 5
+		//	goto See
 		Death:
 			GARD K 7.5 A_Fall
 			GARD L 7.5 A_Scream

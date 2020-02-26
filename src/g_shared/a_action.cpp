@@ -1,5 +1,5 @@
 /*
-** lnspec.h
+** a_action.cpp
 **
 **---------------------------------------------------------------------------
 ** Copyright 2011 Braden Obrzut
@@ -32,36 +32,45 @@
 **
 */
 
-#ifndef __LNSPEC_H__
-#define __LNSPEC_H__
+#include "c_cvars.h"
+#include "thingdef/thingdef.h"
+#include "wl_agent.h"
+#include "wl_game.h"
+#include "wl_main.h"
+#include "wl_play.h"
 
-#include "gamemap.h"
+#include <climits>
 
-class AActor;
+// SwitchableDecoration: Activate and Deactivate change state ---------------
 
-// p_switch.cpp
-bool P_ChangeSwitchTexture (MapSpot spot, MapTile::Side side, int useAgain, BYTE special, bool *quest=NULL);
-bool P_ActivateThingSpecial(AActor * thing, AActor * trigger, bool death = false);
-
-namespace Specials
+class ASwitchableDecoration : public AActor
 {
-	typedef int (*LineSpecialFunction)(MapSpot spot, const int args[], MapTrigger::Side direction, AActor *activator);
+	DECLARE_CLASS (ASwitchableDecoration, AActor)
+public:
+	void Activate (AActor *activator);
+	void Deactivate (AActor *activator);
+};
 
-	#define DEFINE_SPECIAL(name,num,args) name = num,
-	enum LineSpecials
-	{
-		#include "lnspecials.h"
+IMPLEMENT_CLASS (SwitchableDecoration)
 
-		NUM_POSSIBLE_SPECIALS
-	};
-	#undef DEFINE_SPECIAL
-
-	LineSpecials LookupFunctionNum(const char* const function);
-	LineSpecialFunction LookupFunction(LineSpecials function);
-	static inline LineSpecialFunction LookupFunction(const char* const function)
-	{
-		return LookupFunction(LookupFunctionNum(function));
-	}
+void ASwitchableDecoration::Activate (AActor *activator)
+{
+	SetState (FindState(NAME_Active));
 }
 
-#endif
+void ASwitchableDecoration::Deactivate (AActor *activator)
+{
+	SetState (FindState(NAME_Inactive));
+}
+
+// SwitchingDecoration: Only Activate changes state -------------------------
+
+class ASwitchingDecoration : public ASwitchableDecoration
+{
+	DECLARE_CLASS (ASwitchingDecoration, ASwitchableDecoration)
+public:
+	void Deactivate (AActor *activator) {}
+};
+
+IMPLEMENT_CLASS (SwitchingDecoration)
+

@@ -183,6 +183,7 @@ public:
 							delete[] comment;
 						}
 
+						delete savePicture;
 						delete png;
 					}
 					if(file)
@@ -543,7 +544,8 @@ static void Serialize(FArchive &arc)
 		<< gamestate.treasuretotal
 		<< gamestate.killtotal
 		<< gamestate.TimeCount
-		<< gamestate.victoryflag;
+		<< gamestate.victoryflag
+		<< *(gamestate.phubworld);
 	if(SaveVersion >= 1393719642)
 		arc << gamestate.fullmap;
 	arc << LevelRatios.killratio
