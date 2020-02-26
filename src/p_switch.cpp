@@ -431,3 +431,53 @@ bool DActiveButton::AdvanceFrame ()
 	}
 	return ret;
 }
+
+//=============================================================================
+//
+// P_ActivateThingSpecial
+//
+// Handles the code for things activated by death, USESPECIAL or BUMPSPECIAL
+//
+//=============================================================================
+
+bool P_ActivateThingSpecial(AActor * thing, AActor * trigger, bool death)
+{
+	bool res = false;
+
+	// Target switching mechanism
+	if (thing->activationtype & THINGSPEC_ThingTargets)		thing->target = trigger;
+	if (thing->activationtype & THINGSPEC_TriggerTargets)	trigger->target = thing;
+
+	// State change mechanism. The thing needs to be not dead and to have at least one of the relevant flags
+	if (!death && (thing->activationtype & (THINGSPEC_Activate | THINGSPEC_Deactivate | THINGSPEC_Switch)))
+	{
+		// If a switchable thing does not know whether it should be activated
+		// or deactivated, the default is to activate it.
+		if ((thing->activationtype & THINGSPEC_Switch)
+			&& !(thing->activationtype & (THINGSPEC_Activate | THINGSPEC_Deactivate)))
+		{
+			thing->activationtype |= THINGSPEC_Activate;
+		}
+		// Can it be activated?
+		if (thing->activationtype & THINGSPEC_Activate)
+		{
+			thing->activationtype &= ~THINGSPEC_Activate; // Clear flag
+			if (thing->activationtype & THINGSPEC_Switch) // Set other flag if switching
+				thing->activationtype |= THINGSPEC_Deactivate;
+			thing->Activate(trigger);
+			res = true;
+		}
+		// If not, can it be deactivated?
+		else if (thing->activationtype & THINGSPEC_Deactivate)
+		{
+			thing->activationtype &= ~THINGSPEC_Deactivate; // Clear flag
+			if (thing->activationtype & THINGSPEC_Switch)	// Set other flag if switching
+				thing->activationtype |= THINGSPEC_Activate;
+			thing->Deactivate(trigger);
+			res = true;
+		}
+	}
+
+	// Returns the result
+	return res;
+}

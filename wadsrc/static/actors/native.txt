@@ -275,6 +275,19 @@ actor PlayerPawn native
 	}
 }
 
+// SwitchableDecoration: Activate and Deactivate change state --------------
+
+actor SwitchableDecoration native
+{
+}
+
+
+actor SwitchingDecoration : SwitchableDecoration native
+{
+}
+
+// Random spawner ----------------------------------------------------------
+
 actor RandomSpawner native
 {
 }

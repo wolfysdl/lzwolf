@@ -1199,3 +1199,36 @@ FUNC(Change_Music)
 	StartMusic ();
 	return 1;
 }
+
+FUNC(Trigger_ThingSpecial)
+{
+	bool ret = false;
+	std::map< std::pair< int,int >, bool > locs;
+
+	if (args[0] != 0)
+	{
+		MapSpot spot = NULL;
+		while ((spot = map->GetSpotByTag(args[0], spot)))
+		{
+			locs[ std::make_pair(spot->GetX(), spot->GetY()) ] = true;
+		}
+	}
+	else
+	{
+		locs[ std::make_pair(spot->GetX(), spot->GetY()) ] = true;
+	}
+
+	for(AActor::Iterator iter = AActor::GetIterator().Next();iter;)
+	{
+		AActor *check = iter;
+		iter.Next();
+
+		if(locs.find(std::make_pair(check->tilex, check->tiley)) != locs.end())
+		{
+			if(P_ActivateThingSpecial(check, activator))
+				ret = true;
+		}
+	}
+
+	return ret;
+}

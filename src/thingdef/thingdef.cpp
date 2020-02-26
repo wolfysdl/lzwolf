@@ -1069,6 +1069,79 @@ bool ClassDef::SetFlag(const ClassDef *newClass, AActor *instance, const FString
 	return false;
 }
 
+//==========================================================================
+//
+// [MH] parses a morph style expression
+//
+//==========================================================================
+
+struct FParseValue
+{
+	const char *Name;
+	int Flag;
+};
+
+static int ParseFlagExpressionString(Scanner &sc, const FParseValue *vals)
+{
+	// May be given flags by number...
+	if (sc.CheckToken(TK_IntConst))
+	{
+		sc.MustGetToken(TK_IntConst);
+		return sc->number;
+	}
+
+	// ... else should be flags by name.
+	// NOTE: Later this should be removed and a normal expression used.
+	// The current DECORATE parser can't handle this though.
+	bool gotparen = sc.CheckToken('(');
+	int style = 0;
+	do
+	{
+		sc.MustGetToken(TK_Identifier);
+
+		int i;
+		for (i=0; vals[i].Name; i++)
+		{
+			if (strcmp(sc->str.GetChars(), vals[i].Name) == 0)
+				break;
+		}
+
+		if (vals[i].Name)
+			style |= vals[i].Flag;
+	}
+	while (sc.CheckToken('|'));
+	if (gotparen)
+	{
+		sc.MustGetToken(')');
+	}
+
+	return style;
+}
+
+static int ParseThingActivation (Scanner &sc)
+{
+ 	static const FParseValue activationstyles[]={
+
+		{ "THINGSPEC_Default",				THINGSPEC_Default},
+		{ "THINGSPEC_ThingActs",			THINGSPEC_ThingActs},
+		{ "THINGSPEC_ThingTargets",			THINGSPEC_ThingTargets},
+		{ "THINGSPEC_TriggerTargets",		THINGSPEC_TriggerTargets},
+		{ "THINGSPEC_MonsterTrigger",		THINGSPEC_MonsterTrigger},
+		{ "THINGSPEC_MissileTrigger",		THINGSPEC_MissileTrigger},
+		{ "THINGSPEC_ClearSpecial",			THINGSPEC_ClearSpecial},
+		{ "THINGSPEC_NoDeathSpecial",		THINGSPEC_NoDeathSpecial},
+		{ "THINGSPEC_TriggerActs",			THINGSPEC_TriggerActs},
+		{ "THINGSPEC_Activate",				THINGSPEC_Activate},
+		{ "THINGSPEC_Deactivate",			THINGSPEC_Deactivate},
+		{ "THINGSPEC_Switch",				THINGSPEC_Switch},
+		{ NULL, 0 }
+	};
+
+	return ParseFlagExpressionString(sc, activationstyles);
+}
+
+//==========================================================================
+
 bool ClassDef::SetProperty(AActor* actor, const ClassDef *cls, const char* propName, const char* value)
 {
 	Scanner sc( value, strlen(value) );
@@ -1194,6 +1267,10 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								}
 								params[paramc].s = new char[sc->str.Len()+1];
 								strcpy(params[paramc].s, sc->str);
+								break;
+							case 'N':	// special case. An expression-aware parser will not need this.
+								params[paramc].isExpression = false;
+								params[paramc].i = ParseThingActivation(sc);
 								break;
 						}
 						paramc++;

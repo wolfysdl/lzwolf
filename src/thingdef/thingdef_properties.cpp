@@ -54,6 +54,13 @@ HANDLE_PROPERTY(actionns)
 	defaults->actionns = ns;
 }
 
+HANDLE_PROPERTY(activation)
+{
+	// How the thing behaves when activated by death, USESPECIAL or BUMPSPECIAL
+	INT_PARAM(val, 0);
+	defaults->activationtype = val;
+}
+
 HANDLE_PROPERTY(activesound)
 {
 	STRING_PARAM(snd, 0);
@@ -743,6 +750,7 @@ HANDLE_PROPERTY(STATUSBAR)
 extern const PropDef properties[] =
 {
 	DEFINE_PROP(actionns, Actor, S),
+	DEFINE_PROP(activation, Actor, N),
 	DEFINE_PROP(activesound, Actor, S),
 	DEFINE_PROP(ammogive1, Weapon, I),
 	DEFINE_PROP(ammogive2, Weapon, I),
