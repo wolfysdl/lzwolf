@@ -1203,16 +1203,27 @@ FUNC(Change_Music)
 FUNC(Trigger_ThingSpecial)
 {
 	bool ret = false;
+	std::map< std::pair< int,int >, bool > locs;
 
-	int tilex = spot->GetX();
-	int tiley = spot->GetY();
+	if (args[0] != 0)
+	{
+		MapSpot spot = NULL;
+		while ((spot = map->GetSpotByTag(args[0], spot)))
+		{
+			locs[ std::make_pair(spot->GetX(), spot->GetY()) ] = true;
+		}
+	}
+	else
+	{
+		locs[ std::make_pair(spot->GetX(), spot->GetY()) ] = true;
+	}
 
 	for(AActor::Iterator iter = AActor::GetIterator().Next();iter;)
 	{
 		AActor *check = iter;
 		iter.Next();
 
-		if(check->tilex == tilex && check->tiley == tiley)
+		if(locs.find(std::make_pair(check->tilex, check->tiley)) != locs.end())
 		{
 			if(P_ActivateThingSpecial(check, activator))
 				ret = true;
