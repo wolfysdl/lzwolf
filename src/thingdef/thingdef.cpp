@@ -1097,7 +1097,7 @@ static int ParseFlagExpressionString(Scanner &sc, const FParseValue *vals)
 	int style = 0;
 	do
 	{
-		sc.MustGetToken(TK_StringConst);
+		sc.MustGetToken(TK_Identifier);
 
 		int i;
 		for (i=0; vals[i].Name; i++)
@@ -1269,6 +1269,7 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								strcpy(params[paramc].s, sc->str);
 								break;
 							case 'N':	// special case. An expression-aware parser will not need this.
+								params[paramc].isExpression = false;
 								params[paramc].i = ParseThingActivation(sc);
 								break;
 						}
