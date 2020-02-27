@@ -3,7 +3,6 @@
 #include "actors/patrolpoint.txt"
 #include "actors/wolf/wolfguards.txt"
 #include "actors/wolf/angelofdeath.txt"
-#include "actors/wolf/dust.txt"
 #include "actors/wolf/decorations.txt"
 #include "actors/wolf/hitler.txt"
 #include "actors/wolf/rocket.txt"

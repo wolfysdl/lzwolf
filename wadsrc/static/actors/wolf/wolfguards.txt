@@ -9,7 +9,6 @@ actor WolfensteinMonster
 	radius 42
 	painchance 256
 	meleerange 42
-	//litfilter "DustLit"
 	//damageresistance "FireDamage", 50
 	//enemyfaction "AlliedForces"
 	//faction "Nazis"

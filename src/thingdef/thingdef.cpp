@@ -470,7 +470,7 @@ bool ClassDef::bShutdown = false;
 // Minimize warning spam for deprecated feature in 1.4
 static bool g_ThingEdNumWarning;
 
-ClassDef::ClassDef() : tentative(false), filterposRunningId(0)
+ClassDef::ClassDef() : tentative(false)
 {
 	defaultInstance = NULL;
 	FlatPointers = Pointers = NULL;
@@ -1355,13 +1355,6 @@ void ClassDef::UnloadActors()
 	AActor::damageExpressions.Clear();
 	for(unsigned int i = 0;i < globalSymbols.Size();++i)
 		delete globalSymbols[i];
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-int ClassDef::GetNextFilterposId()
-{
-    return filterposRunningId++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
