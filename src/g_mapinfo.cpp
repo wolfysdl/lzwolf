@@ -796,6 +796,8 @@ protected:
 		}
 		else if(key.CompareNoCase("quitmessages") == 0)
 			ParseStringArrayAssignment(gameinfo.QuitMessages);
+		else if(key.CompareNoCase("parallaxskyfloorcolor") == 0)
+			ParseColorAssignment(gameinfo.parallaxskyfloorcolor);
 		else if(key.CompareNoCase("parallaxskyceilcolor") == 0)
 			ParseColorAssignment(gameinfo.parallaxskyceilcolor);
 		else

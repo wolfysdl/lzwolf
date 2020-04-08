@@ -153,6 +153,7 @@ public:
 		int WallColor;
 		int YourColor;
 	} automap;
+	int parallaxskyfloorcolor;
 	int parallaxskyceilcolor;
 } gameinfo;
 
