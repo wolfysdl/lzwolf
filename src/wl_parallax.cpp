@@ -107,11 +107,11 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 
 		if (drawFloorSky)
 		{
-			yend = skyheight + skywallheight[x];
+			yend = skyheight + (skywallheight[x]>>3);
 			if(yend >= viewheight) continue;
 
 			for(int y = yend, offs = x + yend*vbufPitch; y < viewheight; y++, offs += vbufPitch)
-				vbuf[offs] = floorskytex[texoffs + ((y - yend) * h) / skyheight];
+				vbuf[offs] = floorskytex[texoffs + ((y - skyheight) * h) / skyheight];
 		}
 	}
 }
