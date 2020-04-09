@@ -793,3 +793,16 @@ actor DevilStatue : BrownColumn 136
 			stop
 	}
 }
+
+actor HaloCeilingLight
+{
+	halolight 0, 1.0, 10
+
+	states
+	{
+		Spawn:
+			GLMP A 1 A_EnableHaloLight(0, true)
+			GLMP A -1 bright
+			stop
+	}
+}
