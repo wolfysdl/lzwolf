@@ -114,6 +114,37 @@ struct HubWorld
 	MapData                             pendingmapdata;
 };
 
+template< typename T >
+class LegacyHandle
+{
+public:
+	T* operator->()
+	{
+		if( !mp_obj )
+			mp_obj = new T;
+		return mp_obj;
+	}
+
+	T& operator*()
+	{
+		if( !mp_obj )
+			mp_obj = new T;
+		return *mp_obj;
+	}
+
+	void clear()
+	{
+		if( mp_obj )
+		{
+			delete mp_obj;
+			mp_obj = NULL;
+		}
+	}
+
+private:
+	T*   mp_obj = NULL;
+};
+
 inline FArchive &operator<< (FArchive &arc, HubWorld::MapData &mapdata)
 {
 	arc << mapdata.secretcount
@@ -153,7 +184,7 @@ extern struct gametype
 	bool        victoryflag;            // set during victory animations
 	bool		fullmap;
 
-	HubWorld*   phubworld;
+	LegacyHandle<HubWorld>   phubworld;
 } gamestate;
 
 extern  char            demoname[13];
