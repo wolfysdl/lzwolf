@@ -889,6 +889,7 @@ int32_t AActor::SpawnHealth() const
 
 DEFINE_SYMBOL(Actor, angle)
 DEFINE_SYMBOL(Actor, health)
+DEFINE_SYMBOL(Actor, loaded)
 
 //==============================================================================
 

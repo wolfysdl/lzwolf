@@ -75,9 +75,11 @@ actor Actor native
 	scale 1.0
 	projectilepassheight -1
 	singlespawn 0
+	loaded 0
 
 	native angle_t angle;
 	native int health;
+	native int loaded;
 
 	action native A_ActiveSound(int chance=256);
 	action native A_AlertMonsters();

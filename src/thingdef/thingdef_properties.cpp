@@ -395,6 +395,12 @@ HANDLE_PROPERTY(interhubamount)
 	((AInventory *)defaults)->interhubamount = amt;
 }
 
+HANDLE_PROPERTY(loaded)
+{
+	INT_PARAM(loaded, 0);
+	defaults->loaded = loaded;
+}
+
 HANDLE_PROPERTY(maxabsorb)
 {
 	INT_PARAM(i, 0);
@@ -824,6 +830,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
+	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),
 	DEFINE_PROP(maxbonus, BasicArmorBonus, I),

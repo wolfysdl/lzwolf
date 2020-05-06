@@ -249,6 +249,7 @@ class AActor : public Thinker,
 		int		points;
 		fixed	radius;
 		fixed	projectilepassheight;
+		int     loaded;
 
 		const Frame		*state;
 		unsigned int	sprite;
