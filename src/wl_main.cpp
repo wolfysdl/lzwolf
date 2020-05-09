@@ -46,6 +46,7 @@
 #include "filesys.h"
 #include "g_conversation.h"
 #include "g_intermission.h"
+#include "m_argv.h"
 
 #include <clocale>
 
@@ -1289,6 +1290,8 @@ int WL_Main (int argc, char *argv[])
 {
 	try
 	{
+		Args = new AArgs(argc, argv);
+
 		// Stop the C library from screwing around with its functions according
 		// to the system locale.
 		setlocale(LC_ALL, "C");

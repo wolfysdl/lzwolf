@@ -36,6 +36,7 @@ extern  exit_t      playstate;
 extern  bool        madenoise;
 extern  int         godmode;
 extern	bool		notargetmode;
+extern  gameaction_t gameaction;
 
 extern  bool        demorecord,demoplayback;
 extern  int8_t      *demoptr, *lastdemoptr;

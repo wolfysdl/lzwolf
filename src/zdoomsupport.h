@@ -5,6 +5,7 @@
 
 #include "m_crc32.h"
 #include "templates.h"
+#include "basictypes.h"
 
 #include <cstring>
 
@@ -31,6 +32,15 @@ static inline char* copystring(const char* src)
 	strcpy(dest, src);
 	dest[strlen(src)] = 0;
 	return dest;
+}
+
+static inline char *ncopystring (const char *string)
+{
+	if (string == NULL || string[0] == 0)
+	{
+		return NULL;
+	}
+	return copystring (string);
 }
 
 static inline void ReplaceString(char* &ptr, const char* str)
@@ -60,8 +70,6 @@ static inline unsigned int MakeKey(const char *s) { return MakeKey(s, strlen(s))
 // circular dependency issue.
 template<class T> void FixPathSeperator (T &path) { path.ReplaceChars('\\', '/'); }
 
-static void DPrintf(const char* fmt, ...) {}
-
 #define countof(x) (sizeof(x)/sizeof(x[0]))
 #ifndef __BIG_ENDIAN__
 #define MAKE_ID(a,b,c,d)	((DWORD)((a)|((b)<<8)|((c)<<16)|((d)<<24)))
@@ -81,5 +89,12 @@ void I_Error(const char* format, ...);
 #else
 #define STACK_ARGS
 #endif
+
+// [RH] This gets used all over; define it here:
+int STACK_ARGS Printf (int printlevel, const char *, ...) GCCPRINTF(2,3);
+int STACK_ARGS Printf (const char *, ...) GCCPRINTF(1,2);
+
+// [RH] Same here:
+int STACK_ARGS DPrintf (const char *, ...) GCCPRINTF(1,2);
 
 #endif /* __ZDOOM_SUPPORT__ */

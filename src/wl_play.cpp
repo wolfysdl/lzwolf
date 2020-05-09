@@ -49,6 +49,7 @@
 bool madenoise;              // true when shooting or screaming
 
 exit_t playstate;
+gameaction_t gameaction;
 
 static int DebugOk;
 #ifdef __ANDROID__

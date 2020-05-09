@@ -225,9 +225,13 @@ set(SOURCE_FILES
 	thingdef/thingdef_type.cpp
 	actor.cpp
 	am_map.cpp
+	cmdlib.cpp
 	colormatcher.cpp
 	config.cpp
+	c_console.cpp
+	c_consolebuffer.cpp
 	c_cvars.cpp
+	c_dispatch.cpp
 	dobject.cpp
 	dobjgc.cpp
 	farchive.cpp
@@ -251,6 +255,7 @@ set(SOURCE_FILES
 	lnspec.cpp
 	lumpremap.cpp
 	m_alloc.cpp
+	m_argv.cpp
 	m_classes.cpp
 	m_random.cpp
 	m_png.cpp

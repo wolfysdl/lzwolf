@@ -1,5 +1,5 @@
 /*
-** v_text.h
+** m_argv.h
 **
 **---------------------------------------------------------------------------
 ** Copyright 1998-2006 Randy Heit
@@ -31,54 +31,49 @@
 **
 */
 
-#ifndef __V_TEXT_H__
-#define __V_TEXT_H__
+#ifndef __M_ARGV_H__
+#define __M_ARGV_H__
 
-#include "wl_def.h"
-#include "v_font.h"
+#include "actordef.h"
+#include "dobject.h"
 #include "zstring.h"
 
-struct FBrokenLines
+//
+// MISC
+//
+class AArgs : public DObject
 {
-	int			Width;
-	FString		Text;
+	DECLARE_CLASS(AArgs, DObject)
+public:
+	AArgs();
+	AArgs(const AArgs &args);
+	AArgs(int argc, char **argv);
+	AArgs(int argc, FString *argv);
+
+	AArgs &operator=(const AArgs &other);
+
+	void AppendArg(FString arg);
+	void AppendArgs(int argc, const FString *argv);
+	void RemoveArg(int argindex);
+	void RemoveArgs(const char *check);
+	void SetArgs(int argc, char **argv);
+	void CollectFiles(const char *param, const char *extension);
+	AArgs *GatherFiles(const char *param) const;
+	void SetArg(int argnum, const char *arg);
+
+	int CheckParm(const char *check, int start=1) const;	// Returns the position of the given parameter in the arg list (0 if not found).
+	int CheckParmList(const char *check, FString **strings, int start=1) const;
+	const char *CheckValue(const char *check) const;
+	const char *GetArg(int arg) const;
+	FString *GetArgList(int arg) const;
+	FString TakeValue(const char *check);
+	int NumArgs() const;
+	void FlushArgs();
+
+private:
+	TArray<FString> Argv;
 };
 
-#define TEXTCOLOR_ESCAPE		'\034'
+extern AArgs *Args;
 
-#define TEXTCOLOR_BRICK			"\034A"
-#define TEXTCOLOR_TAN			"\034B"
-#define TEXTCOLOR_GRAY			"\034C"
-#define TEXTCOLOR_GREY			"\034C"
-#define TEXTCOLOR_GREEN			"\034D"
-#define TEXTCOLOR_BROWN			"\034E"
-#define TEXTCOLOR_GOLD			"\034F"
-#define TEXTCOLOR_RED			"\034G"
-#define TEXTCOLOR_BLUE			"\034H"
-#define TEXTCOLOR_ORANGE		"\034I"
-#define TEXTCOLOR_WHITE			"\034J"
-#define TEXTCOLOR_YELLOW		"\034K"
-#define TEXTCOLOR_UNTRANSLATED	"\034L"
-#define TEXTCOLOR_BLACK			"\034M"
-#define TEXTCOLOR_LIGHTBLUE		"\034N"
-#define TEXTCOLOR_CREAM			"\034O"
-#define TEXTCOLOR_OLIVE			"\034P"
-#define TEXTCOLOR_DARKGREEN		"\034Q"
-#define TEXTCOLOR_DARKRED		"\034R"
-#define TEXTCOLOR_DARKBROWN		"\034S"
-#define TEXTCOLOR_PURPLE		"\034T"
-#define TEXTCOLOR_DARKGRAY		"\034U"
-#define TEXTCOLOR_CYAN			"\034V"
-
-#define TEXTCOLOR_NORMAL		"\034-"
-#define TEXTCOLOR_BOLD			"\034+"
-
-#define TEXTCOLOR_CHAT			"\034*"
-#define TEXTCOLOR_TEAMCHAT		"\034!"
-
-FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *str, bool preservecolor = false);
-void V_FreeBrokenLines (FBrokenLines *lines);
-inline FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const char *str, bool preservecolor = false)
- { return V_BreakLines (font, maxwidth, (const BYTE *)str, preservecolor); }
-
-#endif //__V_TEXT_H__
+#endif //__M_ARGV_H__
