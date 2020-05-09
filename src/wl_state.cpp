@@ -90,7 +90,8 @@ bool TrySpot(AActor *ob, MapSpot spot)
 		const dirtype offsetDir = iter->distance >= TILEGLOBAL/2 ? iter->dir : nodir;
 
 		// Players need not be checked
-		if(iter != ob && !iter->player && (iter->flags & FL_SOLID) &&
+		if(iter != ob && !iter->player && ( (iter->flags & FL_SOLID) ||
+			(iter->extraflags & FL_ENEMYSOLID) ) &&
 			static_cast<unsigned int>(iter->tilex+dirdeltax[offsetDir]) == x &&
 			static_cast<unsigned int>(iter->tiley+dirdeltay[offsetDir]) == y)
 			return false;

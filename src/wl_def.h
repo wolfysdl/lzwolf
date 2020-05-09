@@ -207,6 +207,11 @@ enum ActorFlag
 	FL_BILLBOARD        = 0x20000000,
 };
 
+enum ExtraActorFlag
+{
+	FL_ENEMYSOLID       = 0x00000001,
+};
+
 enum ItemFlag
 {
 	IF_AUTOACTIVATE		= 0x00000001,

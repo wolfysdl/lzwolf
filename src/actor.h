@@ -77,6 +77,9 @@ enum
 typedef TFlags<ActorFlag> ActorFlags;
 DEFINE_TFLAGS_OPERATORS (ActorFlags)
 
+typedef TFlags<ExtraActorFlag> ExtraActorFlags;
+DEFINE_TFLAGS_OPERATORS (ExtraActorFlags)
+
 // Used to affect the logic for thing activation through death, USESPECIAL and BUMPSPECIAL
 // "thing" refers to what has the flag and the special, "trigger" refers to what used or bumped it
 enum EThingSpecialActivationType
@@ -207,6 +210,9 @@ class AActor : public Thinker,
 
 		// Basic properties from objtype
 		ActorFlags flags;
+
+		// rather than use QWORD we have extra flags
+		ExtraActorFlags extraflags;
 
 		int32_t	distance; // if negative, wait for that door to open
 		dirtype	dir;

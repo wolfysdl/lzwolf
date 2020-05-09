@@ -559,6 +559,7 @@ void AActor::Serialize(FArchive &arc)
 
 	arc << spawnid
 		<< flags
+		<< extraflags
 		<< distance
 		<< x
 		<< y;

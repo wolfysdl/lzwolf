@@ -84,6 +84,7 @@ const struct FlagDef
 	DEFINE_FLAG(FL, DONTRIP, Actor, flags),
 	DEFINE_FLAG(FL, DRAWRELATIVE, Actor, flags),
 	DEFINE_FLAG(FL, DROPBASEDONTARGET, Actor, flags),
+	DEFINE_FLAG(FL, ENEMYSOLID, Actor, extraflags),
 	DEFINE_FLAG(IF, INVBAR, Inventory, itemFlags),
 	DEFINE_FLAG(FL, ISMONSTER, Actor, flags),
 	DEFINE_FLAG(FL, MISSILE, Actor, flags),
