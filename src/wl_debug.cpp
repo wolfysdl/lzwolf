@@ -31,6 +31,8 @@
 #include "r_sprites.h"
 #include "wl_shade.h"
 #include "filesys.h"
+#include "c_dispatch.h"
+#include "v_text.h"
 
 #ifdef USE_CLOUDSKY
 #include "wl_cloudsky.h"
@@ -630,4 +632,107 @@ void DebugGod(bool noah)
 
 	if (viewsize < 18)
 		StatusBar->RefreshBackground ();
+}
+
+
+/*
+==================
+Cmd_God
+
+Sets godmode
+==================
+*/
+CCMD (god)
+{
+	int new_godmode = -1;
+	if (argv.argc() >= 2)
+	{
+		sscanf(argv[1], "%d", &new_godmode);
+		if (!(new_godmode >= 0 && new_godmode <= 2))
+			new_godmode = 0;
+	}
+
+	if (new_godmode == -1)
+	{
+		if (godmode != 2)
+			godmode++;
+		else
+			godmode = 0;
+	}
+	else
+	{
+		godmode = new_godmode;
+	}
+
+	if (godmode == 1)
+		Printf ("God mode ON");
+	else if (godmode == 2)
+		Printf ("God (no flash)");
+	else if (godmode == 0)
+		Printf ("God mode OFF");
+}
+
+CCMD (quit)
+{
+	Quit (NULL);
+}
+
+CCMD (exit)
+{
+	Quit (NULL);
+}
+
+CCMD (notarget)
+{
+	notargetmode = !notargetmode;
+	if(notargetmode)
+		Printf ("No target mode ON");
+	else
+		Printf ("No target mode OFF");
+}
+
+CCMD (noclip)
+{
+	noclip^=1;
+	if (noclip)
+		Printf ("No clipping ON");
+	else
+		Printf ("No clipping OFF");
+}
+
+CCMD (darkonefps)
+{
+	fpscounter ^= 1;
+	if (!fpscounter)
+		Printf ("Darkone's FPS Counter OFF");
+	else
+		Printf ("Darkone's FPS Counter ON");
+}
+
+CCMD (amcheat)
+{
+	am_cheat ^= 1;
+	if (am_cheat)
+		Printf ("Automap revealed");
+	else
+		Printf ("Automap hidden");
+}
+
+CCMD (slowmotion)
+{
+	if (argv.argc() < 2)
+	{
+		Printf ("Usage: slowmotion <steps>\n");
+		return;
+	}
+
+	int level = -1;
+	sscanf(argv[1], "%d", &level);
+	if (!(level>=0 && level<=50))
+	{
+		Printf (TEXTCOLOR_RED " Steps must be in range 0-50\n");
+		return;
+	}
+
+	singlestep = level;
 }

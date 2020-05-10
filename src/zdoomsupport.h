@@ -78,7 +78,7 @@ template<class T> void FixPathSeperator (T &path) { path.ReplaceChars('\\', '/')
 #endif
 
 #define MAXWIDTH 5120
-#define Printf printf
+//#define Printf printf
 #define I_FatalError Quit
 void I_Error(const char* format, ...);
 

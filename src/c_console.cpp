@@ -886,10 +886,11 @@ void C_DrawConsole (bool hw2d)
 
 		if (ConBottom >= 12)
 		{
+			const char* version = GAMENAME " " DOTVERSIONSTR_NOREV;
 			screen->DrawText (ConFont, CR_ORANGE, SCREENWIDTH - 8 -
-				ConFont->StringWidth (GetVersionDescription()),
+				ConFont->StringWidth (version),
 				ConBottom - ConFont->GetHeight() - 4,
-				GetVersionDescription(), TAG_DONE);
+				version, TAG_DONE);
 			if (TickerMax)
 			{
 				char tickstr[256];

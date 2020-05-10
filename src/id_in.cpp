@@ -335,6 +335,9 @@ static bool consoleEatsKey(ScanCode key, SDL_Keymod mod)
 
 	switch (key)
 	{
+	case SDLx_SCANCODE(TAB):
+		ev.data1 = '\t';
+		break;
 	case SDLx_SCANCODE(PAGEDOWN):
 		ev.data1 = GK_PGDN;
 		break;
