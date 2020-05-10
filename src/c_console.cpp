@@ -1513,6 +1513,13 @@ static void C_PasteText(FString clip, BYTE *buffer, int len)
 
 bool C_Responder (event_t *ev)
 {
+	if (ConsoleState == c_up && ev->type == EV_GUI_Event &&
+		ev->subtype == EV_GUI_KeyDown && ev->data1 == '`')
+	{
+		C_ToggleConsole();
+		return true;
+	}
+
 	if (ev->type != EV_GUI_Event ||
 		ConsoleState == c_up ||
 		ConsoleState == c_rising/* ||

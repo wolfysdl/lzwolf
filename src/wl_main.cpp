@@ -1312,6 +1312,7 @@ int WL_Main (int argc, char *argv[])
 		ReadConfig();
 
 		C_InitConsole(80*8, 25*80, false);
+		atterm(C_DeinitConsole);
 
 		{
 			TArray<FString> wadfiles, files;

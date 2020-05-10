@@ -27,6 +27,7 @@
 #include "a_inventory.h"
 #include "am_map.h"
 #include "wl_iwad.h"
+#include "c_console.h"
 
 /*
 =============================================================================
@@ -1130,6 +1131,8 @@ void PlayLoop (void)
 				AActor::FinishSpawningActors();
 			}
 		}
+
+		C_Ticker();
 
 		UpdatePaletteShifts ();
 
