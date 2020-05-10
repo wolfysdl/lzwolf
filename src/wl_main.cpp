@@ -437,6 +437,7 @@ static void InitGame()
 	VW_UpdateScreen();
 
 	C_InitConsole(SCREENWIDTH, SCREENHEIGHT, true);
+	C_InitConback();
 
 //
 // Load Actors
