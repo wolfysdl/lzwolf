@@ -736,3 +736,24 @@ CCMD (slowmotion)
 
 	singlestep = level;
 }
+
+CCMD (map)
+{
+	if (argv.argc() < 2)
+	{
+		Printf ("Usage: map <mapname>\n");
+		return;
+	}
+
+	const char *mapname = argv[1];
+
+	if(!GameMap::CheckMapExists(mapname))
+	{
+		Printf (TEXTCOLOR_RED " Map does not exist\n");
+		return;
+	}
+
+	strncpy(gamestate.mapname, mapname, 8);
+	gamestate.mapname[8] = 0;
+	playstate = ex_warped;
+}
