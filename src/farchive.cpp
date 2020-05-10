@@ -365,8 +365,7 @@ FFile &FCompressedFile::Seek (int pos, ESeekPos ofs)
 	return *this;
 }
 
-//CVAR (Bool, nofilecompression, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
-static const bool nofilecompression = false;
+CVAR (Bool, nofilecompression, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
 void FCompressedFile::Implode ()
 {

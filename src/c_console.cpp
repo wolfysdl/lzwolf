@@ -84,12 +84,11 @@
 #define RIGHTMARGIN 8
 #define BOTTOMARGIN 12
 
-//CUSTOM_CVAR(Int, con_buffersize, -1, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
-//{
-//	// ensure a minimum size
-//	if (self >= 0 && self < 128) self = 128;
-//}
-int con_buffersize = -1;
+CUSTOM_CVAR(Int, con_buffersize, -1, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+{
+	// ensure a minimum size
+	if (self >= 0 && self < 128) self = 128;
+}
 
 FConsoleBuffer *conbuffer;
 
@@ -97,7 +96,7 @@ static void C_TabComplete (bool goForward);
 static bool C_TabCompleteList ();
 static bool TabbedLast;		// True if last key pressed was tab
 static bool TabbedList;		// True if tab list was shown
-//CVAR(Bool, con_notablist, false, CVAR_ARCHIVE)
+CVAR(Bool, con_notablist, false, CVAR_ARCHIVE)
 
 
 static FTextureID conback;
@@ -136,8 +135,7 @@ static GameAtExit *ExitCmdList;
 #define SCROLLDN 2
 #define SCROLLNO 0
 
-//EXTERN_CVAR (Bool, show_messages)
-bool show_messages = true;
+CVAR (Bool, show_messages, true, CVAR_ARCHIVE)
 
 static unsigned int TickerAt, TickerMax;
 static bool TickerPercent;
@@ -168,27 +166,22 @@ static BYTE CmdLine[260];
 static struct History *HistHead = NULL, *HistTail = NULL, *HistPos = NULL;
 static int HistSize;
 
-//CVAR (Float, con_notifytime, 3.f, CVAR_ARCHIVE)
-float con_notifytime = 3.f;
-//CVAR (Bool, con_centernotify, false, CVAR_ARCHIVE)
-bool con_centernotify = false;
-//CUSTOM_CVAR (Int, con_scaletext, 0, CVAR_ARCHIVE)		// Scale notify text at high resolutions?
-//{
-//	if (self < 0) self = 0;
-//	if (self > 2) self = 2;
-//}
-int con_scaletext = 1;
+CVAR (Float, con_notifytime, 3.f, CVAR_ARCHIVE)
+CVAR (Bool, con_centernotify, false, CVAR_ARCHIVE)
+CUSTOM_CVAR (Int, con_scaletext, 0, CVAR_ARCHIVE)		// Scale notify text at high resolutions?
+{
+	if (self < 0) self = 0;
+	if (self > 2) self = 2;
+}
 
-//CUSTOM_CVAR(Float, con_alpha, 0.75f, CVAR_ARCHIVE)
-//{
-//	if (self < 0.f) self = 0.f;
-//	if (self > 1.f) self = 1.f;
-//}
-float con_alpha = 0.75f;
+CUSTOM_CVAR(Float, con_alpha, 0.75f, CVAR_ARCHIVE)
+{
+	if (self < 0.f) self = 0.f;
+	if (self > 1.f) self = 1.f;
+}
 
 // Command to run when Ctrl-D is pressed at start of line
-//CVAR (String, con_ctrl_d, "", CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
-const char* con_ctrl_d = "";
+CVAR (String, con_ctrl_d, "", CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
 #define NUMNOTIFIES 4
 #define NOTIFYFADETIME 6
@@ -211,47 +204,45 @@ FILE *Logfile = NULL;
 void C_AddNotifyString (int printlevel, const char *source);
 
 
-//FIntCVar msglevel ("msg", 0, CVAR_ARCHIVE);
-int msglevel = 0;
+FIntCVar msglevel ("msg", 0, CVAR_ARCHIVE);
 
-//CUSTOM_CVAR (Int, msg0color, 6, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (0, self);
-//}
-//
-//CUSTOM_CVAR (Int, msg1color, 5, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (1, self);
-//}
-//
-//CUSTOM_CVAR (Int, msg2color, 2, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (2, self);
-//}
-//
-//CUSTOM_CVAR (Int, msg3color, 3, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (3, self);
-//}
-//
-//CUSTOM_CVAR (Int, msg4color, 3, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (4, self);
-//}
-//
-//CUSTOM_CVAR (Int, msgmidcolor, 5, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (PRINTLEVELS, self);
-//}
-//
-//CUSTOM_CVAR (Int, msgmidcolor2, 4, CVAR_ARCHIVE)
-//{
-//	setmsgcolor (PRINTLEVELS+1, self);
-//}
+CUSTOM_CVAR (Int, msg0color, 6, CVAR_ARCHIVE)
+{
+	setmsgcolor (0, self);
+}
+
+CUSTOM_CVAR (Int, msg1color, 5, CVAR_ARCHIVE)
+{
+	setmsgcolor (1, self);
+}
+
+CUSTOM_CVAR (Int, msg2color, 2, CVAR_ARCHIVE)
+{
+	setmsgcolor (2, self);
+}
+
+CUSTOM_CVAR (Int, msg3color, 3, CVAR_ARCHIVE)
+{
+	setmsgcolor (3, self);
+}
+
+CUSTOM_CVAR (Int, msg4color, 3, CVAR_ARCHIVE)
+{
+	setmsgcolor (4, self);
+}
+
+CUSTOM_CVAR (Int, msgmidcolor, 5, CVAR_ARCHIVE)
+{
+	setmsgcolor (PRINTLEVELS, self);
+}
+
+CUSTOM_CVAR (Int, msgmidcolor2, 4, CVAR_ARCHIVE)
+{
+	setmsgcolor (PRINTLEVELS+1, self);
+}
 
 // Show developer messages if true.
-//CVAR (Bool, developer, false, 0)
-bool developer = false;
+CVAR (Bool, developer, false, 0)
 
 static void maybedrawnow (bool tick, bool force)
 {
@@ -1558,8 +1549,7 @@ CCMD (toggleconsole)
 
 /* Printing in the middle of the screen */
 
-//CVAR (Float, con_midtime, 3.f, CVAR_ARCHIVE)
-float con_midtime = 3.f;
+CVAR (Float, con_midtime, 3.f, CVAR_ARCHIVE)
 
 static const char bar1[] = TEXTCOLOR_RED "\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36"
 						  "\36\36\36\36\36\36\36\36\36\36\36\36\37" TEXTCOLOR_TAN "\n";
@@ -1742,7 +1732,7 @@ static void C_TabComplete (bool goForward)
 			return;		// No initial matches
 
 		// Show a list of possible completions, if more than one.
-		if (TabbedList/* || con_notablist*/)
+		if (TabbedList || con_notablist)
 		{
 			cancomplete = true;
 		}

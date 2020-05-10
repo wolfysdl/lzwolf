@@ -45,6 +45,7 @@
 #include "cmdlib.h"
 #include "c_console.h"
 #include "c_dispatch.h"
+#include "c_cvars.h"
 #include "m_argv.h"
 //#include "doomstat.h"
 //#include "d_player.h"
@@ -116,8 +117,7 @@ static FConsoleCommand *ScanChainForName (FConsoleCommand *start, const char *na
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
-//CVAR (Bool, lookspring, true, CVAR_ARCHIVE);	// Generate centerview when -mlook encountered?
-bool lookspring = true;
+CVAR (Bool, lookspring, true, CVAR_ARCHIVE);	// Generate centerview when -mlook encountered?
 
 FConsoleCommand *Commands[FConsoleCommand::HASH_SIZE];
 FButtonStatus Button_Mlook, Button_Klook, Button_Use, Button_AltAttack,

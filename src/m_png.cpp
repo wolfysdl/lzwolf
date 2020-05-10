@@ -109,17 +109,14 @@ static void UnpackPixels (int width, int bytesPerRow, int bitdepth, const BYTE *
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
-#define Gamma png_gamma
-int png_level = 5;
-double png_gamma = 0;
-/*CUSTOM_CVAR(Int, png_level, 5, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
+CUSTOM_CVAR(Int, png_level, 5, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 {
 	if (self < 0)
 		self = 0;
 	else if (self > 9)
 		self = 9;
 }
-CVAR(Float, png_gamma, 0.f, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)*/
+CVAR(Float, png_gamma, 0.f, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
