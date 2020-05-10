@@ -29,6 +29,7 @@ actor Guard : WolfensteinMonster 11
 	deathsound "guard/death"
 	secretdeathsound "guard/fart"
 	seesound "guard/sight"
+	obituary "$OB_GUARD"
 	states
 	{
 		Spawn:
@@ -157,6 +158,7 @@ actor Dog : WolfensteinMonster 14
 	deathsound "dog/death"
 	secretdeathsound "dog/fart"
 	seesound "dog/sight"
+	hitobituary "$OB_DOG"
 	-CANUSEWALLS
 	states
 	{
@@ -240,6 +242,7 @@ actor Officer : WolfensteinMonster 12
 	deathsound "officer/death"
 	secretdeathsound "officer/fart"
 	seesound "officer/sight"
+	obituary "$OB_OFFICER"
 	states
 	{
 		Spawn:
@@ -336,6 +339,7 @@ actor Mutant : WolfensteinMonster 15
 	attacksound "mutant/attack"
 	deathsound "mutant/death"
 	secretdeathsound "mutant/fart"
+	obituary "$OB_MUTANT"
 	states
 	{
 		Spawn:
@@ -435,6 +439,7 @@ actor WolfensteinSS : WolfensteinMonster 13 // ZDoom compatible name
 	deathsound "wolfss/death"
 	secretdeathsound "wolfss/fart"
 	seesound "wolfss/sight"
+	obituary "$OB_SS"
 	+DROPBASEDONTARGET
 	states
 	{

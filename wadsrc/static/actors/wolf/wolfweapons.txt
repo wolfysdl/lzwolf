@@ -198,6 +198,7 @@ actor BlueGatlingGun : GatlingGun
 actor GatlingGunUpgrade : WeaponGiver 61
 {
 	inventory.pickupsound "weapon/gatling/pickup"
+	inventory.pickupmessage "$GOTCHAINGUN"
 	weapon.ammogive1 6
 	dropitem "GatlingGun"
 	dropitem "MachineGun"

@@ -11,6 +11,7 @@
 #include "r_data/r_translate.h"
 #include "textures/textures.h"
 #include "templates.h"
+#include "c_console.h"
 
 int	    pa=MENU_CENTER,px,py;
 
@@ -300,6 +301,8 @@ bool FizzleFade (int x1, int y1,
 			}
 
 			memcpy(screen->GetBuffer(), destptr, SCREENHEIGHT*SCREENPITCH);
+
+			C_DrawConsole(false); // need to see the obituary message
 			VH_UpdateScreen();
 		}
 		else
@@ -325,6 +328,7 @@ finished:
 					width); 
 	}
 	memcpy(screen->GetBuffer(), fizzleSurface, SCREENHEIGHT * SCREENPITCH);
+	C_DrawConsole(false); // need to see the obituary message
 	VH_UpdateScreen();
 	delete[] fizzleSurface;
 	delete[] srcptr;

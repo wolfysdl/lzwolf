@@ -7,6 +7,7 @@ actor Hans : WolfensteinMonster 16
 	deathsound "hans/death"
 	seesound "hans/sight"
 	dropitem "GoldKey"
+	obituary "$OB_HANS"
 	+AMBUSH
 	states
 	{
@@ -44,6 +45,7 @@ actor Gretel : WolfensteinMonster 20
 	deathsound "gretel/death"
 	seesound "gretel/sight"
 	dropitem "GoldKey"
+	obituary "$OB_GRETEL"
 	+AMBUSH
 	states
 	{
@@ -101,6 +103,7 @@ actor Schabbs : WolfensteinMonster 17
 	missilefrequency 0.04
 	deathsound "schabbs/death"
 	seesound "schabbs/sight"
+	obituary "$OB_SCHABBS"
 	+AMBUSH
 	states
 	{
@@ -140,6 +143,7 @@ actor Gift : WolfensteinMonster 21
 	attacksound "missile/fire"
 	deathsound "gift/death"
 	seesound "gift/sight"
+	obituary "$OB_GIFT"
 	+AMBUSH
 	states
 	{
@@ -179,6 +183,7 @@ actor FatFace : WolfensteinMonster 22
 	attacksound "missile/fire"
 	deathsound "fat/death"
 	seesound "fat/sight"
+	obituary "$OB_FATFACE"
 	+AMBUSH
 	states
 	{

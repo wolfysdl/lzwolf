@@ -67,6 +67,8 @@ enum
 	AMETA_ZoneLights,
 	AMETA_EnemyFactions,
 	AMETA_PickupMessage,
+	AMETA_Obituary,			// string (player was killed by this actor)
+	AMETA_HitObituary,		// string (player was killed by this actor in melee)
 };
 
 enum
@@ -159,6 +161,7 @@ class AActor : public Thinker,
 		void			ClearCounters();
 		void			ClearInventory();
 		virtual void	Destroy();
+		virtual void	ObituaryMessage(AActor *attacker) {}
 		virtual void	Die();
 		void			EnterZone(const MapZone *zone);
 		AInventory		*FindInventory(const ClassDef *cls);

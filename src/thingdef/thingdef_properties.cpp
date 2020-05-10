@@ -469,6 +469,12 @@ HANDLE_PROPERTY(maxsaveamount)
 	((ABasicArmorBonus *)defaults)->MaxSaveAmount = amt;
 }
 
+HANDLE_PROPERTY(melee)
+{
+	INT_PARAM(melee, 0);
+	((ADamage *)defaults)->melee = melee?true:false;
+}
+
 HANDLE_PROPERTY(meleerange)
 {
 	INT_PARAM(range, 0);
@@ -519,6 +525,18 @@ HANDLE_PROPERTY(painchance)
 	else if(chance < 0)
 		chance = 0;
 	defaults->painchance = chance;
+}
+
+HANDLE_PROPERTY(obituary)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString (AMETA_Obituary, str);
+}
+
+HANDLE_PROPERTY(hitobituary)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString (AMETA_HitObituary, str);
 }
 
 HANDLE_PROPERTY(overheadicon)
@@ -833,6 +851,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(halolight, Actor, IFI_S),
 	DEFINE_PROP(health, Actor, I_IIIIIIII),
 	DEFINE_PROP(height, Actor, I),
+	DEFINE_PROP(hitobituary, Actor, T),
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
@@ -844,12 +863,14 @@ extern const PropDef properties[] =
 	DEFINE_PROP(maxfullabsorb, Armor, I),
 	DEFINE_PROP_PREFIX(maxhealth, PlayerPawn, Player, I),
 	DEFINE_PROP_PREFIX(maxsaveamount, BasicArmorBonus, Armor, I),
+	DEFINE_PROP(melee, Damage, I),
 	DEFINE_PROP(meleerange, Actor, I),
 	DEFINE_PROP(minmissilechance, Actor, I),
 	DEFINE_PROP(missilefrequency, Actor, F),
 	DEFINE_PROP(MONSTER, Actor,),
 	DEFINE_PROP_PREFIX(movebob, PlayerPawn, Player, F),
 	DEFINE_PROP(noxdeath, Damage, I),
+	DEFINE_PROP(obituary, Actor, T),
 	DEFINE_PROP(overheadicon, Actor, S),
 	DEFINE_PROP(painchance, Actor, I),
 	DEFINE_PROP(painsound, Actor, S),

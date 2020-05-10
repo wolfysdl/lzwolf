@@ -297,6 +297,17 @@ GOTMACHINEGUN = "You found the Machine Gun.";
 GOTCHAINGUN = "You found the Gatling Gun!";
 GOTSPEAR = "You found the Spear Of Destiny!";
 
+OB_GUARD = "BJ was shot dead by a guard.";
+OB_DOG = "BJ was mauled to death by a Reich animal.";
+OB_OFFICER = "BJ was taken out by a high ranking officer.";
+OB_MUTANT = "BJ was ripped a new one by a freak of nature.";
+OB_SS = "BJ was turned into schnitzel by the Schutzstaffel.";
+OB_HANS = "BJ was decimated by Hansel.";
+OB_GRETEL = "BJ was humiliated by Gretel.";
+OB_SCHABBS = "BJ was resurrected into a freak by Dr Schabbs.";
+OB_GIFT = "BJ was gassed out by Otto - The Poison Maker.";
+OB_FATFACE = "BJ was outgunned by Fettgesicht.";
+
 NOAH_BRIEF_01 = "You'll be out of the ark in six\ndays, Noah. Unfortunately, the\nanimals are a tad bit restless and\nwant to get out now. Good thing\nyou brought all that food with\nyou. You'll need it to put the\nbusy ones to sleep.\n\nAt the end of the first day, be\nprepared to deal with Carl the\nCamel. He's been real cranky lately\nand is a bit out of control.\n\nGood luck and be careful...\n";
 NOAH_BRIEF_02 = "Wow, Noah! Carl sure was hard to\ncalm down. But remember, you\nwere chosen to guide this ark to\nsafety because you know how to\nget the job done.\n\nThe closing of day two ends with\nirritable Ginny the Giraffe. She\nmay be tall and quick, but give\nher enough food and it's off to\nsleep.\n\nOh, and Noah, remember to keep\nan eye out for hidden rooms...\n";
 NOAH_BRIEF_03 = "ZZZZZ... Great job, Noah!. Ginny is\nsnoring away.\n\nBoy, it seems the animals never\nseem to stay asleep very long.\n\nKeep your eye out for Melvin the\nMonkey. He can be pretty tricky\nand may try distracting you with\ncoconuts, but it's your job to get\nhim settled down for the rest of\nyour time aboard the ark.";

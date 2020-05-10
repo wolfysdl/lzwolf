@@ -625,7 +625,9 @@ ACTION_FUNCTION(A_MeleeAttack)
 	{
 		if(pr_meleeattack() < static_cast<int>(accuracy*256))
 		{
-			DamageActor(self->target, self, damage);
+			const ClassDef *meleeDamageClass =
+				ClassDef::FindClassTentative("MeleeDamage", NATIVE_CLASS(Damage));
+			DamageActor(self->target, self, damage, meleeDamageClass);
 			if(!hitsound.IsEmpty())
 				PlaySoundLocActor(hitsound, self);
 			return true;

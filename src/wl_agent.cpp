@@ -334,6 +334,12 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 
 	if (health<=0)
 	{
+		if(attacker)
+		{
+			mo->killerx = attacker->x;
+			mo->killery = attacker->y;
+			mo->killerdamagetype = damagetype;
+		}
 		mo->target = attacker;
 		mo->Die();
 		health = 0;
