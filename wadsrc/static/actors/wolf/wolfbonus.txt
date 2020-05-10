@@ -2,6 +2,7 @@ actor Cross : ScoreItem 62
 {
 	inventory.amount 100
 	inventory.pickupsound "treasure/cross/pickup"
+	inventory.pickupmessage "$GOTCROSS"
 	states
 	{
 		Spawn:
@@ -23,6 +24,7 @@ actor Chalice : ScoreItem 63
 {
 	inventory.amount 500
 	inventory.pickupsound "treasure/chalice/pickup"
+	inventory.pickupmessage "$GOTCHALICE"
 	states
 	{
 		Spawn:
@@ -44,6 +46,7 @@ actor ChestofJewels : ScoreItem 64
 {
 	inventory.amount 1000
 	inventory.pickupsound "treasure/bible/pickup"
+	inventory.pickupmessage "$GOTCHEST"
 	states
 	{
 		Spawn:
@@ -65,6 +68,7 @@ actor Crown : ScoreItem 65
 {
 	inventory.amount 5000
 	inventory.pickupsound "treasure/crown/pickup"
+	inventory.pickupmessage "$GOTCROWN"
 	states
 	{
 		Spawn:

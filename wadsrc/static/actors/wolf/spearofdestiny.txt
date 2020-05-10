@@ -12,6 +12,7 @@
 actor SpearOfDestiny : Inventory 92 native
 {
 	inventory.pickupsound "treasure/spear/pickup"
+	inventory.pickupmessage "$GOTSPEAR"
 	states
 	{
 		Spawn:
