@@ -47,7 +47,6 @@
 //#include "x86.h"
 
 #undef RANGECHECK
-#define r_drawtrans 1
 
 // status bar height at bottom of screen
 // [RH] status bar position at bottom of screen
@@ -1955,8 +1954,8 @@ void R_InitColumnDrawers ()
 }
 
 // [RH] Choose column drawers in a single place
-//EXTERN_CVAR (Int, r_drawfuzz)
-//EXTERN_CVAR (Bool, r_drawtrans)
+EXTERN_CVAR (Int, r_drawfuzz)
+EXTERN_CVAR (Bool, r_drawtrans)
 //EXTERN_CVAR (Float, transsouls)
 #define transsouls 0.75f
 
