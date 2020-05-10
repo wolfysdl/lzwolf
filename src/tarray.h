@@ -138,11 +138,37 @@ public:
 	{
 		return Array[index];
 	}
+	// Returns a reference to the last element
+	T &Last() const
+	{
+		return Array[Count-1];
+	}
+
+    unsigned int Find(const T& item) const
+    {
+        unsigned int i;
+        for(i = 0;i < Count;++i)
+        {
+            if(Array[i] == item)
+                break;
+        }
+        return i;
+    }
+
 	unsigned int Push (const T &item)
 	{
 		Grow (1);
 		(void)TMoveInsert<T>(&Array[Count], item);
 		return Count++;
+	}
+	bool Pop ()
+	{
+		if (Count > 0)
+		{
+			Array[--Count].~T();
+			return true;
+		}
+		return false;
 	}
 	bool Pop (T &item)
 	{

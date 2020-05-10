@@ -40,6 +40,7 @@
 #include "wl_game.h"
 #include "wl_main.h"
 #include "wl_play.h"
+#include "c_console.h"
 
 #include <climits>
 
@@ -270,6 +271,9 @@ void APlayerPawn::Tick()
 
 	if(cmd.buttonstate[bt_use])
 		Cmd_Use();
+
+	if(cmd.buttonstate[bt_toggleconsole] && !cmd.buttonheld[bt_toggleconsole])
+		C_ToggleConsole();
 
 	if((player->flags & (player_t::PF_WEAPONREADY|player_t::PF_WEAPONREADYALT)))
 	{

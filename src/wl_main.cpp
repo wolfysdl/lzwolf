@@ -46,6 +46,8 @@
 #include "filesys.h"
 #include "g_conversation.h"
 #include "g_intermission.h"
+#include "m_argv.h"
+#include "c_console.h"
 
 #include <clocale>
 
@@ -433,6 +435,9 @@ static void InitGame()
 	DrawStartupConsole();
 
 	VW_UpdateScreen();
+
+	C_InitConsole(SCREENWIDTH, SCREENHEIGHT, true);
+	C_InitConback();
 
 //
 // Load Actors
@@ -1289,6 +1294,8 @@ int WL_Main (int argc, char *argv[])
 {
 	try
 	{
+		Args = new AArgs(argc, argv);
+
 		// Stop the C library from screwing around with its functions according
 		// to the system locale.
 		setlocale(LC_ALL, "C");
@@ -1304,6 +1311,9 @@ int WL_Main (int argc, char *argv[])
 		printf("ReadConfig: Reading the Configuration.\n");
 		config.LocateConfigFile(argc, argv);
 		ReadConfig();
+
+		C_InitConsole(80*8, 25*80, false);
+		atterm(C_DeinitConsole);
 
 		{
 			TArray<FString> wadfiles, files;

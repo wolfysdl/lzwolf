@@ -37,10 +37,8 @@
 #include "renderstyle.h"
 #include "c_cvars.h"
 
-#define r_drawtrans true
-#define r_drawfuzz 1
-//CVAR (Bool, r_drawtrans, true, 0)
-//CVAR (Int, r_drawfuzz, 1, CVAR_ARCHIVE)
+CVAR (Bool, r_drawtrans, true, 0)
+CVAR (Int, r_drawfuzz, 1, CVAR_ARCHIVE)
 
 // Convert legacy render styles to flexible render styles.
 

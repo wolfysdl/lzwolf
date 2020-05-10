@@ -47,6 +47,7 @@
 #include "g_shared/a_playerpawn.h"
 #include "thingdef/thingdef.h"
 #include "wl_game.h"
+#include "c_dispatch.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // MapInfoBlockParser
@@ -1674,6 +1675,19 @@ void G_ParseMapInfo(bool gameinfoPass)
 			const ClassDef *cls = ClassDef::FindClass(gameinfo.PlayerClasses[i]);
 			if(!cls || !cls->IsDescendantOf(NATIVE_CLASS(PlayerPawn)))
 				Quit("'%s' is not a valid player class!", gameinfo.PlayerClasses[i].GetChars());
+		}
+	}
+}
+
+CCMD(listmaps)
+{
+	for(unsigned i = 0; i < levelInfos.Size(); i++)
+	{
+		LevelInfo &info = levelInfos[i];
+
+		if(GameMap::CheckMapExists(info.MapName))
+		{
+			Printf("%s\n", info.MapName);
 		}
 	}
 }

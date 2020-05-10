@@ -333,7 +333,7 @@ extern IVideo *Video;
 
 #define vid_maxfps 70
 #define cl_capfps false
-//EXTERN_CVAR (Float, Gamma)
+EXTERN_CVAR (Float, Gamma)
 //EXTERN_CVAR (Int, vid_maxfps)
 //EXTERN_CVAR (Bool, cl_capfps)
 

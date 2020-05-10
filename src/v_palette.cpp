@@ -51,6 +51,8 @@
 #include "v_palette.h"
 #include "r_data/colormaps.h"
 #include "zdoomsupport.h"
+#include "c_cvars.h"
+#include "c_dispatch.h"
 
 FPalette GPalette;
 
@@ -67,9 +69,8 @@ static int STACK_ARGS sortforremap2 (const void *a, const void *b);
 /**************************/
 
 BYTE newgamma[256];
-double Gamma = 1.f;
 
-/*CUSTOM_CVAR (Float, Gamma, 1.f, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
+CUSTOM_CVAR (Float, Gamma, 1.f, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 {
 	if (self == 0.f)
 	{ // Gamma values of 0 are illegal.
@@ -96,7 +97,7 @@ CCMD (bumpgamma)
 
 	Gamma = newgamma;
 	Printf ("Gamma correction level %g\n", *Gamma);
-}*/
+}
 
 
 /****************************/

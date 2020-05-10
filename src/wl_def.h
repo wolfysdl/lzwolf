@@ -300,6 +300,7 @@ enum Button
 	bt_zoom,
 	bt_automap,
 	bt_showstatusbar,
+	bt_toggleconsole,
 	NUMBUTTONS,
 
 	// AM buttons
@@ -360,9 +361,49 @@ typedef enum
 	ex_demodone,
 	ex_secretlevel,
 	ex_newmap,
-	ex_victorious
+	ex_victorious,
+	ex_fullconsole,
+	ex_demoscreen,
+	ex_startup,
 } exit_t;
 
+typedef enum
+{
+	ga_nothing,
+	ga_loadlevel,
+	ga_newgame,
+	ga_newgame2,
+	ga_recordgame,
+	ga_loadgame,
+	ga_loadgamehidecon,
+	ga_loadgameplaydemo,
+	ga_autoloadgame,
+	ga_savegame,
+	ga_autosave,
+	ga_playdemo,
+	ga_completed,
+	ga_slideshow,
+	ga_worlddone,
+	ga_screenshot,
+	ga_togglemap,
+	ga_fullconsole,
+} gameaction_t;
+
+enum
+{
+	PRINT_LOW,		// pickup messages
+	PRINT_MEDIUM,	// death messages
+	PRINT_HIGH,		// critical messages
+	PRINT_CHAT,		// chat messages
+	PRINT_TEAMCHAT	// chat messages from a teammate
+};
+#define PRINT_LOW				0				// pickup messages
+#define PRINT_MEDIUM			1				// death messages
+#define PRINT_HIGH				2				// critical messages
+#define PRINT_CHAT				3				// chat messages
+#define PRINT_TEAMCHAT			4				// chat messages from a teammate
+#define PRINT_LOG				5				// only to logfile
+#define PRINT_BOLD				200				// What Printf_Bold used
 
 /*
 =============================================================================

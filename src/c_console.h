@@ -1,5 +1,5 @@
 /*
-** v_text.h
+** c_console.h
 **
 **---------------------------------------------------------------------------
 ** Copyright 1998-2006 Randy Heit
@@ -31,54 +31,60 @@
 **
 */
 
-#ifndef __V_TEXT_H__
-#define __V_TEXT_H__
+#ifndef __C_CONSOLE__
+#define __C_CONSOLE__
 
-#include "wl_def.h"
-#include "v_font.h"
-#include "zstring.h"
+#include <stdarg.h>
+#include "basictypes.h"
 
-struct FBrokenLines
+struct event_t;
+
+#define C_BLINKRATE			(TICRATE/2)
+
+typedef enum cstate_t 
 {
-	int			Width;
-	FString		Text;
-};
+	c_up=0, c_down=1, c_falling=2, c_rising=3
+} 
+constate_e;
 
-#define TEXTCOLOR_ESCAPE		'\034'
+#define PRINTLEVELS 5
+extern int PrintColors[PRINTLEVELS + 2];
 
-#define TEXTCOLOR_BRICK			"\034A"
-#define TEXTCOLOR_TAN			"\034B"
-#define TEXTCOLOR_GRAY			"\034C"
-#define TEXTCOLOR_GREY			"\034C"
-#define TEXTCOLOR_GREEN			"\034D"
-#define TEXTCOLOR_BROWN			"\034E"
-#define TEXTCOLOR_GOLD			"\034F"
-#define TEXTCOLOR_RED			"\034G"
-#define TEXTCOLOR_BLUE			"\034H"
-#define TEXTCOLOR_ORANGE		"\034I"
-#define TEXTCOLOR_WHITE			"\034J"
-#define TEXTCOLOR_YELLOW		"\034K"
-#define TEXTCOLOR_UNTRANSLATED	"\034L"
-#define TEXTCOLOR_BLACK			"\034M"
-#define TEXTCOLOR_LIGHTBLUE		"\034N"
-#define TEXTCOLOR_CREAM			"\034O"
-#define TEXTCOLOR_OLIVE			"\034P"
-#define TEXTCOLOR_DARKGREEN		"\034Q"
-#define TEXTCOLOR_DARKRED		"\034R"
-#define TEXTCOLOR_DARKBROWN		"\034S"
-#define TEXTCOLOR_PURPLE		"\034T"
-#define TEXTCOLOR_DARKGRAY		"\034U"
-#define TEXTCOLOR_CYAN			"\034V"
+extern constate_e ConsoleState;
+extern int ConBottom;
 
-#define TEXTCOLOR_NORMAL		"\034-"
-#define TEXTCOLOR_BOLD			"\034+"
+// Initialize the console
+void C_InitConsole (int width, int height, bool ingame);
+void C_DeinitConsole ();
+void C_InitConback();
 
-#define TEXTCOLOR_CHAT			"\034*"
-#define TEXTCOLOR_TEAMCHAT		"\034!"
+// Adjust the console for a new screen mode
+void C_NewModeAdjust (void);
 
-FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *str, bool preservecolor = false);
-void V_FreeBrokenLines (FBrokenLines *lines);
-inline FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const char *str, bool preservecolor = false)
- { return V_BreakLines (font, maxwidth, (const BYTE *)str, preservecolor); }
+void C_Ticker (void);
 
-#endif //__V_TEXT_H__
+void AddToConsole (int printlevel, const char *string);
+int PrintString (int printlevel, const char *string);
+int VPrintf (int printlevel, const char *format, va_list parms) GCCFORMAT(2);
+
+void C_DrawConsole (bool hw2d);
+void C_ToggleConsole (void);
+void C_FullConsole (void);
+void C_HideConsole (void);
+void C_AdjustBottom (void);
+void C_FlushDisplay (void);
+
+void C_InitTicker (const char *label, unsigned int max, bool showpercent=true);
+void C_SetTicker (unsigned int at, bool forceUpdate=false);
+
+//class FFont;
+//void C_MidPrint (FFont *font, const char *message);
+//void C_MidPrintBold (FFont *font, const char *message);
+
+bool C_Responder (event_t *ev);
+
+void C_AddTabCommand (const char *name);
+void C_RemoveTabCommand (const char *name);
+void C_ClearTabCommands();		// Removes all tab commands
+
+#endif

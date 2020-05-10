@@ -39,6 +39,7 @@
 #include "vectors.h"
 #include "zdoomsupport.h"
 #include "r_data/renderstyle.h"
+#include "c_cvars.h"
 
 extern int CleanWidth, CleanHeight, CleanXfac, CleanYfac;
 extern int CleanWidth_1, CleanHeight_1, CleanXfac_1, CleanYfac_1;
@@ -451,6 +452,8 @@ extern DFrameBuffer *screen;
 #define SCREENHEIGHT (screen->GetHeight ())
 #define SCREENPITCH (screen->GetPitch ())
 
+EXTERN_CVAR (Float, Gamma)
+
 // Col2RGB8 is a pre-multiplied palette for color lookup. It is stored in a
 // special R10B10G10 format for efficient blending computation.
 //		--RRRRRrrr--BBBBBbbb--GGGGGggg--   at level 64
@@ -483,6 +486,7 @@ void GenerateLookupTables();
 // Returns the closest color to the one desired. String
 // should be of the form "rr gg bb".
 int V_GetColorFromString (const DWORD *palette, const char *colorstring);
+FString V_GetColorStringByName (const char *name);
 // Similar to above, but can handle names
 int V_GetColor (const DWORD *palette, const char *str);
 

@@ -175,6 +175,11 @@ void AInventory::AbsorbDamage (int damage, FName damageType, int &newdamage)
 	}
 }
 
+const char *AInventory::PickupMessage ()
+{
+	return GetClass()->Meta.GetMetaString (AMETA_PickupMessage);
+}
+
 void AInventory::Serialize(FArchive &arc)
 {
 	arc << itemFlags
@@ -209,6 +214,12 @@ void AInventory::Touch(AActor *toucher)
 	}
 	if(flags & FL_COUNTSECRET)
 		++gamestate.secretcount;
+
+	const char * message = PickupMessage ();
+	if(message != NULL)
+	{
+		Printf (PRINT_LOW, "%s\n", message);
+	}
 
 	PlaySoundLocActor(pickupsound, toucher);
 	if(toucher->player == &players[ConsolePlayer])

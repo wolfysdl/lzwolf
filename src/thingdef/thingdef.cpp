@@ -51,6 +51,7 @@
 #include "thinker.h"
 #include "templates.h"
 #include "g_mapinfo.h"
+#include "language.h"
 
 #include <climits>
 
@@ -1190,6 +1191,7 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 			//   I - Integer
 			//   F - Float
 			//   S - String
+			//   T - Translation
 			bool optional = false;
 			bool done = false;
 			const char* p = properties[mid].params;
@@ -1269,6 +1271,24 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								}
 								params[paramc].s = new char[sc->str.Len()+1];
 								strcpy(params[paramc].s, sc->str);
+								break;
+							case 'T':
+								if(!optional)
+									sc.MustGetToken(TK_StringConst);
+								else if(!sc.CheckToken(TK_StringConst))
+								{
+									done = true;
+									break;
+								}
+								{
+									const char *s = sc->str.GetChars();
+									if (s[0] == '$')
+									{
+										s = language[s+1];
+									}
+									params[paramc].s = new char[strlen(s)+1];
+									strcpy(params[paramc].s, s);
+								}
 								break;
 							case 'N':	// special case. An expression-aware parser will not need this.
 								params[paramc].isExpression = false;

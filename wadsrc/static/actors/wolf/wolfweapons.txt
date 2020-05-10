@@ -98,6 +98,7 @@ actor MachineGun : WolfWeapon 60
 	attacksound "weapon/machine/attack"
 	inventory.icon "MACHGUN"
 	inventory.pickupsound "weapon/machine/pickup"
+	inventory.pickupmessage "$GOTMACHINEGUN"
 	weapon.selectionorder 1300
 	+INVENTORY.ALWAYSPICKUP
 	states
@@ -146,6 +147,7 @@ actor GatlingGun : WolfWeapon
 	attacksound "weapon/gatling/attack"
 	inventory.icon "GATLGUN"
 	inventory.pickupsound "weapon/gatling/pickup"
+	inventory.pickupmessage "$GOTCHAINGUN"
 	weapon.selectionorder 700
 	-WEAPON.NOGRIN
 	+WEAPON.ALWAYSGRIN

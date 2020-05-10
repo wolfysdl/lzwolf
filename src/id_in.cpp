@@ -26,6 +26,9 @@
 #include "id_vh.h"
 #include "config.h"
 #include "wl_play.h"
+#include "c_event.h"
+#include "c_gui.h"
+#include "c_console.h"
 
 
 #if !SDL_VERSION_ATLEAST(1,3,0)
@@ -91,7 +94,7 @@ static KeyboardDef KbdDefs = {
 	sc_RightArrow,          // right
 	sc_End,                 // downleft
 	sc_DownArrow,           // down
-	sc_PgDn                 // downright
+	sc_PgDn,                // downright
 };
 
 static SDL_Joystick *Joystick;
@@ -318,6 +321,90 @@ bool IN_JoyPresent()
 	;
 }
 
+static bool consoleEatsKey(ScanCode key, SDL_Keymod mod)
+{
+	event_t ev;
+	memset(&ev, 0, sizeof(ev));
+	ev.type = EV_GUI_Event;
+	ev.subtype = EV_GUI_KeyDown;
+
+	if (mod & (KMOD_LSHIFT|KMOD_RSHIFT))
+		ev.data3 |= GKM_SHIFT;
+	if (mod & (KMOD_LCTRL|KMOD_RCTRL))
+		ev.data3 |= GKM_CTRL;
+
+	switch (key)
+	{
+	case SDLx_SCANCODE(TAB):
+		ev.data1 = '\t';
+		break;
+	case SDLx_SCANCODE(PAGEDOWN):
+		ev.data1 = GK_PGDN;
+		break;
+	case SDLx_SCANCODE(PAGEUP):
+		ev.data1 = GK_PGUP;
+		break;
+	case SDLx_SCANCODE(HOME):
+		ev.data1 = GK_HOME;
+		break;
+	case SDLx_SCANCODE(END):
+		ev.data1 = GK_END;
+		break;
+	case SDLx_SCANCODE(LEFT):
+		ev.data1 = GK_LEFT;
+		break;
+	case SDLx_SCANCODE(RIGHT):
+		ev.data1 = GK_RIGHT;
+		break;
+	case SDLx_SCANCODE(DOWN):
+		ev.data1 = GK_DOWN;
+		break;
+	case SDLx_SCANCODE(UP):
+		ev.data1 = GK_UP;
+		break;
+	case SDLx_SCANCODE(BACKSPACE):
+		ev.data1 = '\b';
+		break;
+	case SDLx_SCANCODE(DELETE):
+		ev.data1 = GK_DEL;
+		break;
+	case SDLx_SCANCODE(X):
+		ev.data1 = 'X';
+		break;
+	case SDLx_SCANCODE(D):
+		ev.data1 = 'D';
+		break;
+	case SDLx_SCANCODE(RETURN):
+		ev.data1 = '\r';
+		break;
+	case SDLx_SCANCODE(GRAVE):
+		ev.data1 = '`';
+		break;
+	case SDLx_SCANCODE(ESCAPE):
+		ev.data1 = GK_ESCAPE;
+		break;
+	case SDLx_SCANCODE(C):
+		ev.data1 = 'C';
+		break;
+	case SDLx_SCANCODE(V):
+		ev.data1 = 'V';
+		break;
+	}
+
+	return C_Responder(&ev);
+}
+
+static bool consoleEatsChar(char ch)
+{
+	event_t ev;
+	memset(&ev, 0, sizeof(ev));
+	ev.type = EV_GUI_Event;
+	ev.subtype = EV_GUI_Char;
+	ev.data1 = ch;
+
+	return C_Responder(&ev);
+}
+
 #ifdef __ANDROID__
 static bool ShadowKey = false;
 bool ShadowingEnabled = false;
@@ -337,6 +424,8 @@ static void processEvent(SDL_Event *event)
 		case SDL_TEXTINPUT:
 		{
 			LastASCII = event->text.text[0];
+			if (consoleEatsChar(LastASCII))
+				LastASCII = 0;
 			break;
 		}
 #endif
@@ -427,8 +516,12 @@ static void processEvent(SDL_Event *event)
 			}
 			if(LastASCII && sym >= 'A' && sym <= 'Z' && (mod & KMOD_CAPS))
 				LastASCII ^= 0x20;
+			if (consoleEatsChar(LastASCII))
+				LastASCII = 0;
 #endif
 
+			if (consoleEatsKey(LastScan, mod))
+				LastScan = 0;
 			if(LastScan<SDL_NUM_SCANCODES)
 				Keyboard[LastScan] = 1;
 			if(LastScan == SDLx_SCANCODE(PAUSE))

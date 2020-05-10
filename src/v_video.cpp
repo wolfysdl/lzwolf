@@ -1,5 +1,6 @@
 #include "colormatcher.h"
 #include "v_video.h"
+#include "w_wad.h"
 #include "thingdef/thingdef.h"
 #include "wl_main.h"
 
@@ -969,6 +970,96 @@ normal:
 		return ColorMatcher.Pick (c[0], c[1], c[2]);
 	else
 		return MAKERGB(c[0], c[1], c[2]);
+}
+
+//==========================================================================
+//
+// V_GetColorStringByName
+//
+// Searches for the given color name in x11r6rgb.txt and returns an
+// HTML-ish "#RRGGBB" string for it if found or the empty string if not.
+//
+//==========================================================================
+
+FString V_GetColorStringByName (const char *name)
+{
+	FMemLump rgbNames;
+	char *rgbEnd;
+	char *rgb, *endp;
+	int rgblump;
+	int c[3], step;
+	size_t namelen;
+
+	if (Wads.GetNumLumps()==0) return FString();
+
+	rgblump = Wads.CheckNumForName ("X11R6RGB");
+	if (rgblump == -1)
+	{
+		Printf ("X11R6RGB lump not found\n");
+		return FString();
+	}
+
+	rgbNames = Wads.ReadLump (rgblump);
+	rgb = (char *)rgbNames.GetMem();
+	rgbEnd = rgb + Wads.LumpLength (rgblump);
+	step = 0;
+	namelen = strlen (name);
+
+	while (rgb < rgbEnd)
+	{
+		// Skip white space
+		if (*rgb <= ' ')
+		{
+			do
+			{
+				rgb++;
+			} while (rgb < rgbEnd && *rgb <= ' ');
+		}
+		else if (step == 0 && *rgb == '!')
+		{ // skip comment lines
+			do
+			{
+				rgb++;
+			} while (rgb < rgbEnd && *rgb != '\n');
+		}
+		else if (step < 3)
+		{ // collect RGB values
+			c[step++] = strtoul (rgb, &endp, 10);
+			if (endp == rgb)
+			{
+				break;
+			}
+			rgb = endp;
+		}
+		else
+		{ // Check color name
+			endp = rgb;
+			// Find the end of the line
+			while (endp < rgbEnd && *endp != '\n')
+				endp++;
+			// Back up over any whitespace
+			while (endp > rgb && *endp <= ' ')
+				endp--;
+			if (endp == rgb)
+			{
+				break;
+			}
+			size_t checklen = ++endp - rgb;
+			if (checklen == namelen && strnicmp (rgb, name, checklen) == 0)
+			{
+				FString descr;
+				descr.Format ("#%02x%02x%02x", c[0], c[1], c[2]);
+				return descr;
+			}
+			rgb = endp;
+			step = 0;
+		}
+	}
+	if (rgb < rgbEnd)
+	{
+		Printf ("X11R6RGB lump is corrupt\n");
+	}
+	return FString();
 }
 
 //==========================================================================

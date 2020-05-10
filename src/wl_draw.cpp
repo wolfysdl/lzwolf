@@ -26,6 +26,7 @@
 #include "wl_state.h"
 #include "a_inventory.h"
 #include "thingdef/thingdef.h"
+#include "c_console.h"
 
 /*
 =============================================================================
@@ -1301,6 +1302,7 @@ void    ThreeDRefresh (void)
 	vbufPitch = SCREENPITCH;
 
 	R_RenderView();
+	C_DrawConsole(false);
 
 	VL_UnlockSurface();
 	vbuf = NULL;

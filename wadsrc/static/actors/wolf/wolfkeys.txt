@@ -1,6 +1,7 @@
 actor GoldKey : Key 53
 {
 	+INVENTORY.ALWAYSPICKUP
+	inventory.pickupmessage "$GOTGOLDKEY"
 	states
 	{
 		Spawn:
@@ -24,6 +25,7 @@ actor YellowKey : KeyGiver 154
 actor SilverKey : Key 54
 {
 	+INVENTORY.ALWAYSPICKUP
+	inventory.pickupmessage "$GOTSILVERKEY"
 	states
 	{
 		Spawn:
@@ -36,6 +38,7 @@ actor CyanKey : KeyGiver 155
 {
 	dropitem "SilverKey"
 	+INVENTORY.ALWAYSPICKUP
+	inventory.pickupmessage "$GOTCYANKEY"
 	states
 	{
 		Spawn:
