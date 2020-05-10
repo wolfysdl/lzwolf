@@ -1513,13 +1513,6 @@ static void C_PasteText(FString clip, BYTE *buffer, int len)
 
 bool C_Responder (event_t *ev)
 {
-	if (ConsoleState == c_up && ev->type == EV_GUI_Event &&
-		ev->subtype == EV_GUI_KeyDown && ev->data1 == '`')
-	{
-		C_ToggleConsole();
-		return true;
-	}
-
 	if (ev->type != EV_GUI_Event ||
 		ConsoleState == c_up ||
 		ConsoleState == c_rising/* ||
@@ -1556,6 +1549,11 @@ CCMD (echo)
 		FString formatted = strbin1 (argv[i]);
 		Printf ("%s%s", formatted.GetChars(), i!=last ? " " : "\n");
 	}
+}
+
+CCMD (toggleconsole)
+{
+	C_ToggleConsole();
 }
 
 /* Printing in the middle of the screen */

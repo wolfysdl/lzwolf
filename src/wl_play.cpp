@@ -102,6 +102,7 @@ ControlScheme controlScheme[] =
 	{ bt_zoom,				"Zoom",			-1,			-1,				-1, CS_AxisDigital, 0 },
 	{ bt_automap,			"Automap",		-1,			-1,				-1, CS_AxisDigital, 0 },
 	{ bt_showstatusbar,		"Show Status",	-1,			sc_Tab,			-1,	CS_AxisDigital, 0 },
+	{ bt_toggleconsole,		"Console",		-1,			sc_Grave,		-1,	CS_AxisDigital, 0 },
 
 	// End of List
 	{ bt_nobutton,			NULL, -1, -1, -1, CS_AxisDigital, 0 }
@@ -1135,6 +1136,7 @@ void PlayLoop (void)
 		C_Ticker();
 
 		UpdatePaletteShifts ();
+		DrawPlayScreen();
 
 		ThreeDRefresh ();
 

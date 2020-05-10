@@ -300,6 +300,7 @@ enum Button
 	bt_zoom,
 	bt_automap,
 	bt_showstatusbar,
+	bt_toggleconsole,
 	NUMBUTTONS,
 
 	// AM buttons

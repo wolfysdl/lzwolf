@@ -94,7 +94,7 @@ static KeyboardDef KbdDefs = {
 	sc_RightArrow,          // right
 	sc_End,                 // downleft
 	sc_DownArrow,           // down
-	sc_PgDn                 // downright
+	sc_PgDn,                // downright
 };
 
 static SDL_Joystick *Joystick;
