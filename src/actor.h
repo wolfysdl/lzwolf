@@ -66,6 +66,7 @@ enum
 	AMETA_HaloLights,
 	AMETA_ZoneLights,
 	AMETA_EnemyFactions,
+	AMETA_PickupMessage,
 };
 
 enum

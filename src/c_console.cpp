@@ -713,14 +713,16 @@ void C_Ticker ()
 
 static void C_DrawNotifyText ()
 {
-	bool center = (con_centernotify != 0.f);
-	int i, line, lineadv, color, j, skip;
+	bool center = (con_centernotify != false);
+	int i, line, lineadv, color, j, skip, xline, gapfromborder;
 	bool canskip;
 	
 	if (playstate == ex_fullconsole || playstate == ex_demoscreen/* || menuactive != MENU_Off*/)
 		return;
 
-	line = NotifyTop;
+	gapfromborder = 3;
+	xline = viewscreenx + gapfromborder;
+	line = NotifyTop + viewscreeny + gapfromborder;
 	skip = 0;
 	canskip = true;
 
@@ -762,10 +764,10 @@ static void C_DrawNotifyText ()
 			if (con_scaletext == 1)
 			{
 				if (!center)
-					screen->DrawText (SmallFont, color, 0, line, NotifyStrings[i].Text,
+					screen->DrawText (SmallFont, color, xline, line, NotifyStrings[i].Text,
 						DTA_CleanNoMove, true, DTA_Alpha, alpha, TAG_DONE);
 				else
-					screen->DrawText (SmallFont, color, (SCREENWIDTH -
+					screen->DrawText (SmallFont, color, xline + (viewwidth -
 						SmallFont->StringWidth (NotifyStrings[i].Text)*CleanXfac)/2,
 						line, NotifyStrings[i].Text, DTA_CleanNoMove, true,
 						DTA_Alpha, alpha, TAG_DONE);
@@ -773,10 +775,11 @@ static void C_DrawNotifyText ()
 			else if (con_scaletext == 0)
 			{
 				if (!center)
-					screen->DrawText (SmallFont, color, 0, line, NotifyStrings[i].Text,
+					screen->DrawText (SmallFont, color, xline, line,
+						NotifyStrings[i].Text,
 						DTA_Alpha, alpha, TAG_DONE);
 				else
-					screen->DrawText (SmallFont, color, (SCREENWIDTH -
+					screen->DrawText (SmallFont, color, xline + (viewwidth -
 						SmallFont->StringWidth (NotifyStrings[i].Text))/2,
 						line, NotifyStrings[i].Text,
 						DTA_Alpha, alpha, TAG_DONE);
@@ -784,13 +787,14 @@ static void C_DrawNotifyText ()
 			else
 			{
 				if (!center)
-					screen->DrawText (SmallFont, color, 0, line, NotifyStrings[i].Text,
+					screen->DrawText (SmallFont, color, xline, line,
+						NotifyStrings[i].Text,
 						DTA_VirtualWidth, screen->GetWidth() / 2, 
 						DTA_VirtualHeight, screen->GetHeight() / 2,
 						DTA_KeepRatio, true,
 						DTA_Alpha, alpha, TAG_DONE);
 				else
-					screen->DrawText (SmallFont, color, (screen->GetWidth() / 2 -
+					screen->DrawText (SmallFont, color, xline + (viewwidth / 2 -
 						SmallFont->StringWidth (NotifyStrings[i].Text))/2,
 						line, NotifyStrings[i].Text,
 						DTA_VirtualWidth, screen->GetWidth() / 2, 

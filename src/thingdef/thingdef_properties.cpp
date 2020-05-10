@@ -533,6 +533,12 @@ HANDLE_PROPERTY(painsound)
 	defaults->painsound = snd;
 }
 
+HANDLE_PROPERTY(pickupmessage)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString(AMETA_PickupMessage, str);
+}
+
 HANDLE_PROPERTY(pickupsound)
 {
 	STRING_PARAM(snd, 0);
@@ -847,6 +853,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(overheadicon, Actor, S),
 	DEFINE_PROP(painchance, Actor, I),
 	DEFINE_PROP(painsound, Actor, S),
+	DEFINE_PROP(pickupmessage, Inventory, T),
 	DEFINE_PROP(pickupsound, Inventory, S),
 	DEFINE_PROP(points, Actor, I),
 	DEFINE_PROP(PROJECTILE, Actor,),
