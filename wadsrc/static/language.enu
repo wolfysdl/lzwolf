@@ -169,7 +169,7 @@ NOAH_ENDSTR09 = "The animals might get\nhungry if you're gone\ntoo long!\nPress 
 STR_ENDGAME1 = "We owe you a great debt, Mr. Blazkowicz.";
 STR_ENDGAME2 = "You have served your country well.";
 STR_ENDGAME3 = "With the spear gone, the Allies will finally";
-STR_ENDGAME4 = "by able to destroy Hitler...";
+STR_ENDGAME4 = "be able to destroy Hitler...";
 
 ROBSJUKEBOX = "Robert's Jukebox";
 MUS_GETTHEM = "Get Them!";
