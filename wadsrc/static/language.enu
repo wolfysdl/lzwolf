@@ -307,6 +307,13 @@ OB_GRETEL = "BJ was humiliated by Gretel.";
 OB_SCHABBS = "BJ was resurrected into a freak by Dr Schabbs.";
 OB_GIFT = "BJ was gassed out by Otto - The Poison Maker.";
 OB_FATFACE = "BJ was outgunned by Fettgesicht.";
+OB_TRANS = "BJ was erased by Trans.";
+OB_SUBMARINE = "BJ was turned into fish food by Willy.";
+OB_UBERMUTANT = "BJ was butchered by the ultimate creation.";
+OB_WILHELM = "BJ was barnacled by Wilhelm.";
+OB_DEATHKNIGHT = "BJ was shown Death by the Hitler's protector.";
+OB_QUARKBLITZ = "BJ was turned into quarks by an evil professor.";
+OB_ROBOT = "BJ says Goodbye, Galaxy!";
 
 NOAH_BRIEF_01 = "You'll be out of the ark in six\ndays, Noah. Unfortunately, the\nanimals are a tad bit restless and\nwant to get out now. Good thing\nyou brought all that food with\nyou. You'll need it to put the\nbusy ones to sleep.\n\nAt the end of the first day, be\nprepared to deal with Carl the\nCamel. He's been real cranky lately\nand is a bit out of control.\n\nGood luck and be careful...\n";
 NOAH_BRIEF_02 = "Wow, Noah! Carl sure was hard to\ncalm down. But remember, you\nwere chosen to guide this ark to\nsafety because you know how to\nget the job done.\n\nThe closing of day two ends with\nirritable Ginny the Giraffe. She\nmay be tall and quick, but give\nher enough food and it's off to\nsleep.\n\nOh, and Noah, remember to keep\nan eye out for hidden rooms...\n";
