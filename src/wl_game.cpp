@@ -837,12 +837,14 @@ bool GameLoop (void)
 {
 	bool died;
 	bool dointermission;
+	bool forceshowpsyched;
 
 restartgame:
 	VW_FadeOut();
 	DrawPlayScreen ();
 	died = false;
 	dointermission = true;
+	forceshowpsyched = false;
 	do
 	{
 		if (!loadedgame)
@@ -924,7 +926,7 @@ restartgame:
 		ingame = true;
 
 		if (!died)
-			PreloadGraphics (dointermission);
+			PreloadGraphics (dointermission || forceshowpsyched);
 		else
 		{
 			died = false;
@@ -934,6 +936,7 @@ restartgame:
 		StatusBar->DrawStatusBar();
 
 		dointermission = true;
+		forceshowpsyched = false;
 
 		PlayLoop ();
 
@@ -964,6 +967,7 @@ restartgame:
 			case ex_victorious:
 			{
 				dointermission = !levelInfo->NoIntermission;
+				forceshowpsyched = levelInfo->ForceShowPsyched;
 
 				FString next;
 				if(playstate != ex_newmap)

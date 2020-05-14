@@ -292,6 +292,7 @@ LevelInfo::LevelInfo() : ResetHealth(false), ResetInventory(false),
 	LevelNumber = 0;
 	Cluster = 0;
 	NoIntermission = false;
+	ForceShowPsyched = false;
 	SecretDeathSounds = false;
 	SpawnWithWeaponRaised = false;
 	ForceTally = false;
@@ -540,6 +541,8 @@ protected:
 			ParseStringAssignment(mapInfo.Music);
 		else if(key.CompareNoCase("NoIntermission") == 0)
 			mapInfo.NoIntermission = true;
+		else if(key.CompareNoCase("ForceShowPsyched") == 0)
+			mapInfo.ForceShowPsyched = true;
 		else if(key.CompareNoCase("Par") == 0)
 			ParseIntAssignment(mapInfo.Par);
 		else if(key.CompareNoCase("HubPar") == 0)

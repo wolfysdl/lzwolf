@@ -189,6 +189,7 @@ public:
 	int				LevelBonus;
 	unsigned int	LevelNumber;
 	bool			NoIntermission;
+	bool			ForceShowPsyched;
 	TArray<FTextureID>	ParallaxSky;
 	int             NumParallaxTiles;
 	int             Atmos[4];
