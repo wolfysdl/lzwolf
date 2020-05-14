@@ -521,7 +521,7 @@ void V_ForceBlend (int blendr, int blendg, int blendb, int blenda)
 		BaseBlendB = BPART(color);
 		BaseBlendA = amt;
 	}
-}
+}*/
 
 CCMD (testfade)
 {
@@ -534,18 +534,10 @@ CCMD (testfade)
 	}
 	else
 	{
-		if ( !(colorstring = V_GetColorStringByName (argv[1])).IsEmpty() )
-		{
-			color = V_GetColorFromString (NULL, colorstring);
-		}
-		else
-		{
-			color = V_GetColorFromString (NULL, argv[1]);
-		}
-		level.fadeto = color;
+		color = V_GetColorFromString (NULL, argv[1]);
 		NormalLight.ChangeFade (color);
 	}
-}*/
+}
 
 /****** Colorspace Conversion Functions ******/
 
