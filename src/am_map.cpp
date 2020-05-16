@@ -50,6 +50,8 @@
 #include "wl_game.h"
 #include "wl_main.h"
 #include "wl_play.h"
+#include "c_dispatch.h"
+#include "v_text.h"
 
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
 {
@@ -849,4 +851,78 @@ void BasicOverhead()
 		}
 		default: break;
 	}
+}
+
+class GameMapEditor
+{
+public:
+	MapSpot spot;
+
+	GameMapEditor() : spot(NULL)
+	{
+	}
+
+	GameMap::Tile *GetTile(unsigned int index) const
+	{
+		if(index > map->tilePalette.Size())
+			return NULL;
+		return &map->tilePalette[index];
+	}
+
+	size_t GetTileCount() const
+	{
+		return map->tilePalette.Size();
+	}
+
+	MapSpot GetCurSpot()
+	{
+		return map->GetSpot(players[ConsolePlayer].camera->tilex, players[ConsolePlayer].camera->tiley, 0);
+	}
+
+	static GameMapEditor *GetInstance();
+};
+
+GameMapEditor *GameMapEditor::GetInstance()
+{
+	static GameMapEditor inst;
+	return &inst;
+}
+
+CCMD(spotinfo)
+{
+	GameMapEditor *editor = GameMapEditor::GetInstance();
+
+	MapSpot spot = editor->GetCurSpot();
+
+	size_t tileind = map->GetTileIndex(spot->tile);
+	size_t sectorind = map->GetSectorIndex(spot->sector);
+	if (map->GetTile(tileind) != NULL)
+		Printf("tile = %lu\n", tileind);
+	if (map->GetSector(sectorind) != NULL)
+		Printf("sector = %lu\n", sectorind);
+}
+
+CCMD(settile)
+{
+	GameMapEditor *editor = GameMapEditor::GetInstance();
+
+	if (argv.argc() < 2)
+	{
+		Printf("Usage: settile <tileind>\n");
+		return;
+	}
+
+	unsigned tileind = INT_MAX;
+	sscanf(argv[1], "%d", &tileind);
+
+	MapTile *tile = editor->GetTile(tileind);
+	if (tile == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
+			editor->GetTileCount());
+		return;
+	}
+
+	MapSpot spot = editor->GetCurSpot();
+	spot->SetTile(tile);
 }

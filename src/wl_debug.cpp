@@ -665,11 +665,11 @@ CCMD (god)
 	}
 
 	if (godmode == 1)
-		Printf ("God mode ON");
+		Printf ("God mode ON\n");
 	else if (godmode == 2)
-		Printf ("God (no flash)");
+		Printf ("God (no flash)\n");
 	else if (godmode == 0)
-		Printf ("God mode OFF");
+		Printf ("God mode OFF\n");
 }
 
 CCMD (quit)
@@ -686,36 +686,36 @@ CCMD (notarget)
 {
 	notargetmode = !notargetmode;
 	if(notargetmode)
-		Printf ("No target mode ON");
+		Printf ("No target mode ON\n");
 	else
-		Printf ("No target mode OFF");
+		Printf ("No target mode OFF\n");
 }
 
 CCMD (noclip)
 {
 	noclip^=1;
 	if (noclip)
-		Printf ("No clipping ON");
+		Printf ("No clipping ON\n");
 	else
-		Printf ("No clipping OFF");
+		Printf ("No clipping OFF\n");
 }
 
 CCMD (darkonefps)
 {
 	fpscounter ^= 1;
 	if (!fpscounter)
-		Printf ("Darkone's FPS Counter OFF");
+		Printf ("Darkone's FPS Counter OFF\n");
 	else
-		Printf ("Darkone's FPS Counter ON");
+		Printf ("Darkone's FPS Counter ON\n");
 }
 
 CCMD (amcheat)
 {
 	am_cheat ^= 1;
 	if (am_cheat)
-		Printf ("Automap revealed");
+		Printf ("Automap revealed\n");
 	else
-		Printf ("Automap hidden");
+		Printf ("Automap hidden\n");
 }
 
 CCMD (slowmotion)
