@@ -254,6 +254,7 @@ set(SOURCE_FILES
 	language.cpp
 	lnspec.cpp
 	lumpremap.cpp
+	mapedit.cpp
 	m_alloc.cpp
 	m_argv.cpp
 	m_classes.cpp
