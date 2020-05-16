@@ -16,6 +16,7 @@ loaded into the data segment
 
 #include "g_mapinfo.h"
 #include "gamemap.h"
+#include "mapedit.h"
 #include "tmemory.h"
 #include "wl_def.h"
 #include "wl_game.h"
@@ -33,6 +34,7 @@ loaded into the data segment
 
 LevelInfo *levelInfo = NULL;
 GameMap *map = NULL;
+MapEdit::GameMapEditor *mapeditor = NULL;
 
 
 /*
@@ -59,6 +61,8 @@ void CA_UnloadMap(GameMap *map)
 	// Don't dangle a reference to the map we just unloaded.
 	if(::map == map)
 		::map = NULL;
+	
+	delete mapeditor;
 }
 
 /*
@@ -80,6 +84,7 @@ void CA_CacheMap (const FString &mapname, bool loading)
 	levelInfo = &LevelInfo::Find(mapname);
 	::map = map = new GameMap(mapname);
 	map->LoadMap(loading);
+	mapeditor = new MapEdit::GameMapEditor();
 
 	Printf("\n%s - %s\n\n", mapname.GetChars(), levelInfo->GetName(map).GetChars());
 

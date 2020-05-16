@@ -3,8 +3,14 @@
 
 //===========================================================================
 
+namespace MapEdit
+{
+	class GameMapEditor;
+}
+
 extern  class GameMap *map;
 extern	class LevelInfo *levelInfo;
+extern  class MapEdit::GameMapEditor *mapeditor;
 
 //===========================================================================
 

@@ -33,80 +33,103 @@
 */
 
 #include "wl_def.h"
-#include "am_map.h"
-#include "colormatcher.h"
 #include "id_ca.h"
 #include "id_in.h"
 #include "id_vl.h"
 #include "id_vh.h"
-#include "g_mapinfo.h"
-#include "gamemap.h"
-#include "r_data/colormaps.h"
-#include "r_sprites.h"
-#include "v_font.h"
-#include "v_video.h"
+#include "mapedit.h"
 #include "wl_agent.h"
 #include "wl_draw.h"
-#include "wl_game.h"
-#include "wl_main.h"
 #include "wl_play.h"
 #include "c_dispatch.h"
 #include "v_text.h"
 #include "thingdef/thingdef.h"
+using namespace MapEdit;
 
-class GameMapEditor
+CVAR(Bool, mapedit_marker, false, CVAR_ARCHIVE)
+
+GameMapEditor::GameMapEditor() : spot(NULL), armlength(TILEGLOBAL*2)
 {
-public:
-	MapSpot spot;
-	fixed armlength;
+	InitMarkedSector();
+}
 
-	GameMapEditor() : spot(NULL), armlength(TILEGLOBAL*2)
-	{
-	}
-
-	GameMap::Tile *GetTile(unsigned int index) const
-	{
-		if(index > map->tilePalette.Size())
-			return NULL;
-		return &map->tilePalette[index];
-	}
-
-	size_t GetTileCount() const
-	{
-		return map->tilePalette.Size();
-	}
-
-	std::pair<fixed, fixed> GetCurLoc() const
-	{
-		fixed x, y;
-		x = players[ConsolePlayer].camera->x + FixedMul(armlength,viewcos);
-		y = players[ConsolePlayer].camera->y - FixedMul(armlength,viewsin);
-		return std::make_pair(x, y);
-	}
-
-	MapSpot GetCurSpot()
-	{
-		int tilex,tiley;
-		tilex = GetCurLoc().first >> TILESHIFT;
-		tiley = GetCurLoc().second >> TILESHIFT;
-		return map->IsValidTileCoordinate(tilex, tiley, 0) ?
-			map->GetSpot(tilex, tiley, 0) : NULL;
-	}
-
-	static GameMapEditor *GetInstance();
-};
-
-GameMapEditor *GameMapEditor::GetInstance()
+GameMap::Tile *GameMapEditor::GetTile(unsigned int index) const
 {
-	static GameMapEditor inst;
-	return &inst;
+	if(index > map->tilePalette.Size())
+		return NULL;
+	return &map->tilePalette[index];
+}
+
+size_t GameMapEditor::GetTileCount() const
+{
+	return map->tilePalette.Size();
+}
+
+std::pair<fixed, fixed> GameMapEditor::GetCurLoc() const
+{
+	fixed x, y;
+	x = players[ConsolePlayer].camera->x + FixedMul(armlength,viewcos);
+	y = players[ConsolePlayer].camera->y - FixedMul(armlength,viewsin);
+	x = (x & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
+	y = (y & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
+	return std::make_pair(x, y);
+}
+
+MapSpot GameMapEditor::GetCurSpot()
+{
+	int tilex,tiley;
+	tilex = GetCurLoc().first >> TILESHIFT;
+	tiley = GetCurLoc().second >> TILESHIFT;
+	return map->IsValidTileCoordinate(tilex, tiley, 0) ?
+		map->GetSpot(tilex, tiley, 0) : NULL;
+}
+
+void GameMapEditor::InitMarkedSector()
+{
+	FTextureID defaultMarked = TexMan.GetTexture("#ffff00", FTexture::TEX_Flat);
+	markedSector.texture[MapSector::Floor] = defaultMarked;
+	markedSector.texture[MapSector::Ceiling] = defaultMarked;
+}
+
+AdjustGameMap::AdjustGameMap() : spot(NULL), tile(NULL), sector(NULL)
+{
+	if (mapedit_marker)
+	{
+		spot = mapeditor->GetCurSpot();
+		if (spot != NULL)
+		{
+			tile = spot->tile;
+			sector = spot->sector;
+			spot->SetTile(NULL);
+			spot->sector = &mapeditor->markedSector;
+		}
+	}
+}
+
+AdjustGameMap::~AdjustGameMap()
+{
+	if (spot)
+	{
+		spot->SetTile(tile);
+		spot->sector = sector;
+	}
+}
+
+CCMD(mapeditmarker)
+{
+	MapSpot spot = mapeditor->GetCurSpot();
+
+	size_t tileind = map->GetTileIndex(spot->tile);
+	size_t sectorind = map->GetSectorIndex(spot->sector);
+	if (map->GetTile(tileind) != NULL)
+		Printf("tile = %lu\n", tileind);
+	if (map->GetSector(sectorind) != NULL)
+		Printf("sector = %lu\n", sectorind);
 }
 
 CCMD(spotinfo)
 {
-	GameMapEditor *editor = GameMapEditor::GetInstance();
-
-	MapSpot spot = editor->GetCurSpot();
+	MapSpot spot = mapeditor->GetCurSpot();
 
 	size_t tileind = map->GetTileIndex(spot->tile);
 	size_t sectorind = map->GetSectorIndex(spot->sector);
@@ -118,8 +141,6 @@ CCMD(spotinfo)
 
 CCMD(settile)
 {
-	GameMapEditor *editor = GameMapEditor::GetInstance();
-
 	if (argv.argc() < 2)
 	{
 		Printf("Usage: settile <tileind>\n");
@@ -129,22 +150,20 @@ CCMD(settile)
 	unsigned tileind = INT_MAX;
 	sscanf(argv[1], "%d", &tileind);
 
-	MapTile *tile = editor->GetTile(tileind);
+	MapTile *tile = mapeditor->GetTile(tileind);
 	if (tile == NULL)
 	{
 		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
-			editor->GetTileCount());
+			mapeditor->GetTileCount());
 		return;
 	}
 
-	MapSpot spot = editor->GetCurSpot();
+	MapSpot spot = mapeditor->GetCurSpot();
 	spot->SetTile(tile);
 }
 
 CCMD(spawnactor)
 {
-	GameMapEditor *editor = GameMapEditor::GetInstance();
-
 	if (argv.argc() < 2)
 	{
 		Printf("Usage: spawnactor <type>\n");
@@ -158,7 +177,7 @@ CCMD(spawnactor)
 		return;
 	}
 
-	AActor *actor = AActor::Spawn(cls, editor->GetCurLoc().first, editor->GetCurLoc().second, 0, SPAWN_AllowReplacement);
+	AActor *actor = AActor::Spawn(cls, mapeditor->GetCurLoc().first, mapeditor->GetCurLoc().second, 0, SPAWN_AllowReplacement);
 	actor->angle = players[ConsolePlayer].camera->angle;
 	actor->dir = nodir;
 }

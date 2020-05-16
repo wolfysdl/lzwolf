@@ -42,7 +42,11 @@
 
 class Thinker;
 class UWMFParser;
-class GameMapEditor;
+
+namespace MapEdit
+{
+	class GameMapEditor;
+}
 
 enum
 {
@@ -236,7 +240,7 @@ class GameMap
 		TMap<unsigned int, Plane::Map *> elevatorPosition;
 	private:
 		friend class UWMFParser;
-		friend class GameMapEditor;
+		friend class MapEdit::GameMapEditor;
 		friend FArchive &operator<< (FArchive &, GameMap *&);
 
 		Plane	&NewPlane();

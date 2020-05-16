@@ -17,6 +17,7 @@
 #include "actor.h"
 #include "id_ca.h"
 #include "gamemap.h"
+#include "mapedit.h"
 #include "g_mapinfo.h"
 #include "lumpremap.h"
 #include "wl_agent.h"
@@ -1283,6 +1284,8 @@ void R_RenderView()
 
 void    ThreeDRefresh (void)
 {
+	MapEdit::AdjustGameMap adjustGameMap;
+
 	// Ensure we have a valid camera
 	if(players[ConsolePlayer].camera == NULL)
 		players[ConsolePlayer].camera = players[ConsolePlayer].mo;
