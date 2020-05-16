@@ -115,16 +115,9 @@ AdjustGameMap::~AdjustGameMap()
 	}
 }
 
-CCMD(mapeditmarker)
+CCMD(togglememarker)
 {
-	MapSpot spot = mapeditor->GetCurSpot();
-
-	size_t tileind = map->GetTileIndex(spot->tile);
-	size_t sectorind = map->GetSectorIndex(spot->sector);
-	if (map->GetTile(tileind) != NULL)
-		Printf("tile = %lu\n", tileind);
-	if (map->GetSector(sectorind) != NULL)
-		Printf("sector = %lu\n", sectorind);
+	mapedit_marker = !mapedit_marker;
 }
 
 CCMD(spotinfo)
