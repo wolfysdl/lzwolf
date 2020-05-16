@@ -43,6 +43,7 @@ void	CreateStatusBar();
 
 void    CheckWeaponChange (AActor *self);
 void    ControlMovement (class APlayerPawn *self);
+bool    TryMove (AActor *ob);
 
 ////////////////////////////////////////////////////////////////////////////////
 

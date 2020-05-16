@@ -44,6 +44,7 @@
 #include "c_dispatch.h"
 #include "v_text.h"
 #include "thingdef/thingdef.h"
+#include "am_map.h"
 using namespace MapEdit;
 
 CVAR(Bool, me_marker, false, CVAR_ARCHIVE)
@@ -68,8 +69,16 @@ size_t GameMapEditor::GetTileCount() const
 std::pair<fixed, fixed> GameMapEditor::GetCurLoc() const
 {
 	fixed x, y;
-	x = players[ConsolePlayer].camera->x + FixedMul(armlength,viewcos);
-	y = players[ConsolePlayer].camera->y - FixedMul(armlength,viewsin);
+	if(automap == AMA_Normal)
+	{
+		x = viewx;
+		y = viewy;
+	}
+	else
+	{
+		x = viewx + FixedMul(armlength,viewcos);
+		y = viewy - FixedMul(armlength,viewsin);
+	}
 	x = (x & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
 	y = (y & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
 	return std::make_pair(x, y);
@@ -89,6 +98,7 @@ void GameMapEditor::InitMarkedSector()
 	FTextureID defaultMarked = TexMan.GetTexture("#ffff00", FTexture::TEX_Flat);
 	markedSector.texture[MapSector::Floor] = defaultMarked;
 	markedSector.texture[MapSector::Ceiling] = defaultMarked;
+	markedSector.overhead = defaultMarked;
 }
 
 AdjustGameMap::AdjustGameMap() : spot(NULL), tile(NULL), sector(NULL)

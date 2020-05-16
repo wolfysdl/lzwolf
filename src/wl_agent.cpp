@@ -27,6 +27,8 @@
 #include "wl_state.h"
 #include "wl_play.h"
 #include "templates.h"
+#include "mapedit.h"
+#include "am_map.h"
 
 #include "w_wad.h"
 #include "scanner.h"
@@ -380,9 +382,9 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 ===================
 */
 
-static bool TryMove (AActor *ob)
+bool TryMove (AActor *ob)
 {
-	if (noclip)
+	if (noclip || (me_marker && automap == AMA_Normal))
 	{
 		return (ob->x-ob->radius >= 0 && ob->y-ob->radius >= 0
 			&& ob->x+ob->radius < (((int32_t)(map->GetHeader().width))<<TILESHIFT)

@@ -136,7 +136,33 @@ void AM_CheckKeys()
 		if(control[ConsolePlayer].controlpany != 0)
 			pany += control[ConsolePlayer].controlpany * (PAN_ANALOG_MULTIPLIER * (panxadjustment+1));
 
-		AM_Main.SetPanning(panx, pany, true);
+		if(me_marker && control[ConsolePlayer].buttonstate[bt_run])
+		{
+			AActor *ob = players[0].mo;
+
+			AM_Main.SetPanning(panx, pany, true);
+
+			fixed basex = ob->x;
+			fixed basey = ob->y;
+
+			ob->x = basex + panx;
+			ob->y = basey + pany;
+			if(!TryMove (ob))
+			{
+				ob->x = basex;
+				ob->y = basey;
+			}
+		}
+		else
+		{
+			if(me_marker)
+			{
+				panx = -panx;
+				pany = -pany;
+			}
+
+			AM_Main.SetPanning(panx, pany, true);
+		}
 	}
 
 	if(control[ConsolePlayer].ambuttonstate[bt_amtoggleconsole] && !control[ConsolePlayer].ambuttonheld[bt_amtoggleconsole])
@@ -389,7 +415,12 @@ void AutoMap::Draw()
 				}
 				else if(spot->sector && !(amFlags & AMF_Overlay))
 				{
-					if(amFlags & AMF_DrawFloor)
+					if(spot->sector->overhead.isValid())
+					{
+						brightness = 256;
+						tex = TexMan(spot->sector->overhead);
+					}
+					else if(amFlags & AMF_DrawFloor)
 					{
 						brightness = 128;
 						tex = TexMan(spot->sector->texture[MapSector::Floor]);

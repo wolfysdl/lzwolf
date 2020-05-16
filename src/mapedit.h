@@ -37,6 +37,9 @@
 
 #include <algorithm>
 #include "gamemap.h"
+#include "c_cvars.h"
+
+EXTERN_CVAR(Bool, me_marker)
 
 namespace MapEdit
 {

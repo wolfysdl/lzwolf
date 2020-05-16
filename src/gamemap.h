@@ -151,8 +151,14 @@ class GameMap
 		};
 		struct Sector
 		{
+			Sector()
+			{
+				overhead.SetInvalid();
+			}
+
 			enum Flat { Floor, Ceiling };
 			FTextureID	texture[2];
+			FTextureID	overhead;
 		};
 		struct Zone
 		{
