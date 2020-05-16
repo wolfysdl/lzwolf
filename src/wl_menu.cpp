@@ -535,11 +535,11 @@ void CreateMenus()
 	automapMenu.setHeadText(language["STR_AMOPTIONS"]);
 	automapMenu.addItem(new MultipleChoiceMenuItem(ChangeAMOverlay, overlayOptions, 3, am_overlay));
 	automapMenu.addItem(new MultipleChoiceMenuItem(ChangeAMRotate, rotateOptions, 3, am_rotate));
-	automapMenu.addItem(new BooleanMenuItem(language["STR_AMTEXTURES"], am_drawtexturedwalls, ChangeAutomapFlag));
-	automapMenu.addItem(new BooleanMenuItem(language["STR_AMFLOORS"], am_drawfloors, ChangeAutomapFlag));
-	automapMenu.addItem(new BooleanMenuItem(language["STR_AMTEXTUREDOVERLAY"], am_overlaytextured, ChangeAutomapFlag));
-	automapMenu.addItem(new BooleanMenuItem(language["STR_AMRATIOS"], am_showratios, ChangeAutomapFlag));
-	automapMenu.addItem(new BooleanMenuItem(language["STR_AMPAUSE"], am_pause, ChangeAutomapFlag));
+	automapMenu.addItem(new BooleanMenuItem(language["STR_AMTEXTURES"], am_drawtexturedwalls.ValueRef(), ChangeAutomapFlag));
+	automapMenu.addItem(new BooleanMenuItem(language["STR_AMFLOORS"], am_drawfloors.ValueRef(), ChangeAutomapFlag));
+	automapMenu.addItem(new BooleanMenuItem(language["STR_AMTEXTUREDOVERLAY"], am_overlaytextured.ValueRef(), ChangeAutomapFlag));
+	automapMenu.addItem(new BooleanMenuItem(language["STR_AMRATIOS"], am_showratios.ValueRef(), ChangeAutomapFlag));
+	automapMenu.addItem(new BooleanMenuItem(language["STR_AMPAUSE"], am_pause.ValueRef(), ChangeAutomapFlag));
 }
 
 ////////////////////////////////////////////////////////////////////

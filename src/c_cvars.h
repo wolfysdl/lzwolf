@@ -255,6 +255,8 @@ public:
 	inline operator bool () const { return Value; }
 	inline bool operator *() const { return Value; }
 
+	bool &ValueRef() { return Value; }
+
 protected:
 	virtual void DoSet (UCVarValue value, ECVarType type);
 

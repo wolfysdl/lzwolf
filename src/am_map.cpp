@@ -75,14 +75,14 @@ enum
 };
 
 unsigned automap = 0;
-bool am_cheat = false;
-unsigned am_rotate = 0;
-bool am_overlaytextured = false;
-bool am_drawtexturedwalls = true;
-bool am_drawfloors = false;
-unsigned am_overlay = 0;
-bool am_pause = true;
-bool am_showratios = false;
+CVAR (Bool, am_cheat, false, CVAR_ARCHIVE)
+CVAR (Int, am_rotate, 0, CVAR_ARCHIVE)
+CVAR (Bool, am_overlaytextured, false, CVAR_ARCHIVE)
+CVAR (Bool, am_drawtexturedwalls, true, CVAR_ARCHIVE)
+CVAR (Bool, am_drawfloors, false, CVAR_ARCHIVE)
+CVAR (Int, am_overlay, 0, CVAR_ARCHIVE)
+CVAR (Bool, am_pause, true, CVAR_ARCHIVE)
+CVAR (Bool, am_showratios, false, CVAR_ARCHIVE)
 bool am_needsrecalc = false;
 
 void AM_ChangeResolution()

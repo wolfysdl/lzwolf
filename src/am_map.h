@@ -38,6 +38,7 @@
 #include "gamemap.h"
 #include "tarray.h"
 #include "vectors.h"
+#include "c_cvars.h"
 
 enum
 {
@@ -47,14 +48,14 @@ enum
 };
 
 extern unsigned automap;
-extern bool am_cheat;
-extern unsigned am_rotate;
-extern bool am_overlaytextured;
-extern bool am_drawtexturedwalls;
-extern bool am_drawfloors;
-extern unsigned am_overlay;
-extern bool am_pause;
-extern bool am_showratios;
+EXTERN_CVAR (Bool, am_cheat)
+EXTERN_CVAR (Int, am_rotate)
+EXTERN_CVAR (Bool, am_overlaytextured)
+EXTERN_CVAR (Bool, am_drawtexturedwalls)
+EXTERN_CVAR (Bool, am_drawfloors)
+EXTERN_CVAR (Int, am_overlay)
+EXTERN_CVAR (Bool, am_pause)
+EXTERN_CVAR (Bool, am_showratios)
 
 void AM_ChangeResolution();
 void AM_CheckKeys();

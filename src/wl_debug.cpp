@@ -362,7 +362,7 @@ int DebugKeys (void)
 	}
 	else if (Keyboard[sc_O])
 	{
-		am_cheat ^= 1;
+		am_cheat = !am_cheat;
 		US_CenterWindow (18,3);
 		if (am_cheat)
 			US_PrintCentered ("Automap revealed");
@@ -711,7 +711,7 @@ CCMD (darkonefps)
 
 CCMD (amcheat)
 {
-	am_cheat ^= 1;
+	am_cheat = !am_cheat;
 	if (am_cheat)
 		Printf ("Automap revealed\n");
 	else
