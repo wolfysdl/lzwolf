@@ -117,6 +117,7 @@ ControlScheme amControlScheme[] =
 	{ bt_pandown,			"Pan Down",		JoyAx(1)+1,	sc_DownArrow,	-1, offsetof(TicCmd_t, controlpany), 1 },
 	{ bt_panleft,			"Pan Left",		JoyAx(0),	sc_LeftArrow,	-1, offsetof(TicCmd_t, controlpanx), 0 },
 	{ bt_panright,			"Pan Right",	JoyAx(0)+1,	sc_RightArrow,	-1, offsetof(TicCmd_t, controlpanx), 1 },
+	{ bt_amtoggleconsole,	"Console",		-1,			sc_Grave,		-1, -1, 0 },
 
 	{ bt_nobutton,			NULL, -1, -1, -1, -1, 0 }
 };
@@ -1142,6 +1143,8 @@ void PlayLoop (void)
 
 		if(automap && !gamestate.victoryflag)
 			BasicOverhead();
+
+		C_DrawConsole(false);
 
 		//
 		// MAKE FUNNY FACE IF BJ DOESN'T MOVE FOR AWHILE

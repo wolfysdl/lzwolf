@@ -50,6 +50,8 @@
 #include "wl_game.h"
 #include "wl_main.h"
 #include "wl_play.h"
+#include "mapedit.h"
+#include "c_console.h"
 
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
 {
@@ -136,6 +138,9 @@ void AM_CheckKeys()
 
 		AM_Main.SetPanning(panx, pany, true);
 	}
+
+	if(control[ConsolePlayer].ambuttonstate[bt_amtoggleconsole] && !control[ConsolePlayer].ambuttonheld[bt_amtoggleconsole])
+		C_ToggleConsole();
 }
 
 void AM_UpdateFlags()
@@ -830,6 +835,8 @@ bool AutoMap::TransformTile(MapSpot spot, fixed x, fixed y, TArray<FVector2> &po
 
 void BasicOverhead()
 {
+	MapEdit::AdjustGameMap adjustGameMap;
+
 	if(am_needsrecalc)
 		AM_ChangeResolution();
 

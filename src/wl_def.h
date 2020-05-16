@@ -310,6 +310,7 @@ enum Button
 	bt_pandown,
 	bt_panleft,
 	bt_panright,
+	bt_amtoggleconsole,
 	NUMAMBUTTONS
 };
 

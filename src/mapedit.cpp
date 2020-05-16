@@ -46,7 +46,7 @@
 #include "thingdef/thingdef.h"
 using namespace MapEdit;
 
-CVAR(Bool, mapedit_marker, false, CVAR_ARCHIVE)
+CVAR(Bool, me_marker, false, CVAR_ARCHIVE)
 
 GameMapEditor::GameMapEditor() : spot(NULL), armlength(TILEGLOBAL*2)
 {
@@ -93,7 +93,7 @@ void GameMapEditor::InitMarkedSector()
 
 AdjustGameMap::AdjustGameMap() : spot(NULL), tile(NULL), sector(NULL)
 {
-	if (mapedit_marker)
+	if (me_marker)
 	{
 		spot = mapeditor->GetCurSpot();
 		if (spot != NULL)
@@ -117,7 +117,7 @@ AdjustGameMap::~AdjustGameMap()
 
 CCMD(togglememarker)
 {
-	mapedit_marker = !mapedit_marker;
+	me_marker = !me_marker;
 }
 
 CCMD(spotinfo)

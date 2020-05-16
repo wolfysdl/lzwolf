@@ -1305,7 +1305,6 @@ void    ThreeDRefresh (void)
 	vbufPitch = SCREENPITCH;
 
 	R_RenderView();
-	C_DrawConsole(false);
 
 	VL_UnlockSurface();
 	vbuf = NULL;
