@@ -30,6 +30,7 @@
 #include "c_gui.h"
 #include "c_console.h"
 #include "c_bind.h"
+#include "am_map.h"
 
 
 #if !SDL_VERSION_ATLEAST(1,3,0)
@@ -331,7 +332,8 @@ static bool bindingEatsKey(ScanCode key, SDL_EventType type)
 	else if (type == SDL_KEYUP)
 		ev.type = EV_KeyUp;
 	ev.data1 = key;
-	return C_DoKey (&ev, &Bindings, &DoubleBindings);
+	return (automap && C_DoKey(&ev, &AutomapBindings, NULL)) ||
+		C_DoKey (&ev, &Bindings, &DoubleBindings);
 }
 
 static bool consoleEatsKey(ScanCode key, SDL_Keymod mod)
