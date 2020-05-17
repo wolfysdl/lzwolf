@@ -94,8 +94,6 @@ bool C_DoKey (event_t *ev, FKeyBindings *binds, FKeyBindings *doublebinds);
 void C_SetDefaultBindings ();
 void C_UnbindAll ();
 
-extern const char *KeyNames[];
-
 struct FKeyAction
 {
 	FString mTitle;

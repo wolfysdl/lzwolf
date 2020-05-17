@@ -29,6 +29,7 @@
 #include "c_event.h"
 #include "c_gui.h"
 #include "c_console.h"
+#include "c_bind.h"
 
 
 #if !SDL_VERSION_ATLEAST(1,3,0)
@@ -321,6 +322,18 @@ bool IN_JoyPresent()
 	;
 }
 
+static bool bindingEatsKey(ScanCode key, SDL_EventType type)
+{
+	event_t ev;
+	memset(&ev, 0, sizeof(ev));
+	if (type == SDL_KEYDOWN)
+		ev.type = EV_KeyDown;
+	else if (type == SDL_KEYUP)
+		ev.type = EV_KeyUp;
+	ev.data1 = key;
+	return C_DoKey (&ev, &Bindings, &DoubleBindings);
+}
+
 static bool consoleEatsKey(ScanCode key, SDL_Keymod mod)
 {
 	event_t ev;
@@ -520,8 +533,11 @@ static void processEvent(SDL_Event *event)
 				LastASCII = 0;
 #endif
 
-			if (consoleEatsKey(LastScan, mod))
+			if (bindingEatsKey(LastScan, SDL_KEYDOWN) ||
+				consoleEatsKey(LastScan, mod))
+			{
 				LastScan = 0;
+			}
 			if(LastScan<SDL_NUM_SCANCODES)
 				Keyboard[LastScan] = 1;
 			if(LastScan == SDLx_SCANCODE(PAUSE))
@@ -564,6 +580,7 @@ static void processEvent(SDL_Event *event)
 
 			if(key<SDL_NUM_SCANCODES)
 				Keyboard[key] = 0;
+			bindingEatsKey(event->key.keysym.sym, SDL_KEYUP);
 			break;
 		}
 

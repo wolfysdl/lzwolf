@@ -33,6 +33,7 @@
 */
 
 #include "wl_def.h"
+#include "id_in.h"
 #include "cmdlib.h"
 #include "c_dispatch.h"
 #include "c_bind.h"
@@ -43,115 +44,179 @@
 #include "c_event.h"
 #include "w_wad.h"
 #include "scanner.h"
+#include "c_console.h"
 
+#include <SDL.h>
 #include <math.h>
 #include <stdlib.h>
 
 #define CARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
-const char *KeyNames[] =
+namespace KeyNames
 {
-	// This array is dependant on the particular keyboard input
-	// codes generated in i_input.c. If they change there, they
-	// also need to change here. In this case, we use the
-	// DirectInput codes and assume a qwerty keyboard layout.
-	// See <dinput.h> for the DIK_* codes
+	struct KeySymName
+	{
+		unsigned int keysym;
+		const char *name;
+	};
 
-	NULL,		"escape",	"1",		"2",		"3",		"4",		"5",		"6",		//00
-	"7",		"8",		"9",		"0",		"-",		"=",		"backspace","tab",		//08
-	"q",		"w",		"e",		"r",		"t",		"y",		"u",		"i",		//10
-	"o",		"p",		"[",		"]",		"enter",	"ctrl",		"a",		"s",		//18
-	"d",		"f",		"g",		"h",		"j",		"k",		"l",		";",		//20
-	"'",		"`",		"shift",	"\\",		"z",		"x",		"c",		"v",		//28
-	"b",		"n",		"m",		",",		".",		"/",		"rshift",	"kp*",		//30
-	"alt",		"space",	"capslock",	"f1",		"f2",		"f3",		"f4",		"f5",		//38
-	"f6",		"f7",		"f8",		"f9",		"f10",		"numlock",	"scroll",	"kp7",		//40
-	"kp8",		"kp9",		"kp-",		"kp4",		"kp5",		"kp6",		"kp+",		"kp1",		//48
-	"kp2",		"kp3",		"kp0",		"kp.",		NULL,		NULL,		"oem102",	"f11",		//50
-	"f12",		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		//58
-	NULL,		NULL,		NULL,		NULL,		"f13",		"f14",		"f15",		"f16",		//60
-	NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		//68
-	"kana",		NULL,		NULL,		"abnt_c1",	NULL,		NULL,		NULL,		NULL,		//70
-	NULL,		"convert",	NULL,		"noconvert",NULL,		"yen",		"abnt_c2",	NULL,		//78
-	NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		//80
-	NULL,		NULL,		NULL,		NULL,		NULL,		"kp=",		NULL,		NULL,		//88
-	"circumflex","@",		":",		"_",		"kanji",	"stop",		"ax",		"unlabeled",//90
-	NULL,		"prevtrack",NULL,		NULL,		"kp-enter",	"rctrl",	NULL,		NULL,		//98
-	"mute",		"calculator","play",	NULL,		"stop",		NULL,		NULL,		NULL,		//A0
-	NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		"voldown",	NULL,		//A8
-	"volup",	NULL,		"webhome",	"kp,",		NULL,		"kp/",		NULL,		"sysrq",	//B0
-	"ralt",		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		//B8
-	NULL,		NULL,		NULL,		NULL,		NULL,		"pause",	NULL,		"home",		//C0
-	"uparrow",	"pgup",		NULL,		"leftarrow",NULL,		"rightarrow",NULL,		"end",		//C8
-	"downarrow","pgdn",		"ins",		"del",		NULL,		NULL,		NULL,		NULL,		//D0
-#ifdef __APPLE__
-	NULL,		NULL,		NULL,		"command",	NULL,		"apps",		"power",	"sleep",	//D8
-#else // !__APPLE__
-	NULL,		NULL,		NULL,		"lwin",		"rwin",		"apps",		"power",	"sleep",	//D8
-#endif // __APPLE__
-	NULL,		NULL,		NULL,		"wake",		NULL,		"search",	"favorites","refresh",	//E0
-	"webstop",	"webforward","webback",	"mycomputer","mail",	"mediaselect",NULL,		NULL,		//E8
-	NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		//F0
-	NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		NULL,		//F8
+	KeySymName data[] =
+	{
+		{ SDLx_SCANCODE(BACKSPACE), "backspace" },
+		{ SDLx_SCANCODE(TAB), "tab" },
+		{ SDLx_SCANCODE(CLEAR), "clear" },
+		{ SDLx_SCANCODE(RETURN), "return" },
+		{ SDLx_SCANCODE(PAUSE), "pause" },
+		{ SDLx_SCANCODE(ESCAPE), "escape" },
+		{ SDLx_SCANCODE(SPACE), "space" },
+//		{ SDLx_SCANCODE(EXCLAIM), "exclaim" },
+//		{ SDLx_SCANCODE(QUOTEDBL), "quotedbl" },
+//		{ SDLx_SCANCODE(HASH), "hash" },
+//		{ SDLx_SCANCODE(DOLLAR), "dollar" },
+//		{ SDLx_SCANCODE(AMPERSAND), "ampersand" },
+//		{ SDLx_SCANCODE(QUOTE), "quote" },
+//		{ SDLx_SCANCODE(LEFTPAREN), "leftparen" },
+//		{ SDLx_SCANCODE(RIGHTPAREN), "rightparen" },
+//		{ SDLx_SCANCODE(ASTERISK), "asterisk" },
+//		{ SDLx_SCANCODE(PLUS), "plus" },
+		{ SDLx_SCANCODE(COMMA), "comma" },
+		{ SDLx_SCANCODE(MINUS), "minus" },
+		{ SDLx_SCANCODE(PERIOD), "period" },
+		{ SDLx_SCANCODE(SLASH), "slash" },
+		{ SDLx_SCANCODE(0), "0" },
+		{ SDLx_SCANCODE(1), "1" },
+		{ SDLx_SCANCODE(2), "2" },
+		{ SDLx_SCANCODE(3), "3" },
+		{ SDLx_SCANCODE(4), "4" },
+		{ SDLx_SCANCODE(5), "5" },
+		{ SDLx_SCANCODE(6), "6" },
+		{ SDLx_SCANCODE(7), "7" },
+		{ SDLx_SCANCODE(8), "8" },
+		{ SDLx_SCANCODE(9), "9" },
+//		{ SDLx_SCANCODE(COLON), "colon" },
+		{ SDLx_SCANCODE(SEMICOLON), "semicolon" },
+//		{ SDLx_SCANCODE(LESS), "less" },
+		{ SDLx_SCANCODE(EQUALS), "equals" },
+//		{ SDLx_SCANCODE(GREATER), "greater" },
+//		{ SDLx_SCANCODE(QUESTION), "question" },
+//		{ SDLx_SCANCODE(AT), "at" },
+		{ SDLx_SCANCODE(LEFTBRACKET), "leftbracket" },
+		{ SDLx_SCANCODE(BACKSLASH), "backslash" },
+		{ SDLx_SCANCODE(RIGHTBRACKET), "rightbracket" },
+//		{ SDLx_SCANCODE(CARET), "caret" },
+//		{ SDLx_SCANCODE(UNDERSCORE), "underscore" },
+//		{ SDLx_SCANCODE(BACKQUOTE), "backquote" },
+		{ SDLx_SCANCODE(A), "a" },
+		{ SDLx_SCANCODE(B), "b" },
+		{ SDLx_SCANCODE(C), "c" },
+		{ SDLx_SCANCODE(D), "d" },
+		{ SDLx_SCANCODE(E), "e" },
+		{ SDLx_SCANCODE(F), "f" },
+		{ SDLx_SCANCODE(G), "g" },
+		{ SDLx_SCANCODE(H), "h" },
+		{ SDLx_SCANCODE(I), "i" },
+		{ SDLx_SCANCODE(J), "j" },
+		{ SDLx_SCANCODE(K), "k" },
+		{ SDLx_SCANCODE(L), "l" },
+		{ SDLx_SCANCODE(M), "m" },
+		{ SDLx_SCANCODE(N), "n" },
+		{ SDLx_SCANCODE(O), "o" },
+		{ SDLx_SCANCODE(P), "p" },
+		{ SDLx_SCANCODE(Q), "q" },
+		{ SDLx_SCANCODE(R), "r" },
+		{ SDLx_SCANCODE(S), "s" },
+		{ SDLx_SCANCODE(T), "t" },
+		{ SDLx_SCANCODE(U), "u" },
+		{ SDLx_SCANCODE(V), "v" },
+		{ SDLx_SCANCODE(W), "w" },
+		{ SDLx_SCANCODE(X), "x" },
+		{ SDLx_SCANCODE(Y), "y" },
+		{ SDLx_SCANCODE(Z), "z" },
+		{ SDLx_SCANCODE(DELETE), "delete" },
+//		{ SDLx_SCANCODE(KP0), "kp0" },
+//		{ SDLx_SCANCODE(KP1), "kp1" },
+//		{ SDLx_SCANCODE(KP2), "kp2" },
+//		{ SDLx_SCANCODE(KP3), "kp3" },
+//		{ SDLx_SCANCODE(KP4), "kp4" },
+//		{ SDLx_SCANCODE(KP5), "kp5" },
+//		{ SDLx_SCANCODE(KP6), "kp6" },
+//		{ SDLx_SCANCODE(KP7), "kp7" },
+//		{ SDLx_SCANCODE(KP8), "kp8" },
+//		{ SDLx_SCANCODE(KP9), "kp9" },
+		{ SDLx_SCANCODE(KP_PERIOD), "kp_period" },
+		{ SDLx_SCANCODE(KP_DIVIDE), "kp_divide" },
+		{ SDLx_SCANCODE(KP_MULTIPLY), "kp_multiply" },
+		{ SDLx_SCANCODE(KP_MINUS), "kp_minus" },
+		{ SDLx_SCANCODE(KP_PLUS), "kp_plus" },
+		{ SDLx_SCANCODE(KP_ENTER), "kp_enter" },
+		{ SDLx_SCANCODE(KP_EQUALS), "kp_equals" },
+		{ SDLx_SCANCODE(UP), "up" },
+		{ SDLx_SCANCODE(DOWN), "down" },
+		{ SDLx_SCANCODE(RIGHT), "right" },
+		{ SDLx_SCANCODE(LEFT), "left" },
+		{ SDLx_SCANCODE(INSERT), "insert" },
+		{ SDLx_SCANCODE(HOME), "home" },
+		{ SDLx_SCANCODE(END), "end" },
+		{ SDLx_SCANCODE(PAGEUP), "pageup" },
+		{ SDLx_SCANCODE(PAGEDOWN), "pagedown" },
+		{ SDLx_SCANCODE(F1), "f1" },
+		{ SDLx_SCANCODE(F2), "f2" },
+		{ SDLx_SCANCODE(F3), "f3" },
+		{ SDLx_SCANCODE(F4), "f4" },
+		{ SDLx_SCANCODE(F5), "f5" },
+		{ SDLx_SCANCODE(F6), "f6" },
+		{ SDLx_SCANCODE(F7), "f7" },
+		{ SDLx_SCANCODE(F8), "f8" },
+		{ SDLx_SCANCODE(F9), "f9" },
+		{ SDLx_SCANCODE(F10), "f10" },
+		{ SDLx_SCANCODE(F11), "f11" },
+		{ SDLx_SCANCODE(F12), "f12" },
+		{ SDLx_SCANCODE(F13), "f13" },
+		{ SDLx_SCANCODE(F14), "f14" },
+		{ SDLx_SCANCODE(F15), "f15" },
+//		{ SDLx_SCANCODE(NUMLOCK), "numlock" },
+		{ SDLx_SCANCODE(CAPSLOCK), "capslock" },
+//		{ SDLx_SCANCODE(SCROLLOCK), "scrollock" },
+		{ SDLx_SCANCODE(RSHIFT), "rshift" },
+		{ SDLx_SCANCODE(LSHIFT), "lshift" },
+		{ SDLx_SCANCODE(RCTRL), "rctrl" },
+		{ SDLx_SCANCODE(LCTRL), "lctrl" },
+		{ SDLx_SCANCODE(RALT), "ralt" },
+		{ SDLx_SCANCODE(LALT), "lalt" },
+//		{ SDLx_SCANCODE(RMETA), "rmeta" },
+//		{ SDLx_SCANCODE(LMETA), "lmeta" },
+//		{ SDLx_SCANCODE(LSUPER), "lsuper" },
+//		{ SDLx_SCANCODE(RSUPER), "rsuper" },
+//		{ SDLx_SCANCODE(MODE), "mode" },
+//		{ SDLx_SCANCODE(COMPOSE), "compose" },
+//		{ SDLx_SCANCODE(HELP), "help" },
+//		{ SDLx_SCANCODE(PRINT), "print" },
+//		{ SDLx_SCANCODE(SYSREQ), "sysreq" },
+//		{ SDLx_SCANCODE(BREAK), "break" },
+//		{ SDLx_SCANCODE(MENU), "menu" },
+//		{ SDLx_SCANCODE(POWER), "power" },
+//		{ SDLx_SCANCODE(EURO), "euro" },
+//		{ SDLx_SCANCODE(UNDO), "undo" },
+	};
 
-	// non-keyboard buttons that can be bound
-	"mouse1",	"mouse2",	"mouse3",	"mouse4",		// 8 mouse buttons
-	"mouse5",	"mouse6",	"mouse7",	"mouse8",
+	typedef std::map<unsigned int, const char *> Names;
+	static Names m;
 
-	"joy1",		"joy2",		"joy3",		"joy4",			// 128 joystick buttons!
-	"joy5",		"joy6",		"joy7",		"joy8",
-	"joy9",		"joy10",	"joy11",	"joy12",
-	"joy13",	"joy14",	"joy15",	"joy16",
-	"joy17",	"joy18",	"joy19",	"joy20",
-	"joy21",	"joy22",	"joy23",	"joy24",
-	"joy25",	"joy26",	"joy27",	"joy28",
-	"joy29",	"joy30",	"joy31",	"joy32",
-	"joy33",	"joy34",	"joy35",	"joy36",
-	"joy37",	"joy38",	"joy39",	"joy40",
-	"joy41",	"joy42",	"joy43",	"joy44",
-	"joy45",	"joy46",	"joy47",	"joy48",
-	"joy49",	"joy50",	"joy51",	"joy52",
-	"joy53",	"joy54",	"joy55",	"joy56",
-	"joy57",	"joy58",	"joy59",	"joy60",
-	"joy61",	"joy62",	"joy63",	"joy64",
-	"joy65",	"joy66",	"joy67",	"joy68",
-	"joy69",	"joy70",	"joy71",	"joy72",
-	"joy73",	"joy74",	"joy75",	"joy76",
-	"joy77",	"joy78",	"joy79",	"joy80",
-	"joy81",	"joy82",	"joy83",	"joy84",
-	"joy85",	"joy86",	"joy87",	"joy88",
-	"joy89",	"joy90",	"joy91",	"joy92",
-	"joy93",	"joy94",	"joy95",	"joy96",
-	"joy97",	"joy98",	"joy99",	"joy100",
-	"joy101",	"joy102",	"joy103",	"joy104",
-	"joy105",	"joy106",	"joy107",	"joy108",
-	"joy109",	"joy110",	"joy111",	"joy112",
-	"joy113",	"joy114",	"joy115",	"joy116",
-	"joy117",	"joy118",	"joy119",	"joy120",
-	"joy121",	"joy122",	"joy123",	"joy124",
-	"joy125",	"joy126",	"joy127",	"joy128",
+	void Init()
+	{
+		for (unsigned int i = 0; i < CARRAY_SIZE(data); i++)
+		{
+			m.insert(std::make_pair(data[i].keysym, data[i].name));
+		}
+	}
 
-	"pov1up",	"pov1right","pov1down",	"pov1left",		// First POV hat
-	"pov2up",	"pov2right","pov2down",	"pov2left",		// Second POV hat
-	"pov3up",	"pov3right","pov3down",	"pov3left",		// Third POV hat
-	"pov4up",	"pov4right","pov4down",	"pov4left",		// Fourth POV hat
-
-	"mwheelup",	"mwheeldown",							// the mouse wheel
-	"mwheelright", "mwheelleft",
-
-	"axis1plus","axis1minus","axis2plus","axis2minus",	// joystick axes as buttons
-	"axis3plus","axis3minus","axis4plus","axis4minus",
-	"axis5plus","axis5minus","axis6plus","axis6minus",
-	"axis7plus","axis7minus","axis8plus","axis8minus",
-
-	"lstickright","lstickleft","lstickdown","lstickup",			// Gamepad axis-based buttons
-	"rstickright","rstickleft","rstickdown","rstickup",
-
-	"dpadup","dpaddown","dpadleft","dpadright",	// Gamepad buttons
-	"pad_start","pad_back","lthumb","rthumb",
-	"lshoulder","rshoulder","ltrigger","rtrigger",
-	"pad_a", "pad_b", "pad_x", "pad_y"
-};
+	Names &Get()
+	{
+		if (m.empty())
+			Init();
+		return m;
+	}
+}
 
 FKeyBindings Bindings;
 FKeyBindings DoubleBindings;
@@ -177,10 +242,11 @@ static int GetKeyFromName (const char *name)
 	}
 
 	// Otherwise, we scan the KeyNames[] array for a matching name
-	for (i = 0; i < CARRAY_SIZE(KeyNames); i++)
+	KeyNames::Names::const_iterator it;
+	for (it = KeyNames::Get().begin(); it != KeyNames::Get().end(); ++it)
 	{
-		if (KeyNames[i] && !stricmp (KeyNames[i], name))
-			return i;
+		if (!stricmp (it->second, name))
+			return it->first;
 	}
 	return 0;
 }
@@ -226,8 +292,9 @@ static const char *KeyName (int key)
 {
 	static char name[5];
 
-	if (KeyNames[key])
-		return KeyNames[key];
+	KeyNames::Names::const_iterator it = KeyNames::Get().find(key);
+	if (it != KeyNames::Get().end())
+		return it->second;
 
 	mysnprintf (name, countof(name), "#%d", key);
 	return name;
@@ -689,7 +756,7 @@ bool C_DoKey (event_t *ev, FKeyBindings *binds, FKeyBindings *doublebinds)
 	BYTE dclickmask;
 	unsigned int nowtime;
 
-	if (ev->type != EV_KeyDown && ev->type != EV_KeyUp)
+	if (ConsoleState != c_up || (ev->type != EV_KeyDown && ev->type != EV_KeyUp))
 		return false;
 
 	dclickspot = ev->data1 >> 3;
