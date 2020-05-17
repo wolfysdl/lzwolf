@@ -621,7 +621,7 @@ void C_DoCommand (const char *cmd, int keynum)
 	}
 	else
 	{ // Check for any console vars that match the command
-		/*FBaseCVar *var = FindCVarSub (beg, int(len));
+		FBaseCVar *var = FindCVarSub (beg, int(len));
 
 		if (var != NULL)
 		{
@@ -637,7 +637,7 @@ void C_DoCommand (const char *cmd, int keynum)
 				Printf ("\"%s\" is \"%s\"\n", var->GetName(), val.String);
 			}
 		}
-		else*/
+		else
 		{ // We don't know how to handle this command
 			Printf ("Unknown command \"%.*s\"\n", (int)len, beg);
 		}

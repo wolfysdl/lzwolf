@@ -26,12 +26,21 @@ static inline bool CheckTicsValid(double tics)
 	return true;
 }
 
-static inline char* copystring(const char* src)
+static inline char* copystring(const char* s)
 {
-	char *dest = new char[strlen(src)+1];
-	strcpy(dest, src);
-	dest[strlen(src)] = 0;
-	return dest;
+	char *b;
+	if (s)
+	{
+		size_t len = strlen (s) + 1;
+		b = new char[len];
+		memcpy (b, s, len);
+	}
+	else
+	{
+		b = new char[1];
+		b[0] = '\0';
+	}
+	return b;
 }
 
 static inline char *ncopystring (const char *string)

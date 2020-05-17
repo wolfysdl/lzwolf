@@ -136,7 +136,7 @@ void AM_CheckKeys()
 		if(control[ConsolePlayer].controlpany != 0)
 			pany += control[ConsolePlayer].controlpany * (PAN_ANALOG_MULTIPLIER * (panxadjustment+1));
 
-		if(me_marker && control[ConsolePlayer].buttonstate[bt_run])
+		if(me_marker && !control[ConsolePlayer].buttonstate[bt_run])
 		{
 			AActor *ob = players[0].mo;
 
@@ -155,12 +155,6 @@ void AM_CheckKeys()
 		}
 		else
 		{
-			if(me_marker)
-			{
-				panx = -panx;
-				pany = -pany;
-			}
-
 			AM_Main.SetPanning(panx, pany, true);
 		}
 	}
