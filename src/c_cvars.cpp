@@ -45,6 +45,7 @@
 #include "wl_play.h"
 #include "c_console.h"
 #include "c_dispatch.h"
+#include "c_bind.h"
 #include "colormatcher.h"
 #include "cmdlib.h"
 
@@ -303,6 +304,10 @@ void ReadConfig(void)
 		Scores[i].graphic[8] = 0;
 	}
 
+	Bindings.LoadBindings("Bindings", &config);
+	DoubleBindings.LoadBindings("DoubleBindings", &config);
+	AutomapBindings.LoadBindings("AutomapBindings", &config);
+
 	// make sure values are correct
 	if (mousexadjustment<0) mousexadjustment = 0;
 	else if (mousexadjustment>20) mousexadjustment = 20;
@@ -434,6 +439,10 @@ void WriteConfig(void)
 		config.GetSetting(hsCompleted)->SetValue(Scores[i].completed);
 		config.GetSetting(hsGraphic)->SetValue(Scores[i].graphic);
 	}
+
+	Bindings.ArchiveBindings ("Bindings", &config);
+	DoubleBindings.ArchiveBindings ("DoubleBindings", &config);
+	AutomapBindings.ArchiveBindings ("AutomapBindings", &config);
 
 	config.SaveConfig();
 }

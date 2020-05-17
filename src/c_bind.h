@@ -37,6 +37,7 @@
 #include <map>
 #include "tarray.h"
 #include "zstring.h"
+#include "config.h"
 
 struct event_t;
 class FConfigFile;
@@ -52,7 +53,8 @@ class FKeyBindings
 public:
 	void PerformBind(FCommandLine &argv, const char *msg);
 	bool DoKey(event_t *ev);
-	//void ArchiveBindings(FConfigFile *F, const char *matchcmd = NULL);
+	void LoadBindings(const char *bindingsName, Config *f);
+	void ArchiveBindings(const char *bindingsName, Config *f);
 	int  GetKeysForCommand (const char *cmd, int *first, int *second);
 	void UnbindACommand (const char *str);
 	void UnbindAll ();

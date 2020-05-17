@@ -58,6 +58,7 @@ namespace KeyNames
 	{
 		unsigned int keysym;
 		const char *name;
+		const char *settingName;
 	};
 
 	KeySymName data[] =
@@ -79,10 +80,10 @@ namespace KeyNames
 //		{ SDLx_SCANCODE(RIGHTPAREN), "rightparen" },
 //		{ SDLx_SCANCODE(ASTERISK), "asterisk" },
 //		{ SDLx_SCANCODE(PLUS), "plus" },
-		{ SDLx_SCANCODE(COMMA), "comma" },
-		{ SDLx_SCANCODE(MINUS), "minus" },
-		{ SDLx_SCANCODE(PERIOD), "period" },
-		{ SDLx_SCANCODE(SLASH), "slash" },
+		{ SDLx_SCANCODE(COMMA), ",", "comma" },
+		{ SDLx_SCANCODE(MINUS), "-", "minus" },
+		{ SDLx_SCANCODE(PERIOD), ".", "period" },
+		{ SDLx_SCANCODE(SLASH), "/", "slash" },
 		{ SDLx_SCANCODE(0), "0" },
 		{ SDLx_SCANCODE(1), "1" },
 		{ SDLx_SCANCODE(2), "2" },
@@ -94,15 +95,15 @@ namespace KeyNames
 		{ SDLx_SCANCODE(8), "8" },
 		{ SDLx_SCANCODE(9), "9" },
 //		{ SDLx_SCANCODE(COLON), "colon" },
-		{ SDLx_SCANCODE(SEMICOLON), "semicolon" },
+		{ SDLx_SCANCODE(SEMICOLON), ";", "semicolon" },
 //		{ SDLx_SCANCODE(LESS), "less" },
-		{ SDLx_SCANCODE(EQUALS), "equals" },
+		{ SDLx_SCANCODE(EQUALS), "=", "equals" },
 //		{ SDLx_SCANCODE(GREATER), "greater" },
 //		{ SDLx_SCANCODE(QUESTION), "question" },
 //		{ SDLx_SCANCODE(AT), "at" },
-		{ SDLx_SCANCODE(LEFTBRACKET), "leftbracket" },
-		{ SDLx_SCANCODE(BACKSLASH), "backslash" },
-		{ SDLx_SCANCODE(RIGHTBRACKET), "rightbracket" },
+		{ SDLx_SCANCODE(LEFTBRACKET), "[", "leftbracket" },
+		{ SDLx_SCANCODE(BACKSLASH), "\\", "backslash" },
+		{ SDLx_SCANCODE(RIGHTBRACKET), "]", "rightbracket" },
 //		{ SDLx_SCANCODE(CARET), "caret" },
 //		{ SDLx_SCANCODE(UNDERSCORE), "underscore" },
 //		{ SDLx_SCANCODE(BACKQUOTE), "backquote" },
@@ -200,21 +201,31 @@ namespace KeyNames
 	};
 
 	typedef std::map<unsigned int, const char *> Names;
-	static Names m;
+	static Names names;
+	static Names settingNames;
 
 	void Init()
 	{
 		for (unsigned int i = 0; i < CARRAY_SIZE(data); i++)
 		{
-			m.insert(std::make_pair(data[i].keysym, data[i].name));
+			names.insert(std::make_pair(data[i].keysym, data[i].name));
+			settingNames.insert(std::make_pair(data[i].keysym,
+				data[i].settingName ? data[i].settingName : data[i].name));
 		}
 	}
 
 	Names &Get()
 	{
-		if (m.empty())
+		if (names.empty())
 			Init();
-		return m;
+		return names;
+	}
+
+	Names &SettingGet()
+	{
+		if (settingNames.empty())
+			Init();
+		return settingNames;
 	}
 }
 
@@ -297,29 +308,6 @@ static const char *KeyName (int key)
 		return it->second;
 
 	mysnprintf (name, countof(name), "#%d", key);
-	return name;
-}
-
-//=============================================================================
-//
-//
-//
-//=============================================================================
-
-static const char *ConfigKeyName(int keynum)
-{
-	const char *name = KeyName(keynum);
-	if (name[1] == 0)	// Make sure given name is config-safe
-	{
-		if (name[0] == '[')
-			return "LeftBracket";
-		else if (name[0] == ']')
-			return "RightBracket";
-		else if (name[0] == '=')
-			return "Equals";
-		else if (strcmp (name, "kp=") == 0)
-			return "KP-Equals";
-	}
 	return name;
 }
 
@@ -439,7 +427,6 @@ void FKeyBindings::PerformBind(FCommandLine &argv, const char *msg)
 	}
 }
 
-
 //=============================================================================
 //
 // This function is first called for functions in custom key sections.
@@ -455,37 +442,37 @@ void FKeyBindings::PerformBind(FCommandLine &argv, const char *msg)
 //
 //=============================================================================
 
-#ifdef NOTYET
-void FKeyBindings::ArchiveBindings(FConfigFile *f, const char *matchcmd)
+void FKeyBindings::ArchiveBindings(const char *bindingsName, Config *f)
 {
 	int i;
+	char settingName[50];
 
-	for (i = 0; i < NUM_KEYS; i++)
+	KeyNames::Names &settingNames = KeyNames::SettingGet();
+	KeyNames::Names::const_iterator it;
+	for (it = settingNames.begin(); it != settingNames.end(); ++it)
 	{
-		if (Binds[i].IsEmpty())
-		{
-			if (matchcmd == NULL)
-			{
-				f->ClearKey(ConfigKeyName(i));
-			}
-		}
-		else if (matchcmd == NULL || stricmp(Binds[i], matchcmd) == 0)
-		{
-			if (Binds[i][0] == '\1')
-			{
-				Binds[i] = "";
-				continue;
-			}
-			f->SetValueForKey(ConfigKeyName(i), Binds[i]);
-			if (matchcmd != NULL)
-			{ // If saving a specific command, set a marker so that
-			  // it does not get saved in the general binding list.
-				Binds[i] = "\1";
-			}
-		}
+		snprintf(settingName, sizeof(settingName), "%s_%s", bindingsName,
+			it->second);
+		config.GetSetting(settingName)->SetValue(GetBinding(it->first));
 	}
 }
-#endif
+
+void FKeyBindings::LoadBindings(const char *bindingsName, Config *f)
+{
+	int i;
+	char settingName[50];
+
+	KeyNames::Names &settingNames = KeyNames::SettingGet();
+	KeyNames::Names::const_iterator it;
+	for (it = settingNames.begin(); it != settingNames.end(); ++it)
+	{
+		snprintf(settingName, sizeof(settingName), "%s_%s", bindingsName,
+			it->second);
+		config.CreateSetting(settingName, "");
+
+		SetBind(it->first, config.GetSetting(settingName)->GetString());
+	}
+}
 
 //=============================================================================
 //
