@@ -232,6 +232,7 @@ set(SOURCE_FILES
 	c_consolebuffer.cpp
 	c_cvars.cpp
 	c_dispatch.cpp
+	c_bind.cpp
 	dobject.cpp
 	dobjgc.cpp
 	farchive.cpp
