@@ -31,6 +31,7 @@
 #include "c_console.h"
 #include "c_bind.h"
 #include "am_map.h"
+#include "mapedit.h"
 
 
 #if !SDL_VERSION_ATLEAST(1,3,0)
@@ -332,7 +333,8 @@ static bool bindingEatsKey(ScanCode key, SDL_EventType type)
 	else if (type == SDL_KEYUP)
 		ev.type = EV_KeyUp;
 	ev.data1 = key;
-	return (automap && C_DoKey(&ev, &AutomapBindings, NULL)) ||
+	return (me_marker && C_DoKey(&ev, &MapeditBindings, NULL)) ||
+		(automap && C_DoKey(&ev, &AutomapBindings, NULL)) ||
 		C_DoKey (&ev, &Bindings, &DoubleBindings);
 }
 

@@ -125,11 +125,6 @@ AdjustGameMap::~AdjustGameMap()
 	}
 }
 
-CCMD(togglememarker)
-{
-	me_marker = !me_marker;
-}
-
 CCMD(spotinfo)
 {
 	MapSpot spot = mapeditor->GetCurSpot();
@@ -140,29 +135,6 @@ CCMD(spotinfo)
 		Printf("tile = %lu\n", tileind);
 	if (map->GetSector(sectorind) != NULL)
 		Printf("sector = %lu\n", sectorind);
-}
-
-CCMD(settile)
-{
-	if (argv.argc() < 2)
-	{
-		Printf("Usage: settile <tileind>\n");
-		return;
-	}
-
-	unsigned tileind = INT_MAX;
-	sscanf(argv[1], "%d", &tileind);
-
-	MapTile *tile = mapeditor->GetTile(tileind);
-	if (tile == NULL)
-	{
-		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
-			mapeditor->GetTileCount());
-		return;
-	}
-
-	MapSpot spot = mapeditor->GetCurSpot();
-	spot->SetTile(tile);
 }
 
 CCMD(spawnactor)
@@ -188,20 +160,13 @@ CCMD(spawnactor)
 DYNAMIC_CVAR_GETTER(Int, me_tile)
 {
 	MapSpot spot = mapeditor->GetCurSpot();
-	if (spot == NULL)
+	if (spot != NULL && spot->tile != NULL)
 	{
-		Printf(TEXTCOLOR_RED " Invalid tile spot!\n");
-		return false;
+		result = map->GetTileIndex(spot->tile);
+		return true;
 	}
 
-	if (spot->tile == NULL)
-	{
-		Printf(TEXTCOLOR_RED " Tile missing in spot!\n");
-		return false;
-	}
-
-	result = map->GetTileIndex(spot->tile);
-	return true;
+	return false;
 }
 
 DYNAMIC_CVAR_SETTER(Int, me_tile)

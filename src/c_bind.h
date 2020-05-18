@@ -87,6 +87,7 @@ public:
 extern FKeyBindings Bindings;
 extern FKeyBindings DoubleBindings;
 extern FKeyBindings AutomapBindings;
+extern FKeyBindings MapeditBindings;
 extern FKeyBindings MenuBindings;
 
 

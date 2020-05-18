@@ -232,6 +232,7 @@ namespace KeyNames
 FKeyBindings Bindings;
 FKeyBindings DoubleBindings;
 FKeyBindings AutomapBindings;
+FKeyBindings MapeditBindings;
 
 static std::map<unsigned int, unsigned int> DClickTime;
 static std::map<unsigned int, BYTE> DClicked;
@@ -564,6 +565,7 @@ void C_UnbindAll ()
 	Bindings.UnbindAll();
 	DoubleBindings.UnbindAll();
 	AutomapBindings.UnbindAll();
+	MapeditBindings.UnbindAll();
 }
 
 CCMD (unbindall)
@@ -601,6 +603,14 @@ CCMD (unmapbind)
 	}
 }
 
+CCMD (unmebind)
+{
+	if (argv.argc() > 1)
+	{
+		MapeditBindings.UnbindKey(argv[1]);
+	}
+}
+
 //=============================================================================
 //
 //
@@ -620,6 +630,11 @@ CCMD (doublebind)
 CCMD (mapbind)
 {
 	AutomapBindings.PerformBind(argv, "Current automap key bindings");
+}
+
+CCMD (mebind)
+{
+	MapeditBindings.PerformBind(argv, "Current mapedit key bindings");
 }
 
 //==========================================================================
@@ -709,6 +724,11 @@ void C_BindDefaults ()
 			else if (sc->str.Compare("mapbind"))
 			{
 				dest = &AutomapBindings;
+				sc.MustGetToken(TK_StringConst);
+			}
+			else if (sc->str.Compare("mebind"))
+			{
+				dest = &MapeditBindings;
 				sc.MustGetToken(TK_StringConst);
 			}
 			key = GetConfigKeyFromName(sc->str);

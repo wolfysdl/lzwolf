@@ -307,6 +307,7 @@ void ReadConfig(void)
 	Bindings.LoadBindings("Bindings", &config);
 	DoubleBindings.LoadBindings("DoubleBindings", &config);
 	AutomapBindings.LoadBindings("AutomapBindings", &config);
+	MapeditBindings.LoadBindings("MapeditBindings", &config);
 
 	// make sure values are correct
 	if (mousexadjustment<0) mousexadjustment = 0;
@@ -443,6 +444,7 @@ void WriteConfig(void)
 	Bindings.ArchiveBindings ("Bindings", &config);
 	DoubleBindings.ArchiveBindings ("DoubleBindings", &config);
 	AutomapBindings.ArchiveBindings ("AutomapBindings", &config);
+	MapeditBindings.ArchiveBindings ("MapeditBindings", &config);
 
 	config.SaveConfig();
 }
