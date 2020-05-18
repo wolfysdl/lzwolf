@@ -34,6 +34,7 @@
 
 // HEADER FILES ------------------------------------------------------------
 
+#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -879,6 +880,14 @@ char *FCommandLine::operator[] (int i)
 	return _argv[i];
 }
 
+FCommandLine FCommandLine::CreateFromArgs(char **argv, int argc)
+{
+	FCommandLine cl;
+	cl._argc = argc;
+	cl._argv = argv;
+	return cl;
+}
+
 static FConsoleCommand *ScanChainForName (FConsoleCommand *start, const char *name, size_t namelen, FConsoleCommand **prev)
 {
 	int comp;
@@ -989,7 +998,34 @@ FConsoleCommand::~FConsoleCommand ()
 
 void FConsoleCommand::Run (FCommandLine &argv, APlayerPawn *who, int key)
 {
-	m_RunFunc (argv, who, key);
+	// deal with cvar expansions like ${myvar}
+	char **eargs = new char*[argv.argc()];
+	std::vector<std::string> vs;
+	vs.reserve(argv.argc()); // cannot end up with more than this
+
+	for (int i = 0; i < argv.argc(); i++)
+	{
+		std::string arg = argv[i];
+
+		FBaseCVar *argVar;
+		if (arg.length() > 3 &&
+			arg.substr(0, 2) == "${" && arg.substr(arg.length()-1) == "}" &&
+			(argVar = 
+				FindCVar (arg.substr(2, arg.length()-3).c_str(), NULL)) != NULL)
+		{
+			UCVarValue val = argVar->GetGenericRep (CVAR_String);
+			vs.push_back(val.String);
+			eargs[i] = &vs.back()[0];
+		}
+		else
+		{
+			eargs[i] = argv[i];
+		}
+	}
+	FCommandLine eargv = FCommandLine::CreateFromArgs(eargs, argv.argc());
+
+	// now call the run function
+	m_RunFunc (eargv, who, key);
 }
 
 FConsoleAlias::FConsoleAlias (const char *name, const char *command, bool noSave)

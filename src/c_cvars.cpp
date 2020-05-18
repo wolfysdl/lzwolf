@@ -1995,20 +1995,7 @@ CCMD (set)
 		if (var == NULL)
 			var = new FStringCVar (argv[1], NULL, CVAR_AUTO | CVAR_UNSETTABLE | cvar_defflags);
 
-		std::string arg2 = argv[2];
-		FBaseCVar *argVar;
-		if (arg2.length() > 3 &&
-			arg2.substr(0, 2) == "${" && arg2.substr(arg2.length()-1) == "}" &&
-			(argVar = 
-				FindCVar (arg2.substr(2, arg2.length()-3).c_str(), NULL)) != NULL)
-		{
-			UCVarValue val = argVar->GetGenericRep (CVAR_String);
-			var->CmdSet (val.String);
-		}
-		else
-		{
-			var->CmdSet (argv[2]);
-		}
+		var->CmdSet (argv[2]);
 	}
 }
 
