@@ -130,6 +130,12 @@ void AM_CheckKeys()
 		if(control[ConsolePlayer].ambuttonstate[bt_pandown])
 			pany -= PAN_AMOUNT;
 
+		if(me_marker && !control[ConsolePlayer].buttonstate[bt_run])
+		{
+			panx = -panx;
+			pany = -pany;
+		}
+
 		if(control[ConsolePlayer].controlpanx != 0)
 			panx += control[ConsolePlayer].controlpanx * (PAN_ANALOG_MULTIPLIER * (panxadjustment+1));
 

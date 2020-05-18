@@ -54,18 +54,7 @@ public:
 	const char *args () { return cmd; }
 	void Shift();
 
-	static FCommandLine CreateFromArgs(char **argv, int argc);
-
 private:
-	FCommandLine()
-		: cmd(NULL)
-		, _argc(-1)
-		, _argv(NULL)
-		, argsize(0)
-		, noescapes(false)
-	{
-	}
-
 	const char *cmd;
 	int _argc;
 	char **_argv;

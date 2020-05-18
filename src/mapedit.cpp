@@ -184,3 +184,45 @@ CCMD(spawnactor)
 	actor->angle = players[ConsolePlayer].camera->angle;
 	actor->dir = nodir;
 }
+
+DYNAMIC_CVAR_GETTER(Int, me_tile)
+{
+	MapSpot spot = mapeditor->GetCurSpot();
+	if (spot == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Invalid tile spot!\n");
+		return false;
+	}
+
+	if (spot->tile == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Tile missing in spot!\n");
+		return false;
+	}
+
+	result = map->GetTileIndex(spot->tile);
+	return true;
+}
+
+DYNAMIC_CVAR_SETTER(Int, me_tile)
+{
+	MapTile *tile = mapeditor->GetTile(value);
+	if (tile == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
+			mapeditor->GetTileCount());
+		return false;
+	}
+
+	MapSpot spot = mapeditor->GetCurSpot();
+	if (spot == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Invalid tile spot!\n");
+		return false;
+	}
+
+	spot->SetTile(tile);
+	return true;
+}
+
+DYNAMIC_CVAR(Int, me_tile, 0, CVAR_ARCHIVE)

@@ -1078,12 +1078,12 @@ void FBoolCVar::DoSet (UCVarValue value, ECVarType type)
 // Integer cvar implementation
 //
 
-FIntCVar::FIntCVar (const char *name, int def, DWORD flags, void (*callback)(FIntCVar &))
-: FBaseCVar (name, flags, reinterpret_cast<void (*)(FBaseCVar &)>(callback))
+FIntCVar::FIntCVar (const char *name, int def, DWORD flags, void (*callback)(FIntCVar &), DynamicAccessorType *dynamicAccessor)
+: FBaseCVar (name, flags, reinterpret_cast<void (*)(FBaseCVar &)>(callback)), DynamicAccessor(dynamicAccessor)
 {
 	DefaultValue = def;
-	if (Flags & CVAR_ISDEFAULT)
-		Value = def;
+	if ((Flags & CVAR_ISDEFAULT) && dynamicAccessor == NULL)
+		WriteValue(def);
 }
 
 ECVarType FIntCVar::GetRealType () const
@@ -1093,14 +1093,14 @@ ECVarType FIntCVar::GetRealType () const
 
 UCVarValue FIntCVar::GetGenericRep (ECVarType type) const
 {
-	return FromInt (Value, type);
+	return FromInt (ReadValue(), type);
 }
 
 UCVarValue FIntCVar::GetFavoriteRep (ECVarType *type) const
 {
 	UCVarValue ret;
 	*type = CVAR_Int;
-	ret.Int = Value;
+	ret.Int = ReadValue();
 	return ret;
 }
 
@@ -1129,7 +1129,7 @@ void FIntCVar::SetGenericRepDefault (UCVarValue value, ECVarType type)
 
 void FIntCVar::DoSet (UCVarValue value, ECVarType type)
 {
-	Value = ToInt (value, type);
+	WriteValue(ToInt (value, type));
 }
 
 //

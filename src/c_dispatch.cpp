@@ -798,18 +798,18 @@ static long ParseCommandLine (const char *args, int *argc, char **argv, bool no_
 		else
 		{ // read unquoted string
 			const char *start = args++, *end;
-			//FBaseCVar *var;
-			//UCVarValue val;
+			FBaseCVar *var;
+			UCVarValue val;
 
 			while (*args && *args > ' ' && *args != '\"')
 				args++;
-			/*if (*start == '$' && (var = FindCVarSub (start+1, int(args-start-1))))
+			if (*start == '$' && (var = FindCVarSub (start+1, int(args-start-1))))
 			{
 				val = var->GetGenericRep (CVAR_String);
 				start = val.String;
 				end = start + strlen (start);
 			}
-			else*/
+			else
 			{
 				end = args;
 			}
@@ -878,14 +878,6 @@ char *FCommandLine::operator[] (int i)
 		ParseCommandLine (cmd, NULL, _argv, noescapes);
 	}
 	return _argv[i];
-}
-
-FCommandLine FCommandLine::CreateFromArgs(char **argv, int argc)
-{
-	FCommandLine cl;
-	cl._argc = argc;
-	cl._argv = argv;
-	return cl;
 }
 
 static FConsoleCommand *ScanChainForName (FConsoleCommand *start, const char *name, size_t namelen, FConsoleCommand **prev)
@@ -998,34 +990,7 @@ FConsoleCommand::~FConsoleCommand ()
 
 void FConsoleCommand::Run (FCommandLine &argv, APlayerPawn *who, int key)
 {
-	// deal with cvar expansions like ${myvar}
-	char **eargs = new char*[argv.argc()];
-	std::vector<std::string> vs;
-	vs.reserve(argv.argc()); // cannot end up with more than this
-
-	for (int i = 0; i < argv.argc(); i++)
-	{
-		std::string arg = argv[i];
-
-		FBaseCVar *argVar;
-		if (arg.length() > 3 &&
-			arg.substr(0, 2) == "${" && arg.substr(arg.length()-1) == "}" &&
-			(argVar = 
-				FindCVar (arg.substr(2, arg.length()-3).c_str(), NULL)) != NULL)
-		{
-			UCVarValue val = argVar->GetGenericRep (CVAR_String);
-			vs.push_back(val.String);
-			eargs[i] = &vs.back()[0];
-		}
-		else
-		{
-			eargs[i] = argv[i];
-		}
-	}
-	FCommandLine eargv = FCommandLine::CreateFromArgs(eargs, argv.argc());
-
-	// now call the run function
-	m_RunFunc (eargv, who, key);
+	m_RunFunc (argv, who, key);
 }
 
 FConsoleAlias::FConsoleAlias (const char *name, const char *command, bool noSave)
