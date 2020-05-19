@@ -309,6 +309,8 @@ void ReadConfig(void)
 	AutomapBindings.LoadBindings("AutomapBindings", &config);
 	MapeditBindings.LoadBindings("MapeditBindings", &config);
 
+	C_LoadCVars(&config, CVAR_ARCHIVE);
+
 	// make sure values are correct
 	if (mousexadjustment<0) mousexadjustment = 0;
 	else if (mousexadjustment>20) mousexadjustment = 20;
@@ -445,6 +447,8 @@ void WriteConfig(void)
 	DoubleBindings.ArchiveBindings ("DoubleBindings", &config);
 	AutomapBindings.ArchiveBindings ("AutomapBindings", &config);
 	MapeditBindings.ArchiveBindings ("MapeditBindings", &config);
+
+	C_ArchiveCVars(&config, CVAR_ARCHIVE);
 
 	config.SaveConfig();
 }
@@ -1949,10 +1953,10 @@ void C_SetCVarsToDefaults (void)
 	}
 }
 
-#ifdef NOTYET
-void C_ArchiveCVars (FConfigFile *f, uint32 filter)
+void C_ArchiveCVars (Config *f, uint32 filter)
 {
 	FBaseCVar *cvar = CVars;
+	char settingName[50];
 
 	while (cvar)
 	{
@@ -1960,14 +1964,40 @@ void C_ArchiveCVars (FConfigFile *f, uint32 filter)
 			(CVAR_GLOBALCONFIG|CVAR_ARCHIVE|CVAR_MOD|CVAR_AUTO|CVAR_USERINFO|CVAR_SERVERINFO|CVAR_NOSAVE))
 			== filter)
 		{
+			snprintf(settingName, sizeof(settingName),
+				"ConsoleVar_%s", cvar->GetName ());
+
 			UCVarValue val;
 			val = cvar->GetGenericRep (CVAR_String);
-			f->SetValueForKey (cvar->GetName (), val.String);
+			f->GetSetting(settingName)->SetValue(val.String);
 		}
 		cvar = cvar->m_Next;
 	}
 }
-#endif
+
+void C_LoadCVars (Config *f, uint32 filter)
+{
+	FBaseCVar *cvar = CVars;
+	char settingName[50];
+
+	while (cvar)
+	{
+		if ((cvar->Flags &
+			(CVAR_GLOBALCONFIG|CVAR_ARCHIVE|CVAR_MOD|CVAR_AUTO|CVAR_USERINFO|CVAR_SERVERINFO|CVAR_NOSAVE))
+			== filter)
+		{
+			snprintf(settingName, sizeof(settingName),
+				"ConsoleVar_%s", cvar->GetName ());
+
+			f->CreateSetting(settingName, "");
+
+			UCVarValue val;
+			val.String = f->GetSetting(settingName)->GetString();
+			cvar->SetGenericRep(val, CVAR_String);
+		}
+		cvar = cvar->m_Next;
+	}
+}
 
 void FBaseCVar::CmdSet (const char *newval)
 {

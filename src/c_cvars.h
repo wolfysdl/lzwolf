@@ -40,6 +40,7 @@
 
 #include "wl_def.h"
 #include "zstring.h"
+#include "config.h"
 
 void FinalReadConfig();
 void ReadConfig();
@@ -81,6 +82,7 @@ CVARS (console variables)
 
 enum
 {
+	CVAR_NOFLAGS		= 0,	// not archived
 	CVAR_ARCHIVE		= 1,	// set to cause it to be saved to config
 	CVAR_USERINFO		= 2,	// added to userinfo  when changed
 	CVAR_SERVERINFO		= 4,	// added to serverinfo when changed
@@ -193,7 +195,8 @@ private:
 	friend FBaseCVar *FindCVarSub (const char *var_name, int namelen);
 	friend void UnlatchCVars (void);
 	friend void DestroyCVarsFlagged (DWORD flags);
-	//friend void C_ArchiveCVars (FConfigFile *f, uint32 filter);
+	friend void C_ArchiveCVars (Config *f, uint32 filter);
+	friend void C_LoadCVars (Config *f, uint32 filter);
 	friend void C_SetCVarsToDefaults (void);
 	friend void FilterCompactCVars (TArray<FBaseCVar *> &cvars, uint32 filter);
 	friend void C_DeinitConsole();
@@ -227,8 +230,9 @@ void UnlatchCVars (void);
 // Destroy CVars with the matching flags; called from CCMD(restart)
 void DestroyCVarsFlagged (DWORD flags);
 
-// archive cvars to FILE f
-//void C_ArchiveCVars (FConfigFile *f, uint32 filter);
+// archive or load cvars to/from FILE f
+void C_ArchiveCVars (Config *f, uint32 filter);
+void C_LoadCVars (Config *f, uint32 filter);
 
 // initialize cvars to default values after they are created
 void C_SetCVarsToDefaults (void);
@@ -270,7 +274,7 @@ class FDynamicCVarAccess
 public:
 	typedef T ValueType;
 	typedef FDynamicCVarAccess<T> ThisType;
-	typedef bool (*ReaderType)(T &);
+	typedef T (*ReaderType)();
 	typedef bool (*WriterType)(T);
 
 	FDynamicCVarAccess(ReaderType reader_, WriterType writer_)
@@ -280,9 +284,7 @@ public:
 
 	T GetValue()
 	{
-		T result = T();
-		reader(result);
-		return result;
+		return reader();
 	}
 
 	void SetValue(T value)
@@ -516,7 +518,7 @@ void C_ForgetCVars (void);
 #define EXTERN_CVAR(type,name) extern F##type##CVar name;
 
 #define DYNAMIC_CVAR_GETTER(type,name) \
-	static bool cvargetter_##name(F##type##CVar::DynamicAccessorType::ValueType &result)
+	static F##type##CVar::DynamicAccessorType::ValueType cvargetter_##name()
 
 #define DYNAMIC_CVAR_SETTER(type,name) \
 	static bool cvarsetter_##name(F##type##CVar::DynamicAccessorType::ValueType value)

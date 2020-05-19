@@ -454,7 +454,7 @@ void FKeyBindings::ArchiveBindings(const char *bindingsName, Config *f)
 	{
 		snprintf(settingName, sizeof(settingName), "%s_%s", bindingsName,
 			it->second);
-		config.GetSetting(settingName)->SetValue(GetBinding(it->first));
+		f->GetSetting(settingName)->SetValue(GetBinding(it->first));
 	}
 }
 
@@ -469,9 +469,9 @@ void FKeyBindings::LoadBindings(const char *bindingsName, Config *f)
 	{
 		snprintf(settingName, sizeof(settingName), "%s_%s", bindingsName,
 			it->second);
-		config.CreateSetting(settingName, "");
+		f->CreateSetting(settingName, "");
 
-		SetBind(it->first, config.GetSetting(settingName)->GetString());
+		SetBind(it->first, f->GetSetting(settingName)->GetString());
 	}
 }
 

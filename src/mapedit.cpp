@@ -163,24 +163,13 @@ CCMD(spawnactor)
 DYNAMIC_CVAR_GETTER(Int, me_tile)
 {
 	MapSpot spot = mapeditor->GetCurSpot();
-	if (spot != NULL && spot->tile != NULL)
-	{
-		result = map->GetTileIndex(spot->tile);
-		return true;
-	}
-
-	return false;
+	return (spot != NULL && spot->tile != NULL ?
+		map->GetTileIndex(spot->tile) : -1);
 }
 
 DYNAMIC_CVAR_SETTER(Int, me_tile)
 {
 	const MapTile *tile = map->GetTile(value);
-	if (tile == NULL)
-	{
-		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
-			mapeditor->GetTileCount());
-		return false;
-	}
 
 	MapSpot spot = mapeditor->GetCurSpot();
 	if (spot == NULL)
@@ -193,7 +182,7 @@ DYNAMIC_CVAR_SETTER(Int, me_tile)
 	return true;
 }
 
-DYNAMIC_CVAR(Int, me_tile, 0, CVAR_ARCHIVE)
+DYNAMIC_CVAR(Int, me_tile, 0, CVAR_NOFLAGS)
 
 
 // ==================================
@@ -203,24 +192,13 @@ DYNAMIC_CVAR(Int, me_tile, 0, CVAR_ARCHIVE)
 DYNAMIC_CVAR_GETTER(Int, me_sector)
 {
 	MapSpot spot = mapeditor->GetCurSpot();
-	if (spot != NULL && spot->sector != NULL)
-	{
-		result = map->GetSectorIndex(spot->sector);
-		return true;
-	}
-
-	return false;
+	return (spot != NULL && spot->sector != NULL ?
+		map->GetSectorIndex(spot->sector) : -1);
 }
 
 DYNAMIC_CVAR_SETTER(Int, me_sector)
 {
 	const MapSector *sector = map->GetSector(value);
-	if (sector == NULL)
-	{
-		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
-			mapeditor->GetSectorCount());
-		return false;
-	}
 
 	MapSpot spot = mapeditor->GetCurSpot();
 	if (spot == NULL)
@@ -233,4 +211,4 @@ DYNAMIC_CVAR_SETTER(Int, me_sector)
 	return true;
 }
 
-DYNAMIC_CVAR(Int, me_sector, 0, CVAR_ARCHIVE)
+DYNAMIC_CVAR(Int, me_sector, 0, CVAR_NOFLAGS)
