@@ -52,9 +52,9 @@ namespace MapEdit
 
 		GameMapEditor();
 
-		GameMap::Tile *GetTile(unsigned int index) const;
-
 		size_t GetTileCount() const;
+
+		size_t GetSectorCount() const;
 
 		std::pair<fixed, fixed> GetCurLoc() const;
 

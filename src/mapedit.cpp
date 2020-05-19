@@ -54,16 +54,14 @@ GameMapEditor::GameMapEditor() : spot(NULL), armlength(TILEGLOBAL*2)
 	InitMarkedSector();
 }
 
-GameMap::Tile *GameMapEditor::GetTile(unsigned int index) const
-{
-	if(index > map->tilePalette.Size())
-		return NULL;
-	return &map->tilePalette[index];
-}
-
 size_t GameMapEditor::GetTileCount() const
 {
 	return map->tilePalette.Size();
+}
+
+size_t GameMapEditor::GetSectorCount() const
+{
+	return map->sectorPalette.Size();
 }
 
 std::pair<fixed, fixed> GameMapEditor::GetCurLoc() const
@@ -157,6 +155,11 @@ CCMD(spawnactor)
 	actor->dir = nodir;
 }
 
+
+// ==================================
+//          CVAR me_tile
+// ==================================
+
 DYNAMIC_CVAR_GETTER(Int, me_tile)
 {
 	MapSpot spot = mapeditor->GetCurSpot();
@@ -171,7 +174,7 @@ DYNAMIC_CVAR_GETTER(Int, me_tile)
 
 DYNAMIC_CVAR_SETTER(Int, me_tile)
 {
-	MapTile *tile = mapeditor->GetTile(value);
+	const MapTile *tile = map->GetTile(value);
 	if (tile == NULL)
 	{
 		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
@@ -182,7 +185,7 @@ DYNAMIC_CVAR_SETTER(Int, me_tile)
 	MapSpot spot = mapeditor->GetCurSpot();
 	if (spot == NULL)
 	{
-		Printf(TEXTCOLOR_RED " Invalid tile spot!\n");
+		Printf(TEXTCOLOR_RED " Invalid spot!\n");
 		return false;
 	}
 
@@ -191,3 +194,43 @@ DYNAMIC_CVAR_SETTER(Int, me_tile)
 }
 
 DYNAMIC_CVAR(Int, me_tile, 0, CVAR_ARCHIVE)
+
+
+// ==================================
+//          CVAR me_sector
+// ==================================
+
+DYNAMIC_CVAR_GETTER(Int, me_sector)
+{
+	MapSpot spot = mapeditor->GetCurSpot();
+	if (spot != NULL && spot->sector != NULL)
+	{
+		result = map->GetSectorIndex(spot->sector);
+		return true;
+	}
+
+	return false;
+}
+
+DYNAMIC_CVAR_SETTER(Int, me_sector)
+{
+	const MapSector *sector = map->GetSector(value);
+	if (sector == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Index must be in range 0 - %lu!\n",
+			mapeditor->GetSectorCount());
+		return false;
+	}
+
+	MapSpot spot = mapeditor->GetCurSpot();
+	if (spot == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Invalid spot!\n");
+		return false;
+	}
+
+	spot->sector = sector;
+	return true;
+}
+
+DYNAMIC_CVAR(Int, me_sector, 0, CVAR_ARCHIVE)
