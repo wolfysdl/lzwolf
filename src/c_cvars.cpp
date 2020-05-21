@@ -202,13 +202,6 @@ void ReadConfig(void)
 	config.CreateSetting("QuitOnEscape", quitonescape);
 	config.CreateSetting("MoveBob", FRACUNIT);
 	config.CreateSetting("Gamma", 1.0f);
-	config.CreateSetting("AM_Rotate", 0);
-	config.CreateSetting("AM_DrawTexturedWalls", true);
-	config.CreateSetting("AM_DrawFloors", false);
-	config.CreateSetting("AM_Overlay", 0);
-	config.CreateSetting("AM_OverlayTextured", false);
-	config.CreateSetting("AM_Pause", true);
-	config.CreateSetting("AM_ShowRatios", false);
 
 	char joySettingName[50] = {0};
 	char keySettingName[50] = {0};
@@ -270,13 +263,6 @@ void ReadConfig(void)
 	quitonescape = config.GetSetting("QuitOnEscape")->GetInteger() != 0;
 	movebob = config.GetSetting("MoveBob")->GetInteger();
 	screenGamma = static_cast<float>(config.GetSetting("Gamma")->GetFloat());
-	am_rotate = config.GetSetting("AM_Rotate")->GetInteger();
-	am_drawtexturedwalls = config.GetSetting("AM_DrawTexturedWalls")->GetInteger() != 0;
-	am_drawfloors = config.GetSetting("AM_DrawFloors")->GetInteger() != 0;
-	am_overlay = config.GetSetting("AM_Overlay")->GetInteger();
-	am_overlaytextured = config.GetSetting("AM_OverlayTextured")->GetInteger() != 0;
-	am_pause = config.GetSetting("AM_Pause")->GetInteger() != 0;
-	am_showratios = config.GetSetting("AM_ShowRatios")->GetInteger() != 0;
 
 	char hsName[50];
 	char hsScore[50];
@@ -418,13 +404,6 @@ void WriteConfig(void)
 	config.GetSetting("QuitOnEscape")->SetValue(quitonescape);
 	config.GetSetting("MoveBob")->SetValue(movebob);
 	config.GetSetting("Gamma")->SetValue(screenGamma);
-	config.GetSetting("AM_Rotate")->SetValue(am_rotate);
-	config.GetSetting("AM_DrawTexturedWalls")->SetValue(am_drawtexturedwalls);
-	config.GetSetting("AM_DrawFloors")->SetValue(am_drawfloors);
-	config.GetSetting("AM_Overlay")->SetValue(am_overlay);
-	config.GetSetting("AM_OverlayTextured")->SetValue(am_overlaytextured);
-	config.GetSetting("AM_Pause")->SetValue(am_pause);
-	config.GetSetting("AM_ShowRatios")->SetValue(am_showratios);
 
 	char hsName[50];
 	char hsScore[50];
