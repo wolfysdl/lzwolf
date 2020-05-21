@@ -1989,9 +1989,14 @@ void C_LoadCVars (Config *f, uint32 filter)
 			snprintf(settingName, sizeof(settingName),
 				"ConsoleVar_%s", cvar->GetName ());
 
-			f->CreateSetting(settingName, "");
-
 			UCVarValue val;
+
+			if (f->GetSetting(settingName) == NULL)
+			{
+				val = cvar->GetGenericRep(CVAR_String);
+				f->CreateSetting(settingName, val.String);
+			}
+
 			val.String = f->GetSetting(settingName)->GetString();
 			cvar->SetGenericRep(val, CVAR_String);
 		}

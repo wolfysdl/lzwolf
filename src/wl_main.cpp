@@ -48,6 +48,7 @@
 #include "g_intermission.h"
 #include "m_argv.h"
 #include "c_console.h"
+#include "c_bind.h"
 
 #include <clocale>
 
@@ -1330,6 +1331,8 @@ int WL_Main (int argc, char *argv[])
 			LumpRemapper::RemapAll();
 			language.SetupStrings();
 		}
+
+		C_SetDefaultBindings();
 
 		InitThinkerList();
 

@@ -204,13 +204,19 @@ namespace KeyNames
 	static Names names;
 	static Names settingNames;
 
+	typedef std::map<std::string, unsigned int> KeyDict;
+	static KeyDict keyDict;
+
 	void Init()
 	{
 		for (unsigned int i = 0; i < CARRAY_SIZE(data); i++)
 		{
 			names.insert(std::make_pair(data[i].keysym, data[i].name));
-			settingNames.insert(std::make_pair(data[i].keysym,
-				data[i].settingName ? data[i].settingName : data[i].name));
+
+			const char *settingName = data[i].settingName ?
+				data[i].settingName : data[i].name;
+			settingNames.insert(std::make_pair(data[i].keysym, settingName));
+			keyDict.insert(std::make_pair(settingName, data[i].keysym));
 		}
 	}
 
@@ -226,6 +232,13 @@ namespace KeyNames
 		if (settingNames.empty())
 			Init();
 		return settingNames;
+	}
+
+	const KeyDict &GetKeyDict()
+	{
+		if (keyDict.empty())
+			Init();
+		return keyDict;
 	}
 }
 
@@ -271,25 +284,13 @@ static int GetKeyFromName (const char *name)
 
 static int GetConfigKeyFromName (const char *key)
 {
-	int keynum = GetKeyFromName(key);
-	if (keynum == 0)
+	using namespace KeyNames;
+
+	int keynum = 0;
+	KeyDict::const_iterator it = GetKeyDict().find( key );
+	if( it != GetKeyDict().end() )
 	{
-		if (stricmp (key, "LeftBracket") == 0)
-		{
-			keynum = GetKeyFromName ("[");
-		}
-		else if (stricmp (key, "RightBracket") == 0)
-		{
-			keynum = GetKeyFromName ("]");
-		}
-		else if (stricmp (key, "Equals") == 0)
-		{
-			keynum = GetKeyFromName ("=");
-		}
-		else if (stricmp (key, "KP-Equals") == 0)
-		{
-			keynum = GetKeyFromName ("kp=");
-		}
+		keynum = it->second;
 	}
 	return keynum;
 }
@@ -712,21 +713,21 @@ void C_BindDefaults ()
 			sc.MustGetToken(TK_Identifier);
 
 			// bind destination is optional and is the same as the console command
-			if (sc->str.Compare("bind"))
+			if (sc->str.Compare("bind") == 0)
 			{
 				sc.MustGetToken(TK_StringConst);
 			}
-			else if (sc->str.Compare("doublebind"))
+			else if (sc->str.Compare("doublebind") == 0)
 			{
 				dest = &DoubleBindings;
 				sc.MustGetToken(TK_StringConst);
 			}
-			else if (sc->str.Compare("mapbind"))
+			else if (sc->str.Compare("mapbind") == 0)
 			{
 				dest = &AutomapBindings;
 				sc.MustGetToken(TK_StringConst);
 			}
-			else if (sc->str.Compare("mebind"))
+			else if (sc->str.Compare("mebind") == 0)
 			{
 				dest = &MapeditBindings;
 				sc.MustGetToken(TK_StringConst);
