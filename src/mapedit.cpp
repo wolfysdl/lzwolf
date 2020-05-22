@@ -45,6 +45,7 @@
 #include "v_text.h"
 #include "thingdef/thingdef.h"
 #include "am_map.h"
+#include "uwmfdoc.h"
 using namespace MapEdit;
 
 CVAR(Bool, me_marker, false, CVAR_ARCHIVE)
@@ -97,6 +98,117 @@ void GameMapEditor::InitMarkedSector()
 	markedSector.texture[MapSector::Floor] = defaultMarked;
 	markedSector.texture[MapSector::Ceiling] = defaultMarked;
 	markedSector.overhead = defaultMarked;
+}
+
+void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
+{
+	doc.globProp.ns = "Wolf3D";
+	//doc.globProp.name;
+	doc.globProp.tileSize = map.header.tileSize;
+	doc.globProp.width = map.header.width;
+	doc.globProp.height = map.header.height;
+
+	for (unsigned i = 0; i < map.tilePalette.Size(); i++)
+	{
+		const MapTile &mapTile = map.tilePalette[i];
+
+		UwmfDoc::Tile tile;
+		FTexture *tex;
+
+		tex = TexMan(mapTile.texture[MapTile::East]);
+		if (tex != NULL)
+			tile.textureEast = tex->Name;
+
+		tex = TexMan(mapTile.texture[MapTile::West]);
+		if (tex != NULL)
+			tile.textureWest = tex->Name;
+
+		tex = TexMan(mapTile.texture[MapTile::South]);
+		if (tex != NULL)
+			tile.textureSouth = tex->Name;
+
+		tex = TexMan(mapTile.texture[MapTile::North]);
+		if (tex != NULL)
+			tile.textureNorth = tex->Name;
+
+		tile.blockingEast = mapTile.sideSolid[MapTile::East];
+		tile.blockingWest = mapTile.sideSolid[MapTile::West];
+		tile.blockingSouth = mapTile.sideSolid[MapTile::South];
+		tile.blockingNorth = mapTile.sideSolid[MapTile::North];
+		tile.offsetVertical = mapTile.offsetVertical;
+		tile.offsetHorizontal = mapTile.offsetHorizontal;
+		tile.dontOverlay = mapTile.dontOverlay;
+		tile.mapped.val() = mapTile.mapped;
+
+		if (mapTile.soundSequence.IsValidName())
+			tile.soundSequence.val() = mapTile.soundSequence.GetChars();
+
+		tex = TexMan(mapTile.overhead);
+		if (tex != NULL)
+			tile.textureOverhead.val() = tex->Name;
+
+		doc.tiles.push_back(tile);
+	}
+
+	for (unsigned i = 0; i < map.sectorPalette.Size(); i++)
+	{
+		MapSector &mapSector = map.sectorPalette[i];
+
+		UwmfDoc::Sector sector;
+		FTexture *tex;
+
+		tex = TexMan(mapSector.texture[MapSector::Floor]);
+		if (tex != NULL)
+			sector.textureFloor = tex->Name;
+
+		tex = TexMan(mapSector.texture[MapSector::Ceiling]);
+		if (tex != NULL)
+			sector.textureCeiling = tex->Name;
+
+		doc.sectors.push_back(sector);
+	}
+
+	for (unsigned i = 0; i < map.zonePalette.Size(); i++)
+	{
+		MapZone &mapZone = map.zonePalette[i];
+
+		UwmfDoc::Zone zone;
+
+		doc.zones.push_back(zone);
+	}
+
+	for (unsigned z = 0; z < map.planes.Size(); z++)
+	{
+		MapPlane &mapPlane = map.planes[z];
+
+		UwmfDoc::Plane plane;
+		plane.depth = mapPlane.depth;
+
+		doc.planes.push_back(plane);
+
+		doc.planemaps.push_back(UwmfDoc::Planemap());
+		UwmfDoc::Planemap &planemap = doc.planemaps.back();
+
+		unsigned int x,y;
+		for (y = 0; y < map.header.height; y++)
+		{
+			for (x = 0; x < map.header.width; x++)
+			{
+				MapSpot mapSpot = map.GetSpot(x,y,z);
+
+				UwmfDoc::Planemap::Spot spot;
+				if (mapSpot->tile != NULL)
+					spot.tileind = mapSpot->tile - &map.tilePalette[0];
+				if (mapSpot->sector != NULL)
+					spot.sectorind = mapSpot->sector - &map.sectorPalette[0];
+				if (mapSpot->zone != NULL)
+					spot.zoneind = mapSpot->zone - &map.zonePalette[0];
+				spot.tag = mapSpot->tag;
+
+				planemap.spots.push_back(spot);
+			}
+		}
+	}
 }
 
 AdjustGameMap::AdjustGameMap() : spot(NULL), tile(NULL), sector(NULL)
@@ -159,12 +271,18 @@ CCMD(savemap)
 {
 	if (argv.argc() < 3)
 	{
-		Printf("Usage: savemap <mapname> <wadfolder>\n");
+		Printf("Usage: savemap <mapname> <wadpath>\n");
 		return;
 	}
 
 	const char *mapname = argv[1];
-	const char *wadfolderpath = argv[2];
+	const char *wadpath = argv[2];
+
+	UwmfDoc::Document uwmfdoc;
+	mapeditor->ConvertToDoc(*map, uwmfdoc);
+	uwmfdoc.globProp.name = mapname;
+
+	UwmfToWadWriter::Write(uwmfdoc, mapname, wadpath);
 }
 
 // ==================================

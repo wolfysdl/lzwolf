@@ -226,11 +226,11 @@ namespace UwmfDoc
 	};
 }
 
-namespace UwmfDocEmitter
+namespace UwmfToWadWriter
 {
 	typedef UwmfDoc::Document Map;
 
-	void Emit(const Map &map, std::ostream &os);
+	void Write(const Map &map, std::string mapname, std::string wadpath);
 }
 
 #endif

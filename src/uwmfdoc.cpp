@@ -32,6 +32,8 @@
 **
 */
 
+#include <sstream>
+#include "m_swap.h"
 #include "uwmfdoc.h"
 using namespace UwmfDoc;
 
@@ -138,6 +140,8 @@ Trigger::Trigger() :
 
 namespace UwmfDocEmitter
 {
+	typedef UwmfDoc::Document Map;
+
 	class Quoted
 	{
 	public:
@@ -347,7 +351,6 @@ namespace UwmfDocEmitter
 		std::ostream &os;
 		unsigned int &nspots;
 		unsigned int totalspots;
-		const UwmfDoc::Planemap::Spot dftSpot;
 
 	public:
 		explicit EmitSpot(std::ostream &os_, unsigned int &nspots_,
@@ -459,9 +462,6 @@ namespace UwmfDocEmitter
 
 	void Emit(const Map &map, std::ostream &os)
 	{
-		const UwmfDoc::Thing dftThing;
-		const UwmfDoc::Trigger dftTrigger;
-
 		propGap() = "";
 		os << MakeProperty("namespace", map.globProp.ns);
 		os << MakeProperty("name", map.globProp.name);
@@ -497,5 +497,75 @@ namespace UwmfDocEmitter
 
 		EmitTrigger emitTrigger(os);
 		std::for_each(map.triggers.begin(), map.triggers.end(), emitTrigger);
+	}
+}
+
+namespace UwmfToWadWriter
+{
+#pragma pack(push,1)
+	struct Header
+	{
+		char pwad[4];
+		DWORD numentries;
+		DWORD diroff;
+	};
+
+	struct Dirent
+	{
+		DWORD lumpoff;
+		DWORD lumpsize;
+		char name[8];
+	};
+#pragma pack(pop)
+
+	std::string StringToUpper(std::string str)
+	{
+		std::for_each(str.begin(), str.end(), ::toupper);
+		return str;
+	}
+
+	void Write(const Map &map, std::string mapname, std::string wadpath)
+	{
+		std::stringstream fp_ss;
+		fp_ss << wadpath << "/" << mapname << ".wad";
+		wadpath = fp_ss.str();
+		FILE *fp = fopen(wadpath.c_str(), "wb");
+		if (fp != NULL)
+		{
+			std::stringstream ss;
+			UwmfDocEmitter::Emit(map, ss);
+			const std::string textmap = ss.str();
+
+			Header hdr;
+			memcpy(hdr.pwad, "PWAD", 4);
+			hdr.numentries = LittleLong(3);
+			hdr.diroff = LittleLong(sizeof(Header) + textmap.size());
+
+			Dirent dirent;
+			memset(&dirent, 0, sizeof(dirent));
+
+			fwrite(&hdr, sizeof(Header), 1, fp);
+			fwrite(textmap.data(), textmap.size(), 1, fp);
+
+			dirent.lumpoff = LittleLong(sizeof(Header));
+			dirent.lumpsize = LittleLong(0);
+			memset(dirent.name, '\0', 8);
+			snprintf(dirent.name, 8, "%s", StringToUpper(mapname).c_str());
+			fwrite(&dirent, sizeof(Dirent), 1, fp);
+
+			dirent.lumpoff = LittleLong(sizeof(Header));
+			dirent.lumpsize = LittleLong(textmap.size());
+			memset(dirent.name, '\0', 8);
+			snprintf(dirent.name, 8, "TEXTMAP");
+			fwrite(&dirent, sizeof(Dirent), 1, fp);
+
+			dirent.lumpoff = LittleLong(sizeof(Header) + textmap.size());
+			dirent.lumpsize = LittleLong(0);
+			memset(dirent.name, '\0', 8);
+			snprintf(dirent.name, 8, "ENDMAP");
+			fwrite(&dirent, sizeof(Dirent), 1, fp);
+
+			fclose(fp);
+		}
 	}
 }

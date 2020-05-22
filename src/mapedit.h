@@ -38,6 +38,7 @@
 #include <algorithm>
 #include "gamemap.h"
 #include "c_cvars.h"
+#include "uwmfdoc.h"
 
 EXTERN_CVAR(Bool, me_marker)
 
@@ -61,6 +62,8 @@ namespace MapEdit
 		MapSpot GetCurSpot();
 
 		void InitMarkedSector();
+
+		void ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc);
 
 		static GameMapEditor *GetInstance();
 	};
