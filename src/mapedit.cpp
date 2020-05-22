@@ -155,6 +155,17 @@ CCMD(spawnactor)
 	actor->dir = nodir;
 }
 
+CCMD(savemap)
+{
+	if (argv.argc() < 3)
+	{
+		Printf("Usage: savemap <mapname> <wadfolder>\n");
+		return;
+	}
+
+	const char *mapname = argv[1];
+	const char *wadfolderpath = argv[2];
+}
 
 // ==================================
 //          CVAR me_tile

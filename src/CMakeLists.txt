@@ -269,6 +269,7 @@ set(SOURCE_FILES
 	sndinfo.cpp
 	sndseq.cpp
 	thinker.cpp
+	uwmfdoc.cpp
 	v_draw.cpp
 	v_font.cpp
 	v_palette.cpp
