@@ -44,6 +44,7 @@
 #ifndef __sun
 #include <fts.h>
 #endif
+#include <limits.h>
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -109,7 +110,7 @@ FDirectory::FDirectory(const char * directory)
 	#ifdef _WIN32
 		directory = _fullpath(NULL, directory, _MAX_PATH);
 	#else
-		// Todo for Linux: Resolve the path befire using it
+	    directory = realpath(directory, NULL);
 	#endif
 	dirname = directory;
 	dirname.ReplaceChars('\\', '/');
