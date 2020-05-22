@@ -217,7 +217,7 @@ FTextureID FTextureManager::CheckForTexture (const char *name, int usetype, BITF
 	size_t namelen = strlen(name);
 	if(name[0] == '#' && namelen == 7)
 	{
-		FTexture *solidTex = SolidTexture_TryCreate(name+1);
+		FTexture *solidTex = SolidTexture_TryCreate(name);
 		solidTex->UseType = FTexture::TEX_Flat;
 		return AddTexture(solidTex);
 	}

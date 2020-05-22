@@ -47,7 +47,7 @@
 class FSolidTexture : public FTexture
 {
 public:
-	FSolidTexture(DWORD color);
+	FSolidTexture(const char *name, DWORD color);
 	~FSolidTexture();
 
 	const BYTE *GetColumn(unsigned int column, const Span **spans_out);
@@ -71,6 +71,8 @@ protected:
 
 FTexture *SolidTexture_TryCreate(const char* color)
 {
+	const char *name = color++;
+
 	DWORD texColor = 0;
 	int i = 5;
 	do
@@ -93,7 +95,7 @@ FTexture *SolidTexture_TryCreate(const char* color)
 	}
 	while(*color != '\0');
 
-	return new FSolidTexture(texColor);
+	return new FSolidTexture(name, texColor);
 }
 
 //==========================================================================
@@ -102,8 +104,8 @@ FTexture *SolidTexture_TryCreate(const char* color)
 //
 //==========================================================================
 
-FSolidTexture::FSolidTexture(DWORD color) : FTexture(NULL, -1), Pixels(NULL),
-	Spans(NULL), color(color)
+FSolidTexture::FSolidTexture(const char *name, DWORD color) : FTexture(name, -1),
+	Pixels(NULL), Spans(NULL), color(color)
 {
 	Width = 64;
 	Height = 64;

@@ -138,10 +138,14 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 		tile.offsetVertical = mapTile.offsetVertical;
 		tile.offsetHorizontal = mapTile.offsetHorizontal;
 		tile.dontOverlay = mapTile.dontOverlay;
-		tile.mapped.val() = mapTile.mapped;
+		if (mapTile.mapped != 0)
+			tile.mapped.val() = mapTile.mapped;
 
-		if (mapTile.soundSequence.IsValidName())
+		if (mapTile.soundSequence.IsValidName() &&
+			mapTile.soundSequence != NAME_None)
+		{
 			tile.soundSequence.val() = mapTile.soundSequence.GetChars();
+		}
 
 		tex = TexMan(mapTile.overhead);
 		if (tex != NULL)
@@ -152,7 +156,7 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 
 	for (unsigned i = 0; i < map.sectorPalette.Size(); i++)
 	{
-		MapSector &mapSector = map.sectorPalette[i];
+		const MapSector &mapSector = map.sectorPalette[i];
 
 		UwmfDoc::Sector sector;
 		FTexture *tex;
@@ -170,7 +174,7 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 
 	for (unsigned i = 0; i < map.zonePalette.Size(); i++)
 	{
-		MapZone &mapZone = map.zonePalette[i];
+		const MapZone &mapZone = map.zonePalette[i];
 
 		UwmfDoc::Zone zone;
 
@@ -179,7 +183,7 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 
 	for (unsigned z = 0; z < map.planes.Size(); z++)
 	{
-		MapPlane &mapPlane = map.planes[z];
+		const MapPlane &mapPlane = map.planes[z];
 
 		UwmfDoc::Plane plane;
 		plane.depth = mapPlane.depth;
@@ -206,8 +210,55 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 				spot.tag = mapSpot->tag;
 
 				planemap.spots.push_back(spot);
+
+				for (unsigned k = 0; k < mapSpot->triggers.Size(); k++)
+				{
+					const MapTrigger &mapTrigger = mapSpot->triggers[k];
+
+					UwmfDoc::Trigger trigger;
+					trigger.x = x;
+					trigger.y = y;
+					trigger.z = z;
+					trigger.action = mapTrigger.action;
+					trigger.arg0 = mapTrigger.arg[0];
+					trigger.arg1 = mapTrigger.arg[1];
+					trigger.arg2 = mapTrigger.arg[2];
+					trigger.arg3 = mapTrigger.arg[3];
+					trigger.arg4 = mapTrigger.arg[4];
+					trigger.activateEast = mapTrigger.activate[MapTrigger::East];
+					trigger.activateWest = mapTrigger.activate[MapTrigger::West];
+					trigger.activateSouth = mapTrigger.activate[MapTrigger::South];
+					trigger.activateNorth = mapTrigger.activate[MapTrigger::North];
+					trigger.playerUse = mapTrigger.playerUse;
+					trigger.playerCross = mapTrigger.playerCross;
+					trigger.monsterUse = mapTrigger.monsterUse;
+					trigger.repeatable = mapTrigger.repeatable;
+					trigger.secret = mapTrigger.isSecret;
+
+					doc.triggers.push_back(trigger);
+				}
 			}
 		}
+	}
+
+	for (unsigned i = 0; i < map.things.Size(); i++)
+	{
+		const MapThing &mapThing = map.things[i];
+
+		UwmfDoc::Thing thing;
+		if (mapThing.type.IsValidName())
+			thing.type = mapThing.type.GetChars();
+		thing.x = static_cast<double>(mapThing.x) / FRACUNIT;
+		thing.y = static_cast<double>(mapThing.y) / FRACUNIT;
+		thing.z = static_cast<double>(mapThing.z) / FRACUNIT;
+		thing.angle = mapThing.angle;
+		thing.ambush = mapThing.ambush;
+		thing.skill1 = mapThing.skill[0];
+		thing.skill2 = mapThing.skill[1];
+		thing.skill3 = mapThing.skill[2];
+		thing.skill4 = mapThing.skill[3];
+
+		doc.things.push_back(thing);
 	}
 }
 

@@ -192,7 +192,7 @@ namespace UwmfDoc
 		int x;
 		int y;
 		int z;
-		std::string action;
+		int action;
 		int arg0;
 		int arg1;
 		int arg2;

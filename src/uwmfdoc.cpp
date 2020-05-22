@@ -119,7 +119,7 @@ Trigger::Trigger() :
 	x(0),
 	y(0),
 	z(0),
-	action(""),
+	action(0),
 	arg0(0),
 	arg1(0),
 	arg2(0),
