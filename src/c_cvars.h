@@ -366,7 +366,8 @@ protected:
 class FStringCVar : public FBaseCVar
 {
 public:
-	FStringCVar (const char *name, const char *def, uint32 flags, void (*callback)(FStringCVar &)=NULL);
+	typedef FDynamicCVarAccess<const char *> DynamicAccessorType;
+	FStringCVar (const char *name, const char *def, uint32 flags, void (*callback)(FStringCVar &)=NULL, DynamicAccessorType *dynamicAccessor = NULL);
 	~FStringCVar ();
 
 	virtual ECVarType GetRealType () const;
@@ -379,14 +380,20 @@ public:
 
 	const char *operator= (const char *stringrep)
 		{ UCVarValue val; val.String = const_cast<char *>(stringrep); SetGenericRep (val, CVAR_String); return stringrep; }
-	inline operator const char * () const { return Value; }
-	inline const char *operator *() const { return Value; }
+	inline operator const char * () const { return ReadValue(); }
+	inline const char *operator *() const { return ReadValue(); }
 
 protected:
 	virtual void DoSet (UCVarValue value, ECVarType type);
 
+	const char *ReadValue() const
+	{
+		return (DynamicAccessor != NULL ? DynamicAccessor->GetValue() : Value);
+	}
+
 	char *Value;
 	char *DefaultValue;
+	DynamicAccessorType *DynamicAccessor;
 };
 
 class FColorCVar : public FIntCVar

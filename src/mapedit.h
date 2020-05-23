@@ -47,6 +47,8 @@ namespace MapEdit
 	class GameMapEditor
 	{
 	public:
+		typedef std::pair<fixed, fixed> LocType;
+
 		MapSpot spot;
 		fixed armlength;
 		MapSector markedSector;
@@ -57,9 +59,11 @@ namespace MapEdit
 
 		size_t GetSectorCount() const;
 
-		std::pair<fixed, fixed> GetCurLoc() const;
+		LocType GetCurLoc(bool center = true) const;
 
-		MapSpot GetCurSpot();
+		MapSpot GetCurSpot() const;
+
+		MapThing *GetCurThing() const;
 
 		void InitMarkedSector();
 

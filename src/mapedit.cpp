@@ -65,7 +65,7 @@ size_t GameMapEditor::GetSectorCount() const
 	return map->sectorPalette.Size();
 }
 
-std::pair<fixed, fixed> GameMapEditor::GetCurLoc() const
+GameMapEditor::LocType GameMapEditor::GetCurLoc(bool center) const
 {
 	fixed x, y;
 	if(automap == AMA_Normal)
@@ -78,18 +78,58 @@ std::pair<fixed, fixed> GameMapEditor::GetCurLoc() const
 		x = viewx + FixedMul(armlength,viewcos);
 		y = viewy - FixedMul(armlength,viewsin);
 	}
-	x = (x & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
-	y = (y & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
+	if(center)
+	{
+		x = (x & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
+		y = (y & ~(TILEGLOBAL-1)) + (TILEGLOBAL/2);
+	}
 	return std::make_pair(x, y);
 }
 
-MapSpot GameMapEditor::GetCurSpot()
+MapSpot GameMapEditor::GetCurSpot() const
 {
 	int tilex,tiley;
 	tilex = GetCurLoc().first >> TILESHIFT;
 	tiley = GetCurLoc().second >> TILESHIFT;
 	return map->IsValidTileCoordinate(tilex, tiley, 0) ?
 		map->GetSpot(tilex, tiley, 0) : NULL;
+}
+
+MapThing *GameMapEditor::GetCurThing() const
+{
+	int tilex,tiley,thingx,thingy;
+	fixed dx,dy;
+	fixed dist,mindist;
+	MapThing *minthing;
+
+	LocType loc = GetCurLoc(false);
+	tilex = loc.first >> TILESHIFT;
+	tiley = loc.second >> TILESHIFT;
+
+	mindist = -1;
+	minthing = NULL;
+
+	for(unsigned i = 0; i < map->things.Size(); i++)
+	{
+		MapThing &mapThing = map->things[i];
+
+		thingx = mapThing.x >> TILESHIFT;
+		thingy = mapThing.y >> TILESHIFT;
+
+		if(thingx == tilex && thingy == tiley)
+		{
+			dx = mapThing.x - loc.first;
+			dy = mapThing.y - loc.second;
+			dist = FixedMul(dx,dx) + FixedMul(dy,dy);
+			if(mindist < 0 || dist < mindist)
+			{
+				mindist = dist;
+				minthing = &mapThing;
+			}
+		}
+	}
+
+	return minthing;
 }
 
 void GameMapEditor::InitMarkedSector()
@@ -298,6 +338,16 @@ CCMD(spotinfo)
 		Printf("sector = %lu\n", sectorind);
 }
 
+CCMD(thinginfo)
+{
+	MapThing *mapThing = mapeditor->GetCurThing();
+	if (mapThing == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Cannot find thing at current spot!\n");
+		return;
+	}
+}
+
 CCMD(spawnactor)
 {
 	if (argv.argc() < 2)
@@ -392,3 +442,64 @@ DYNAMIC_CVAR_SETTER(Int, me_sector)
 }
 
 DYNAMIC_CVAR(Int, me_sector, 0, CVAR_NOFLAGS)
+
+
+// ==================================
+//         CVAR me_thingtype
+// ==================================
+
+DYNAMIC_CVAR_GETTER(String, me_thingtype)
+{
+	MapThing *mapThing = mapeditor->GetCurThing();
+	return (mapThing != NULL && mapThing->type.IsValidName() ?
+		mapThing->type.GetChars() : "");
+}
+
+DYNAMIC_CVAR_SETTER(String, me_thingtype)
+{
+	MapThing *mapThing = mapeditor->GetCurThing();
+
+	if (mapThing == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Cannot find thing at current spot!\n");
+		return false;
+	}
+
+	const ClassDef *cls = ClassDef::FindClass(value);
+	if(cls == NULL)
+	{
+		Printf(TEXTCOLOR_RED " Unknown thing type:\"%s\"\n", value);
+		return false;
+	}
+
+	namespace aid = ActorSpawnID;
+	aid::ActorByKey &actors = aid::Actors;
+
+	if(mapThing->spawnkey == 0 || actors.find(mapThing->spawnkey) == actors.end() ||
+		actors.find(mapThing->spawnkey)->second == NULL)
+	{
+		Printf(TEXTCOLOR_RED " No associated actor for thing with spawnkey:%d",
+			(int)mapThing->spawnkey);
+		return false;
+	}
+	AActor *actor = actors.find(mapThing->spawnkey)->second;
+	actor->Destroy();
+
+	actor = AActor::Spawn(cls, mapThing->x, mapThing->y, mapThing->z, SPAWN_AllowReplacement|(mapThing->patrol ? SPAWN_Patrol : 0));
+	// This forumla helps us to avoid errors in roundoffs.
+	actor->angle = (mapThing->angle/45)*ANGLE_45 + (mapThing->angle%45)*ANGLE_1;
+	actor->dir = nodir;
+	if(mapThing->ambush)
+		actor->flags |= FL_AMBUSH;
+	if(mapThing->patrol)
+		actor->dir = dirtype(actor->angle/ANGLE_45);
+	if(mapThing->holo)
+		actor->flags &= ~(FL_SOLID);
+	actor->spawnThingNum = std::make_pair(true, map->GetThingIndex(mapThing));
+	mapThing->spawnkey = actor->spawnid;
+
+	mapThing->type = value;
+	return true;
+}
+
+DYNAMIC_CVAR(String, me_thingtype, "", CVAR_NOFLAGS)

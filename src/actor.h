@@ -343,7 +343,8 @@ public:
 
 namespace ActorSpawnID
 {
-	extern std::map<unsigned int, AActor *> Actors;
+	typedef std::map<unsigned int, AActor *> ActorByKey;
+	extern ActorByKey Actors;
 
 	void Serialize(FArchive &arc);
 }

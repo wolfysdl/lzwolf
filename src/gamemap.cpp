@@ -371,6 +371,14 @@ unsigned int GameMap::GetSectorIndex(const GameMap::Sector *sector) const
 	return static_cast<unsigned int>(sector - &sectorPalette[0]);
 }
 
+unsigned int GameMap::GetThingIndex(const GameMap::Thing *thing) const
+{
+	if(!thing)
+		return INT_MAX;
+
+	return static_cast<unsigned int>(thing - &things[0]);
+}
+
 void GameMap::LinkZones(const Zone *zone1, const Zone *zone2, bool open)
 {
 	if(zone1 == zone2 || zone1 == NULL || zone2 == NULL)
@@ -551,6 +559,7 @@ void GameMap::SpawnThings() const
 			if(thing.holo)
 				actor->flags &= ~(FL_SOLID);
 			actor->spawnThingNum = std::make_pair(true, i);
+			thing.spawnkey = actor->spawnid;
 
 			// you can score 100% kills/treasure again in this level if a new
 			// actor is spawned that counts towards the statistic

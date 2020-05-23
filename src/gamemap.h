@@ -80,7 +80,7 @@ class GameMap
 			};
 
 			Thing() : x(0), y(0), z(0), type(NAME_None), angle(0),
-				ambush(false), patrol(false), holo(false)
+				ambush(false), patrol(false), holo(false), spawnkey(0)
 			{
 				skill[0] = skill[1] = skill[2] = skill[3] = false;
 				for(int i = 0; i < MAXHUBPASSES; i++)
@@ -101,6 +101,7 @@ class GameMap
 			bool			holo;
 			bool			skill[4];
 			bool			hubnospawn[MAXHUBPASSES];
+			unsigned int    spawnkey; // see ActorSpawnID
 		};
 		struct Trigger
 		{
@@ -238,6 +239,7 @@ class GameMap
 		unsigned int	GetTileIndex(const Tile *tile) const;
 		const Sector	*GetSector(unsigned int index) const;
 		unsigned int	GetSectorIndex(const Sector *sector) const;
+		unsigned int	GetThingIndex(const Thing *thing) const;
 
 		static bool		CheckMapExists(const FString &map);
 

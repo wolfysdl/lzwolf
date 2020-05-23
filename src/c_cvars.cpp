@@ -1179,8 +1179,8 @@ void FFloatCVar::DoSet (UCVarValue value, ECVarType type)
 // String cvar implementation
 //
 
-FStringCVar::FStringCVar (const char *name, const char *def, DWORD flags, void (*callback)(FStringCVar &))
-: FBaseCVar (name, flags, reinterpret_cast<void (*)(FBaseCVar &)>(callback))
+FStringCVar::FStringCVar (const char *name, const char *def, DWORD flags, void (*callback)(FStringCVar &), DynamicAccessorType *dynamicAccessor)
+: FBaseCVar (name, flags, reinterpret_cast<void (*)(FBaseCVar &)>(callback)), DynamicAccessor(dynamicAccessor)
 {
 	DefaultValue = copystring (def);
 	if (Flags & CVAR_ISDEFAULT)
@@ -1205,14 +1205,14 @@ ECVarType FStringCVar::GetRealType () const
 
 UCVarValue FStringCVar::GetGenericRep (ECVarType type) const
 {
-	return FromString (Value, type);
+	return FromString (ReadValue(), type);
 }
 
 UCVarValue FStringCVar::GetFavoriteRep (ECVarType *type) const
 {
 	UCVarValue ret;
 	*type = CVAR_String;
-	ret.String = Value;
+	ret.String = ReadValue();
 	return ret;
 }
 
@@ -1242,6 +1242,8 @@ void FStringCVar::SetGenericRepDefault (UCVarValue value, ECVarType type)
 void FStringCVar::DoSet (UCVarValue value, ECVarType type)
 {
 	ReplaceString (Value, ToString (value, type));
+	if (DynamicAccessor)
+		DynamicAccessor->SetValue(Value);
 }
 
 //
