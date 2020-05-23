@@ -1005,8 +1005,8 @@ void FBaseCVar::DisableCallbacks ()
 // Boolean cvar implementation
 //
 
-FBoolCVar::FBoolCVar (const char *name, bool def, DWORD flags, void (*callback)(FBoolCVar &))
-: FBaseCVar (name, flags, reinterpret_cast<void (*)(FBaseCVar &)>(callback))
+FBoolCVar::FBoolCVar (const char *name, bool def, DWORD flags, void (*callback)(FBoolCVar &), DynamicAccessorType *dynamicAccessor)
+: FBaseCVar (name, flags, reinterpret_cast<void (*)(FBaseCVar &)>(callback)), DynamicAccessor(dynamicAccessor)
 {
 	DefaultValue = def;
 	if (Flags & CVAR_ISDEFAULT)
@@ -1020,14 +1020,14 @@ ECVarType FBoolCVar::GetRealType () const
 
 UCVarValue FBoolCVar::GetGenericRep (ECVarType type) const
 {
-	return FromBool (Value, type);
+	return FromBool (ReadValue(), type);
 }
 
 UCVarValue FBoolCVar::GetFavoriteRep (ECVarType *type) const
 {
 	UCVarValue ret;
 	*type = CVAR_Bool;
-	ret.Bool = Value;
+	ret.Bool = ReadValue();
 	return ret;
 }
 
@@ -1056,7 +1056,7 @@ void FBoolCVar::SetGenericRepDefault (UCVarValue value, ECVarType type)
 
 void FBoolCVar::DoSet (UCVarValue value, ECVarType type)
 {
-	Value = ToBool (value, type);
+	WriteValue(ToBool (value, type));
 }
 
 //

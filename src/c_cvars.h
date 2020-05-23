@@ -241,10 +241,25 @@ void FilterCompactCVars (TArray<FBaseCVar *> &cvars, uint32 filter);
 
 void C_DeinitConsole();
 
+template<typename T>
+class FDynamicCVarAccess
+{
+public:
+	typedef T ValueType;
+	typedef FDynamicCVarAccess<T> ThisType;
+
+	virtual ~FDynamicCVarAccess()
+	{}
+
+	virtual T GetValue() const = 0;
+	virtual bool SetValue(T value) const = 0;
+};
+
 class FBoolCVar : public FBaseCVar
 {
 public:
-	FBoolCVar (const char *name, bool def, uint32 flags, void (*callback)(FBoolCVar &)=NULL);
+	typedef FDynamicCVarAccess<bool> DynamicAccessorType;
+	FBoolCVar (const char *name, bool def, uint32 flags, void (*callback)(FBoolCVar &)=NULL, DynamicAccessorType *dynamicAccessor = NULL);
 
 	virtual ECVarType GetRealType () const;
 
@@ -256,45 +271,30 @@ public:
 
 	inline bool operator= (bool boolval)
 		{ UCVarValue val; val.Bool = boolval; SetGenericRep (val, CVAR_Bool); return boolval; }
-	inline operator bool () const { return Value; }
-	inline bool operator *() const { return Value; }
+	inline operator bool () const { return ReadValue(); }
+	inline bool operator *() const { return ReadValue(); }
 
+	// this is only used by the menus
 	bool &ValueRef() { return Value; }
 
 protected:
 	virtual void DoSet (UCVarValue value, ECVarType type);
 
+	int ReadValue() const
+	{
+		return (DynamicAccessor != NULL ? DynamicAccessor->GetValue() : Value);
+	}
+
+	void WriteValue(bool value)
+	{
+		if (DynamicAccessor)
+			DynamicAccessor->SetValue(value);
+		Value = value;
+	}
+
 	bool Value;
 	bool DefaultValue;
-};
-
-template<typename T>
-class FDynamicCVarAccess
-{
-public:
-	typedef T ValueType;
-	typedef FDynamicCVarAccess<T> ThisType;
-	typedef T (*ReaderType)();
-	typedef bool (*WriterType)(T);
-
-	FDynamicCVarAccess(ReaderType reader_, WriterType writer_)
-		: reader(reader_), writer(writer_)
-	{
-	}
-
-	T GetValue()
-	{
-		return reader();
-	}
-
-	void SetValue(T value)
-	{
-		writer(value);
-	}
-
-private:
-	ReaderType reader;
-	WriterType writer;
+	DynamicAccessorType *DynamicAccessor;
 };
 
 class FIntCVar : public FBaseCVar
@@ -524,14 +524,8 @@ void C_ForgetCVars (void);
 
 #define EXTERN_CVAR(type,name) extern F##type##CVar name;
 
-#define DYNAMIC_CVAR_GETTER(type,name) \
-	static F##type##CVar::DynamicAccessorType::ValueType cvargetter_##name()
-
-#define DYNAMIC_CVAR_SETTER(type,name) \
-	static bool cvarsetter_##name(F##type##CVar::DynamicAccessorType::ValueType value)
-
 #define DYNAMIC_CVAR(type,name,def,flags) \
-	F##type##CVar::DynamicAccessorType cvaraccessor_##name(cvargetter_##name, cvarsetter_##name); \
+	FCVar_##name cvaraccessor_##name; \
 	F##type##CVar name (#name, def, flags, NULL, &cvaraccessor_##name);
 
 extern FBaseCVar *CVars;

@@ -178,6 +178,7 @@ typedef uint32_t angle_t;
 
 enum ActorFlag
 {
+	FL_NONE             = 0x00000000,
 	FL_SHOOTABLE        = 0x00000001,
 	FL_DRAWRELATIVE     = 0x00000002,
 	FL_VISABLE          = 0x00000008,

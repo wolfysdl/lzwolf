@@ -386,124 +386,158 @@ CCMD(savemap)
 	UwmfToWadWriter::Write(uwmfdoc, mapname, wadpath);
 }
 
-// ==================================
-//          CVAR me_tile
-// ==================================
-
-DYNAMIC_CVAR_GETTER(Int, me_tile)
+class FCVar_me_tile : public FDynamicCVarAccess<int>
 {
-	MapSpot spot = mapeditor->GetCurSpot();
-	return (spot != NULL && spot->tile != NULL ?
-		map->GetTileIndex(spot->tile) : -1);
-}
-
-DYNAMIC_CVAR_SETTER(Int, me_tile)
-{
-	const MapTile *tile = map->GetTile(value);
-
-	MapSpot spot = mapeditor->GetCurSpot();
-	if (spot == NULL)
+public:
+	int GetValue() const
 	{
-		Printf(TEXTCOLOR_RED " Invalid spot!\n");
-		return false;
+		MapSpot spot = mapeditor->GetCurSpot();
+		return (spot != NULL && spot->tile != NULL ?
+			map->GetTileIndex(spot->tile) : -1);
 	}
 
-	spot->SetTile(tile);
-	return true;
-}
-
-DYNAMIC_CVAR(Int, me_tile, 0, CVAR_NOFLAGS)
-
-
-// ==================================
-//          CVAR me_sector
-// ==================================
-
-DYNAMIC_CVAR_GETTER(Int, me_sector)
-{
-	MapSpot spot = mapeditor->GetCurSpot();
-	return (spot != NULL && spot->sector != NULL ?
-		map->GetSectorIndex(spot->sector) : -1);
-}
-
-DYNAMIC_CVAR_SETTER(Int, me_sector)
-{
-	const MapSector *sector = map->GetSector(value);
-
-	MapSpot spot = mapeditor->GetCurSpot();
-	if (spot == NULL)
+	bool SetValue(int value) const
 	{
-		Printf(TEXTCOLOR_RED " Invalid spot!\n");
-		return false;
-	}
+		const MapTile *tile = map->GetTile(value);
 
-	spot->sector = sector;
-	return true;
-}
-
-DYNAMIC_CVAR(Int, me_sector, 0, CVAR_NOFLAGS)
-
-
-// ==================================
-//         CVAR me_thingtype
-// ==================================
-
-DYNAMIC_CVAR_GETTER(String, me_thingtype)
-{
-	MapThing *mapThing = mapeditor->GetCurThing();
-	return (mapThing != NULL && mapThing->type.IsValidName() ?
-		mapThing->type.GetChars() : "");
-}
-
-DYNAMIC_CVAR_SETTER(String, me_thingtype)
-{
-	MapThing *mapThing = mapeditor->GetCurThing();
-
-	if (mapThing == NULL)
-	{
-		Printf(TEXTCOLOR_RED " Cannot find thing at current spot!\n");
-		return false;
-	}
-
-	const ClassDef *cls = ClassDef::FindClass(value);
-	if(cls == NULL)
-	{
-		Printf(TEXTCOLOR_RED " Unknown thing type:\"%s\"\n", value);
-		return false;
-	}
-
-	AActor *actor = NULL;
-	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
-	{
-		AActor *check = iter;
-		if (check->spawnThingNum.first &&
-			check->spawnThingNum.second == map->GetThingIndex(mapThing))
+		MapSpot spot = mapeditor->GetCurSpot();
+		if (spot == NULL)
 		{
-			actor = check;
-			break;
+			Printf(TEXTCOLOR_RED " Invalid spot!\n");
+			return false;
 		}
-	}
 
-	if(actor == NULL)
+		spot->SetTile(tile);
+		return true;
+	}
+};
+
+class FCVar_me_sector : public FDynamicCVarAccess<int>
+{
+public:
+	int GetValue() const
 	{
-		Printf(TEXTCOLOR_RED " No associated actor for thing");
-		return false;
+		MapSpot spot = mapeditor->GetCurSpot();
+		return (spot != NULL && spot->sector != NULL ?
+			map->GetSectorIndex(spot->sector) : -1);
 	}
-	actor->Destroy();
 
-	mapThing->type = value;
+	bool SetValue(int value) const
+	{
+		const MapSector *sector = map->GetSector(value);
 
-	actor = AActor::Spawn(cls, mapThing->x, mapThing->y, mapThing->z, SPAWN_AllowReplacement|(mapThing->patrol ? SPAWN_Patrol : 0));
-	// This forumla helps us to avoid errors in roundoffs.
-	actor->angle = (mapThing->angle/45)*ANGLE_45 + (mapThing->angle%45)*ANGLE_1;
-	actor->dir = nodir;
-	if(mapThing->ambush)
-		actor->flags |= FL_AMBUSH;
-	if(mapThing->patrol)
-		actor->dir = dirtype(actor->angle/ANGLE_45);
-	if(mapThing->holo)
-		actor->flags &= ~(FL_SOLID);
-	return true;
-}
+		MapSpot spot = mapeditor->GetCurSpot();
+		if (spot == NULL)
+		{
+			Printf(TEXTCOLOR_RED " Invalid spot!\n");
+			return false;
+		}
 
-DYNAMIC_CVAR(String, me_thingtype, "", CVAR_NOFLAGS)
+		spot->sector = sector;
+		return true;
+	}
+};
+
+class FCVarThingCommon
+{
+public:
+	bool GetCurThingAndActor(MapThing *&mapThing, AActor *&actor) const
+	{
+		mapThing = mapeditor->GetCurThing();
+		if (mapThing == NULL)
+		{
+			Printf(TEXTCOLOR_RED " Cannot find thing at current spot!\n");
+			return false;
+		}
+
+		actor = NULL;
+		for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
+		{
+			AActor *check = iter;
+			if (check->spawnThingNum.first &&
+				check->spawnThingNum.second == map->GetThingIndex(mapThing))
+			{
+				actor = check;
+				break;
+			}
+		}
+
+		if(actor == NULL)
+		{
+			Printf(TEXTCOLOR_RED " No associated actor for thing");
+			return false;
+		}
+
+		return true;
+	};
+};
+
+class FCVar_me_thingtype : public FDynamicCVarAccess<const char *>
+{
+public:
+	const char *GetValue() const
+	{
+		MapThing *mapThing = mapeditor->GetCurThing();
+		return (mapThing != NULL && mapThing->type.IsValidName() ?
+			mapThing->type.GetChars() : "");
+	}
+
+	bool SetValue(const char *value) const
+	{
+		MapThing *mapThing;
+		AActor *actor;
+		if (!FCVarThingCommon().GetCurThingAndActor(mapThing, actor))
+			return false;
+
+		const ClassDef *cls = ClassDef::FindClass(value);
+		if(cls == NULL)
+		{
+			Printf(TEXTCOLOR_RED " Unknown thing type:\"%s\"\n", value);
+			return false;
+		}
+
+		actor->Destroy();
+
+		mapThing->type = value;
+
+		actor = AActor::Spawn(cls, mapThing->x, mapThing->y, mapThing->z, SPAWN_AllowReplacement|(mapThing->patrol ? SPAWN_Patrol : 0));
+		// This forumla helps us to avoid errors in roundoffs.
+		actor->angle = (mapThing->angle/45)*ANGLE_45 + (mapThing->angle%45)*ANGLE_1;
+		actor->dir = nodir;
+		if(mapThing->ambush)
+			actor->flags |= FL_AMBUSH;
+		if(mapThing->patrol)
+			actor->dir = dirtype(actor->angle/ANGLE_45);
+		if(mapThing->holo)
+			actor->flags &= ~(FL_SOLID);
+		return true;
+	}
+};
+
+class FCVar_me_thingambush : public FDynamicCVarAccess<bool>
+{
+public:
+	bool GetValue() const
+	{
+		MapThing *mapThing = mapeditor->GetCurThing();
+		return (mapThing != NULL ? mapThing->ambush : false);
+	}
+
+	bool SetValue(bool value) const
+	{
+		MapThing *mapThing;
+		AActor *actor;
+		if (!FCVarThingCommon().GetCurThingAndActor(mapThing, actor))
+			return false;
+
+		mapThing->ambush = value;
+		actor->flags &= ~FL_AMBUSH;
+		actor->flags |= (value ? FL_AMBUSH : FL_NONE);
+		return true;
+	}
+};
+
+DYNAMIC_CVAR (Int, me_tile, 0, CVAR_NOFLAGS)
+DYNAMIC_CVAR (Int, me_sector, 0, CVAR_NOFLAGS)
+DYNAMIC_CVAR (String, me_thingtype, "", CVAR_NOFLAGS)
+DYNAMIC_CVAR (Bool, me_thingambush, false, CVAR_NOFLAGS)
