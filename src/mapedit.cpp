@@ -472,18 +472,26 @@ DYNAMIC_CVAR_SETTER(String, me_thingtype)
 		return false;
 	}
 
-	namespace aid = ActorSpawnID;
-	aid::ActorByKey &actors = aid::Actors;
-
-	if(mapThing->spawnkey == 0 || actors.find(mapThing->spawnkey) == actors.end() ||
-		actors.find(mapThing->spawnkey)->second == NULL)
+	AActor *actor = NULL;
+	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
 	{
-		Printf(TEXTCOLOR_RED " No associated actor for thing with spawnkey:%d",
-			(int)mapThing->spawnkey);
+		AActor *check = iter;
+		if (check->spawnThingNum.first &&
+			check->spawnThingNum.second == map->GetThingIndex(mapThing))
+		{
+			actor = check;
+			break;
+		}
+	}
+
+	if(actor == NULL)
+	{
+		Printf(TEXTCOLOR_RED " No associated actor for thing");
 		return false;
 	}
-	AActor *actor = actors.find(mapThing->spawnkey)->second;
 	actor->Destroy();
+
+	mapThing->type = value;
 
 	actor = AActor::Spawn(cls, mapThing->x, mapThing->y, mapThing->z, SPAWN_AllowReplacement|(mapThing->patrol ? SPAWN_Patrol : 0));
 	// This forumla helps us to avoid errors in roundoffs.
@@ -495,10 +503,6 @@ DYNAMIC_CVAR_SETTER(String, me_thingtype)
 		actor->dir = dirtype(actor->angle/ANGLE_45);
 	if(mapThing->holo)
 		actor->flags &= ~(FL_SOLID);
-	actor->spawnThingNum = std::make_pair(true, map->GetThingIndex(mapThing));
-	mapThing->spawnkey = actor->spawnid;
-
-	mapThing->type = value;
 	return true;
 }
 

@@ -293,7 +293,7 @@ class AActor : public Thinker,
 		int         singlespawn;
 
 		const ClassDef  *faction;
-		std::pair<bool,int> spawnThingNum;
+		std::pair<bool,unsigned int> spawnThingNum;
 		int			activationtype;	// How the thing behaves when activated with USESPECIAL or BUMPSPECIAL
 
 		TObjPtr<AActor> target;

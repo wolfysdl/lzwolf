@@ -80,7 +80,7 @@ class GameMap
 			};
 
 			Thing() : x(0), y(0), z(0), type(NAME_None), angle(0),
-				ambush(false), patrol(false), holo(false), spawnkey(0)
+				ambush(false), patrol(false), holo(false)
 			{
 				skill[0] = skill[1] = skill[2] = skill[3] = false;
 				for(int i = 0; i < MAXHUBPASSES; i++)
@@ -101,7 +101,6 @@ class GameMap
 			bool			holo;
 			bool			skill[4];
 			bool			hubnospawn[MAXHUBPASSES];
-			unsigned int    spawnkey; // see ActorSpawnID
 		};
 		struct Trigger
 		{

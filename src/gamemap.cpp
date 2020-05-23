@@ -559,7 +559,6 @@ void GameMap::SpawnThings() const
 			if(thing.holo)
 				actor->flags &= ~(FL_SOLID);
 			actor->spawnThingNum = std::make_pair(true, i);
-			thing.spawnkey = actor->spawnid;
 
 			// you can score 100% kills/treasure again in this level if a new
 			// actor is spawned that counts towards the statistic
