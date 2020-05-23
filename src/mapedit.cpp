@@ -537,7 +537,118 @@ public:
 	}
 };
 
+class FCVar_me_thingangle : public FDynamicCVarAccess<int>
+{
+public:
+	int GetValue() const
+	{
+		MapThing *mapThing = mapeditor->GetCurThing();
+		return (mapThing != NULL ? mapThing->angle : 0);
+	}
+
+	bool SetValue(int value) const
+	{
+		MapThing *mapThing;
+		AActor *actor;
+		if (!FCVarThingCommon().GetCurThingAndActor(mapThing, actor))
+			return false;
+		MapThing &thing = *mapThing;
+
+		thing.angle = value;
+		actor->angle = (thing.angle/45)*ANGLE_45 + (thing.angle%45)*ANGLE_1;
+		return true;
+	}
+};
+
+class FCVar_me_thingpatrol : public FDynamicCVarAccess<bool>
+{
+public:
+	bool GetValue() const
+	{
+		MapThing *mapThing = mapeditor->GetCurThing();
+		return (mapThing != NULL ? mapThing->patrol : false);
+	}
+
+	bool SetValue(bool value) const
+	{
+		MapThing *mapThing;
+		AActor *actor;
+		if (!FCVarThingCommon().GetCurThingAndActor(mapThing, actor))
+			return false;
+		MapThing &thing = *mapThing;
+
+		thing.patrol = value;
+		if(thing.patrol)
+			actor->dir = dirtype(actor->angle/ANGLE_45);
+		else
+			actor->dir = nodir;
+		return true;
+	}
+};
+
+class FCVar_me_thingholo : public FDynamicCVarAccess<bool>
+{
+public:
+	bool GetValue() const
+	{
+		MapThing *mapThing = mapeditor->GetCurThing();
+		return (mapThing != NULL ? mapThing->holo : false);
+	}
+
+	bool SetValue(bool value) const
+	{
+		MapThing *mapThing;
+		AActor *actor;
+		if (!FCVarThingCommon().GetCurThingAndActor(mapThing, actor))
+			return false;
+		MapThing &thing = *mapThing;
+
+		thing.holo = value;
+		if(thing.holo)
+			actor->flags &= ~(FL_SOLID);
+		else
+			actor->flags |= FL_SOLID;
+		return true;
+	}
+};
+
+class FCVar_me_thingskill : public FDynamicCVarAccess<int>
+{
+public:
+	int GetValue() const
+	{
+		MapThing *mapThing = mapeditor->GetCurThing();
+		return (mapThing != NULL ?
+			(mapThing->skill[3] ? 3 :
+				(mapThing->skill[2] ? 2 :
+					(mapThing->skill[1] ? 1 : 0)
+				)
+			) : false);
+	}
+
+	bool SetValue(int value) const
+	{
+		MapThing *mapThing;
+		AActor *actor;
+		if (!FCVarThingCommon().GetCurThingAndActor(mapThing, actor))
+			return false;
+		MapThing &thing = *mapThing;
+
+		std::fill(&thing.skill[0], &thing.skill[4], false);
+		while (value >= 0 && value < 4)
+		{
+			thing.skill[value] = true;
+			value++;
+		}
+		return true;
+	}
+};
+
 DYNAMIC_CVAR (Int, me_tile, 0, CVAR_NOFLAGS)
 DYNAMIC_CVAR (Int, me_sector, 0, CVAR_NOFLAGS)
 DYNAMIC_CVAR (String, me_thingtype, "", CVAR_NOFLAGS)
+DYNAMIC_CVAR (Int, me_thingangle, false, CVAR_NOFLAGS)
 DYNAMIC_CVAR (Bool, me_thingambush, false, CVAR_NOFLAGS)
+DYNAMIC_CVAR (Bool, me_thingpatrol, false, CVAR_NOFLAGS)
+DYNAMIC_CVAR (Bool, me_thingholo, false, CVAR_NOFLAGS)
+DYNAMIC_CVAR (Int, me_thingskill, 0, CVAR_NOFLAGS)
