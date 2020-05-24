@@ -132,6 +132,16 @@ MapThing *GameMapEditor::GetCurThing() const
 	return minthing;
 }
 
+MapTrigger *GameMapEditor::GetTrigger(unsigned int ind) const
+{
+	MapSpot spot = mapeditor->GetCurSpot();
+	if (spot != NULL && ind < spot->triggers.Size())
+	{
+		return &spot->triggers[ind];
+	}
+	return NULL;
+}
+
 void GameMapEditor::InitMarkedSector()
 {
 	FTextureID defaultMarked = TexMan.GetTexture("#ffff00", FTexture::TEX_Flat);
@@ -644,6 +654,38 @@ public:
 	}
 };
 
+class FRefCVarAccess_me_triggerplayeruse : public FRefCVarAccess<bool>
+{
+public:
+	bool &GetElemValueRef(int arrind, bool &valid) const
+	{
+		MapTrigger *mapTrigger = mapeditor->GetTrigger(arrind);
+		if (mapTrigger != NULL)
+		{
+			valid = true;
+			return mapTrigger->playerUse;
+		}
+		static bool unused = false;
+		return unused;
+	}
+};
+
+class FRefCVarAccess_me_triggerrepeatable : public FRefCVarAccess<bool>
+{
+public:
+	bool &GetElemValueRef(int arrind, bool &valid) const
+	{
+		MapTrigger *mapTrigger = mapeditor->GetTrigger(arrind);
+		if (mapTrigger != NULL)
+		{
+			valid = true;
+			return mapTrigger->repeatable;
+		}
+		static bool unused = false;
+		return unused;
+	}
+};
+
 DYNAMIC_CVAR (Int, me_tile, 0, CVAR_NOFLAGS)
 DYNAMIC_CVAR (Int, me_sector, 0, CVAR_NOFLAGS)
 DYNAMIC_CVAR (String, me_thingtype, "", CVAR_NOFLAGS)
@@ -652,3 +694,5 @@ DYNAMIC_CVAR (Bool, me_thingambush, false, CVAR_NOFLAGS)
 DYNAMIC_CVAR (Bool, me_thingpatrol, false, CVAR_NOFLAGS)
 DYNAMIC_CVAR (Bool, me_thingholo, false, CVAR_NOFLAGS)
 DYNAMIC_CVAR (Int, me_thingskill, 0, CVAR_NOFLAGS)
+REF_CVAR (Bool, me_triggerplayeruse, false, CVAR_NOFLAGS)
+REF_CVAR (Bool, me_triggerrepeatable, false, CVAR_NOFLAGS)

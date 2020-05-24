@@ -65,6 +65,8 @@ namespace MapEdit
 
 		MapThing *GetCurThing() const;
 
+		MapTrigger *GetTrigger(unsigned int ind) const;
+
 		void InitMarkedSector();
 
 		void ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc);

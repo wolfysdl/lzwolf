@@ -470,6 +470,7 @@ FBaseCVar::FBaseCVar (const char *var_name, DWORD flags, void (*callback)(FBaseC
 	m_Callback = callback;
 	Flags = 0;
 	Name = NULL;
+	ArrIndex = 0;
 
 	if (var_name)
 	{
@@ -1243,7 +1244,7 @@ void FStringCVar::DoSet (UCVarValue value, ECVarType type)
 {
 	ReplaceString (Value, ToString (value, type));
 	if (DynamicAccessor)
-		DynamicAccessor->SetValue(Value);
+		DynamicAccessor->SetElemValue(ArrIndex, Value);
 }
 
 //
@@ -1839,12 +1840,34 @@ FBaseCVar *FindCVar (const char *var_name, FBaseCVar **prev)
 	return var;
 }
 
+int ExtractArrIndex(const char *var_name, int namelen, int &arrind)
+{
+	const char *s1 = strchr(var_name, '[');
+	const char *s2 = strchr(var_name, ']');
+	if (s1 != NULL && s2 != NULL && s2 > s1 && s1 - var_name < namelen &&
+		s2 - var_name < namelen)
+	{
+		namelen = s1 - var_name;
+
+		char *sub = new char[(s2 - s1) + 1];
+		memcpy(sub, s1+1, s2 - s1);
+		sub[s2-s1] = '\0';
+		arrind = atoi(sub);
+		delete[] sub;
+	}
+
+	return namelen;
+}
+
 FBaseCVar *FindCVarSub (const char *var_name, int namelen)
 {
 	FBaseCVar *var;
 
 	if (var_name == NULL)
 		return NULL;
+	
+	int arrind = 0;
+	namelen = ExtractArrIndex(var_name, namelen, arrind);
 
 	var = CVars;
 	while (var)
@@ -1854,6 +1877,7 @@ FBaseCVar *FindCVarSub (const char *var_name, int namelen)
 		if (strnicmp (probename, var_name, namelen) == 0 &&
 			probename[namelen] == 0)
 		{
+			var->ArrIndex = arrind;
 			break;
 		}
 		var = var->m_Next;

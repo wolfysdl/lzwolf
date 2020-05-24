@@ -177,6 +177,7 @@ protected:
 
 	char *Name;
 	uint32 Flags;
+	int ArrIndex;
 
 private:
 	FBaseCVar (const FBaseCVar &var);
@@ -246,13 +247,61 @@ class FDynamicCVarAccess
 {
 public:
 	typedef T ValueType;
-	typedef FDynamicCVarAccess<T> ThisType;
 
 	virtual ~FDynamicCVarAccess()
 	{}
 
 	virtual T GetValue() const = 0;
 	virtual bool SetValue(T value) const = 0;
+
+	virtual T GetElemValue(int arrind) const
+	{
+		return GetValue();
+	}
+
+	virtual bool SetElemValue(int arrind, T value) const
+	{
+		return SetValue(value);
+	}
+};
+
+template<typename T>
+class FRefCVarAccess : public FDynamicCVarAccess<T>
+{
+public:
+	virtual ~FRefCVarAccess()
+	{}
+
+	T GetValue() const
+	{
+		return T();
+	}
+
+	bool SetValue(T value) const
+	{
+		return false;
+	}
+
+	T GetElemValue(int arrind) const
+	{
+		bool valid = false;
+		return GetElemValueRef(arrind, valid);
+	}
+
+	bool SetElemValue(int arrind, T value) const
+	{
+		bool valid = false;
+		T &valref = GetElemValueRef(arrind, valid);
+
+		if (valid)
+		{
+			valref = value;
+			return true;
+		}
+		return false;
+	}
+
+	virtual T &GetElemValueRef(int arrind, bool &valid) const = 0;
 };
 
 class FBoolCVar : public FBaseCVar
@@ -282,13 +331,14 @@ protected:
 
 	int ReadValue() const
 	{
-		return (DynamicAccessor != NULL ? DynamicAccessor->GetValue() : Value);
+		return (DynamicAccessor != NULL ?
+			DynamicAccessor->GetElemValue(ArrIndex) : Value);
 	}
 
 	void WriteValue(bool value)
 	{
 		if (DynamicAccessor)
-			DynamicAccessor->SetValue(value);
+			DynamicAccessor->SetElemValue(ArrIndex, value);
 		Value = value;
 	}
 
@@ -321,13 +371,14 @@ protected:
 
 	int ReadValue() const
 	{
-		return (DynamicAccessor != NULL ? DynamicAccessor->GetValue() : Value);
+		return (DynamicAccessor != NULL ?
+			DynamicAccessor->GetElemValue(ArrIndex) : Value);
 	}
 
 	void WriteValue(int value)
 	{
 		if (DynamicAccessor)
-			DynamicAccessor->SetValue(value);
+			DynamicAccessor->SetElemValue(ArrIndex, value);
 		Value = value;
 	}
 
@@ -388,7 +439,8 @@ protected:
 
 	const char *ReadValue() const
 	{
-		return (DynamicAccessor != NULL ? DynamicAccessor->GetValue() : Value);
+		return (DynamicAccessor != NULL ?
+			DynamicAccessor->GetElemValue(ArrIndex) : Value);
 	}
 
 	char *Value;
@@ -526,6 +578,10 @@ void C_ForgetCVars (void);
 
 #define DYNAMIC_CVAR(type,name,def,flags) \
 	FCVar_##name cvaraccessor_##name; \
+	F##type##CVar name (#name, def, flags, NULL, &cvaraccessor_##name);
+
+#define REF_CVAR(type,name,def,flags) \
+	FRefCVarAccess_##name cvaraccessor_##name; \
 	F##type##CVar name (#name, def, flags, NULL, &cvaraccessor_##name);
 
 extern FBaseCVar *CVars;
