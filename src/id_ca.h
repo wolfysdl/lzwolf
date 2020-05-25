@@ -1,6 +1,8 @@
 #ifndef __ID_CA__
 #define __ID_CA__
 
+#include <memory>
+
 //===========================================================================
 
 namespace MapEdit
@@ -10,7 +12,7 @@ namespace MapEdit
 
 extern  class GameMap *map;
 extern	class LevelInfo *levelInfo;
-extern  class MapEdit::GameMapEditor *mapeditor;
+extern  std::unique_ptr<MapEdit::GameMapEditor> mapeditor;
 
 //===========================================================================
 

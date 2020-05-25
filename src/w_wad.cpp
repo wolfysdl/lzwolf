@@ -1312,7 +1312,7 @@ FString::FString (ELumpNum lumpnum) : CharsPtr(std::make_shared<std::string>()),
 	FWadLump lumpr = Wads.OpenLumpNum ((int)lumpnum);
 	long size = lumpr.GetLength ();
 	auto &s = *CharsPtr;
-	s.resize(size);
+	s.resize(1 + size);
 	long numread = lumpr.Read (&s[0], size);
 
 	if (numread != size)
