@@ -1307,13 +1307,13 @@ FMemLump::~FMemLump ()
 {
 }
 
-FString::FString (ELumpNum lumpnum)
+FString::FString (ELumpNum lumpnum) : CharsPtr(std::make_shared<std::string>()), LockCount(0)
 {
 	FWadLump lumpr = Wads.OpenLumpNum ((int)lumpnum);
 	long size = lumpr.GetLength ();
-	AllocBuffer (1 + size);
-	long numread = lumpr.Read (&Chars[0], size);
-	Chars[size] = '\0';
+	auto &s = *CharsPtr;
+	s.resize(size);
+	long numread = lumpr.Read (&s[0], size);
 
 	if (numread != size)
 	{

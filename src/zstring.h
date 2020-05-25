@@ -34,6 +34,8 @@
 #ifndef ZSTRING_H
 #define ZSTRING_H
 
+#include <string>
+#include <memory>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -61,61 +63,6 @@
 extern "C" int mysnprintf(char *buffer, size_t count, const char *format, ...) GCCPRINTF(3,4);
 extern "C" int myvsnprintf(char *buffer, size_t count, const char *format, va_list argptr) GCCFORMAT(3);
 
-struct FStringData
-{
-	unsigned int Len;		// Length of string, excluding terminating null
-	unsigned int AllocLen;	// Amount of memory allocated for string
-	int RefCount;			// < 0 means it's locked
-	// char StrData[xxx];
-
-	char *Chars()
-	{
-		return (char *)(this + 1);
-	}
-
-	const char *Chars() const
-	{
-		return (const char *)(this + 1);
-	}
-
-	char *AddRef()
-	{
-		if (RefCount < 0)
-		{
-			return (char *)(MakeCopy() + 1);
-		}
-		else
-		{
-			RefCount++;
-			return (char *)(this + 1);
-		}
-	}
-
-	void Release()
-	{
-		assert (RefCount != 0);
-
-		if (--RefCount <= 0)
-		{
-			Dealloc();
-		}
-	}
-
-	FStringData *MakeCopy();
-
-	static FStringData *Alloc (size_t strlen);
-	FStringData *Realloc (size_t newstrlen);
-	void Dealloc ();
-};
-
-struct FNullStringData
-{
-	unsigned int Len;
-	unsigned int AllocLen;
-	int RefCount;
-	char Nothing[2];
-};
-
 enum ELumpNum
 {
 };
@@ -123,10 +70,10 @@ enum ELumpNum
 class FString
 {
 public:
-	FString () : Chars(&NullString.Nothing[0]) { NullString.RefCount++; }
+	FString () : CharsPtr(std::make_shared<std::string>()), LockCount(0) {}
 
 	// Copy constructors
-	FString (const FString &other) { AttachToOther (other); }
+	FString (const FString &other);
 	FString (const char *copyStr);
 	FString (const char *copyStr, size_t copyLen);
 	FString (char oneChar);
@@ -142,30 +89,34 @@ public:
 	// Other constructors
 	FString (ELumpNum);	// Create from a lump
 
-	~FString ();
-
 	// Discard string's contents, create a new buffer, and lock it.
 	char *LockNewBuffer(size_t len);
 
 	char *LockBuffer();		// Obtain write access to the character buffer
 	void UnlockBuffer();	// Allow shared access to the character buffer
 
-	operator const char *() const { return Chars; }
+	operator const char *() const
+	{
+		return CharsPtr->c_str();
+	}
 
-	const char *GetChars() const { return Chars; }
+	const char *GetChars() const
+	{
+		return CharsPtr->c_str();
+	}
 
-	const char &operator[] (int index) const { return Chars[index]; }
+	const char &operator[] (int index) const { return (*CharsPtr)[index]; }
 #if defined(_WIN32) && !defined(_WIN64) && defined(_MSC_VER)
 	// Compiling 32-bit Windows source with MSVC: size_t is typedefed to an
 	// unsigned int with the 64-bit portability warning attribute, so the
 	// prototype cannot substitute unsigned int for size_t, or you get
 	// spurious warnings.
-	const char &operator[] (size_t index) const { return Chars[index]; }
+	const char &operator[] (size_t index) const { return (*CharsPtr)[index]; }
 #else
-	const char &operator[] (unsigned int index) const { return Chars[index]; }
+	const char &operator[] (unsigned int index) const { return (*CharsPtr)[index]; }
 #endif
-	const char &operator[] (unsigned long index) const { return Chars[index]; }
-	const char &operator[] (unsigned long long index) const { return Chars[index]; }
+	const char &operator[] (unsigned long index) const { return (*CharsPtr)[index]; }
+	const char &operator[] (unsigned long long index) const { return (*CharsPtr)[index]; }
 
 	FString &operator = (const FString &other);
 	FString &operator = (const char *copyStr);
@@ -215,18 +166,6 @@ public:
 	void ToLower ();
 	void SwapCase ();
 
-	void StripLeft ();
-	void StripLeft (const FString &charset);
-	void StripLeft (const char *charset);
-
-	void StripRight ();
-	void StripRight (const FString &charset);
-	void StripRight (const char *charset);
-
-	void StripLeftRight ();
-	void StripLeftRight (const FString &charset);
-	void StripLeftRight (const char *charset);
-
 	void Insert (size_t index, const FString &instr);
 	void Insert (size_t index, const char *instr);
 	void Insert (size_t index, const char *instr, size_t instrlen);
@@ -236,16 +175,6 @@ public:
 
 	void StripChars (char killchar);
 	void StripChars (const char *killchars);
-
-	void MergeChars (char merger);
-	void MergeChars (char merger, char newchar);
-	void MergeChars (const char *charset, char newchar);
-
-	void Substitute (const FString &oldstr, const FString &newstr);
-	void Substitute (const char *oldstr, const FString &newstr);
-	void Substitute (const FString &oldstr, const char *newstr);
-	void Substitute (const char *oldstr, const char *newstr);
-	void Substitute (const char *oldstr, const char *newstr, size_t oldstrlen, size_t newstrlen);
 
 	void Format (const char *fmt, ...) PRINTFISH(3);
 	void AppendFormat (const char *fmt, ...) PRINTFISH(3);
@@ -258,39 +187,29 @@ public:
 	unsigned long ToULong (int base=0) const;
 	double ToDouble () const;
 
-	size_t Len() const { return Data()->Len; }
+	size_t Len() const { return CharsPtr->length(); }
 	bool IsEmpty() const { return Len() == 0; }
 	bool IsNotEmpty() const { return Len() != 0; }
 
 	void Truncate (long newlen);
 
-	int Compare (const FString &other) const { return strcmp (Chars, other.Chars); }
-	int Compare (const char *other) const { return strcmp (Chars, other); }
-	int Compare(const FString &other, int len) const { return strncmp(Chars, other.Chars, len); }
-	int Compare(const char *other, int len) const { return strncmp(Chars, other, len); }
+	int Compare (const FString &other) const { return strcmp (CharsPtr->c_str(), other.CharsPtr->c_str()); }
+	int Compare (const char *other) const { return strcmp (CharsPtr->c_str(), other); }
+	int Compare(const FString &other, int len) const { return strncmp(CharsPtr->c_str(), other.CharsPtr->c_str(), len); }
+	int Compare(const char *other, int len) const { return strncmp(CharsPtr->c_str(), other, len); }
 
-	int CompareNoCase (const FString &other) const { return stricmp (Chars, other.Chars); }
-	int CompareNoCase (const char *other) const { return stricmp (Chars, other); }
-	int CompareNoCase(const FString &other, int len) const { return strnicmp(Chars, other.Chars, len); }
-	int CompareNoCase(const char *other, int len) const { return strnicmp(Chars, other, len); }
+	int CompareNoCase (const FString &other) const { return stricmp (CharsPtr->c_str(), other.CharsPtr->c_str()); }
+	int CompareNoCase (const char *other) const { return stricmp (CharsPtr->c_str(), other); }
+	int CompareNoCase(const FString &other, int len) const { return strnicmp(CharsPtr->c_str(), other.CharsPtr->c_str(), len); }
+	int CompareNoCase(const char *other, int len) const { return strnicmp(CharsPtr->c_str(), other, len); }
 
 protected:
-	const FStringData *Data() const { return (FStringData *)Chars - 1; }
-	FStringData *Data() { return (FStringData *)Chars - 1; }
+	static int FormatHelper (void *data, const char *str, int len);
 
 	void AttachToOther (const FString &other);
-	void AllocBuffer (size_t len);
-	void ReallocBuffer (size_t newlen);
 
-	static int FormatHelper (void *data, const char *str, int len);
-	static void StrCopy (char *to, const char *from, size_t len);
-	static void StrCopy (char *to, const FString &from);
-
-	char *Chars;
-
-	static FNullStringData NullString;
-
-	friend struct FStringData;
+	std::shared_ptr<std::string> CharsPtr;
+	int LockCount;
 
 private:
 	// Prevent these from being called as current practices are to use Compare.
