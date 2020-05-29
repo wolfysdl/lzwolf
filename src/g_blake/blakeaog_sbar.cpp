@@ -298,6 +298,8 @@ public:
 protected:
 	void DrawLed(double percent, double x, double y) const;
 	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false) const;
+	void LatchNumber (int x, int y, unsigned width, int32_t number, bool zerofill, bool cap);
+	void LatchString (int x, int y, unsigned width, const FString &str);
 
 private:
 	int CurrentScore;
@@ -426,9 +428,7 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	health.Format("%3d%%", players[0].health);
 	DrawString(IndexFont, health, 149, 200 - STATUSLINES + 34, false, CR_LIGHTBLUE);
 
-	//FString score;
-	//score.Format("%7d", CurrentScore);
-	//DrawString(ScoreFont, score, 256, 155, false);
+	LatchNumber(256, 3, 7, CurrentScore, false, false);
 
 	if(players[0].ReadyWeapon)
 	{
@@ -557,6 +557,51 @@ void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, do
 				TAG_DONE);
 		}
 		x += chWidth;
+	}
+}
+
+/*
+===============
+=
+= LatchNumber
+=
+= right justifies and pads with blanks
+=
+===============
+*/
+
+void BlakeAOGStatusBar::LatchNumber (int x, int y, unsigned width, int32_t number, bool zerofill, bool cap)
+{
+	FString str;
+	if(zerofill)
+		str.Format("%0*d", width, number);
+	else
+		str.Format("%*d", width, number);
+	if(str.Len() > width && cap)
+	{
+		int maxval = width <= 9 ? (int) ceil(pow(10., (int)width))-1 : INT_MAX;
+		str.Format("%d", maxval);
+	}
+
+	LatchString(x, y, width, str);
+}
+
+void BlakeAOGStatusBar::LatchString (int x, int y, unsigned width, const FString &str)
+{
+	static FFont *HudFont = NULL;
+	if(!HudFont)
+	{
+		HudFont = V_GetFont("HudFont");
+	}
+
+	y = 200-(STATUSLINES-y);// + HudFont->GetHeight();
+
+	int cwidth;
+	FRemapTable *remap = HudFont->GetColorTranslation(CR_UNTRANSLATED);
+	for(unsigned int i = MAX<int>(0, (int)(str.Len()-width));i < str.Len();++i)
+	{
+		VWB_DrawGraphic(HudFont->GetChar(str[i], &cwidth), x, y, MENU_NONE, remap);
+		x += cwidth;
 	}
 }
 
