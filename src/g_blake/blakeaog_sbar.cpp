@@ -123,7 +123,7 @@ void BlakeAOGStatusBar::DrawStatusBar()
 		return;
 
 	static FFont *IndexFont = V_GetFont("INDEXFON");
-	static FFont *HealthFont = V_GetFont("BlakeHealthFont");
+	//static FFont *HealthFont = V_GetFont("BlakeHealthFont");
 	static FFont *ScoreFont = V_GetFont("BlakeScoreFont");
 
 	static FTextureID STBar = TexMan.GetTexture("STBAR", FTexture::TEX_Any);
@@ -182,13 +182,31 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	DrawString(IndexFont, lives, 267, 5, true, CR_WHITE);
 
 	// Draw bottom information
-	FString health;
-	health.Format("%3d", players[0].health);
-	DrawString(HealthFont, health, 128, 162, false);
 
-	FString score;
-	score.Format("%7d", CurrentScore);
-	DrawString(ScoreFont, score, 256, 155, false);
+	static FTextureID ECGGPIEC = TexMan.GetTexture("ECGGPIEC", FTexture::TEX_Any);
+	for (int i = 0; i < 3; ++i)
+	{
+		FTexture *tex = TexMan(ECGGPIEC);
+
+		double stx = 144 + (i * 8);
+		double sty = 200-STATUSLINES+32;
+		double stw = tex->GetScaledWidthDouble();
+		double sth = tex->GetScaledHeightDouble();
+		screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
+
+		screen->DrawTexture(tex, stx, sty,
+			DTA_DestWidthF, stw,
+			DTA_DestHeightF, sth,
+			TAG_DONE);
+	}
+
+	FString health;
+	health.Format("%3d%%", players[0].health);
+	DrawString(IndexFont, health, 149, 200 - STATUSLINES + 34, false, CR_LIGHTBLUE);
+
+	//FString score;
+	//score.Format("%7d", CurrentScore);
+	//DrawString(ScoreFont, score, 256, 155, false);
 
 	if(players[0].ReadyWeapon)
 	{
@@ -212,60 +230,60 @@ void BlakeAOGStatusBar::DrawStatusBar()
 
 		FString ammo;
 		ammo.Format("%3d%%", amount);
-		DrawString(IndexFont, ammo, 252, 190, false, CR_LIGHTBLUE);
+		DrawString(IndexFont, ammo, 211, 200 - STATUSLINES + 38, false, CR_LIGHTBLUE);
 	}
 
-	if(players[0].mo)
-	{
-		static const ClassDef * const radarPackCls = ClassDef::FindClass("RadarPack");
-		AInventory *radarPack = players[0].mo->FindInventory(radarPackCls);
-		if(radarPack)
-			DrawLed(static_cast<double>(radarPack->amount)/static_cast<double>(radarPack->maxamount), 235, 155);
-		else
-			DrawLed(0, 235, 155);
-	}
+	//if(players[0].mo)
+	//{
+	//	static const ClassDef * const radarPackCls = ClassDef::FindClass("RadarPack");
+	//	AInventory *radarPack = players[0].mo->FindInventory(radarPackCls);
+	//	if(radarPack)
+	//		DrawLed(static_cast<double>(radarPack->amount)/static_cast<double>(radarPack->maxamount), 235, 155);
+	//	else
+	//		DrawLed(0, 235, 155);
+	//}
 
 	// Find keys in inventory
-	int presentKeys = 0;
-	if(players[0].mo)
-	{
-		for(AInventory *item = players[0].mo->inventory;item != NULL;item = item->inventory)
-		{
-			if(item->IsKindOf(NATIVE_CLASS(Key)))
-			{
-				int slot = static_cast<AKey *>(item)->KeyNumber;
-				if(slot <= 3)
-					presentKeys |= 1<<(slot-1);
-				if(presentKeys == 0x7)
-					break;
-			}
-		}
-	}
+	//int presentKeys = 0;
+	//if(players[0].mo)
+	//{
+	//	for(AInventory *item = players[0].mo->inventory;item != NULL;item = item->inventory)
+	//	{
+	//		if(item->IsKindOf(NATIVE_CLASS(Key)))
+	//		{
+	//			int slot = static_cast<AKey *>(item)->KeyNumber;
+	//			if(slot <= 3)
+	//				presentKeys |= 1<<(slot-1);
+	//			if(presentKeys == 0x7)
+	//				break;
+	//		}
+	//	}
+	//}
 
-	static FTextureID Keys[4] = {
-		TexMan.GetTexture("STKEYS0", FTexture::TEX_Any),
-		TexMan.GetTexture("STKEYS1", FTexture::TEX_Any),
-		TexMan.GetTexture("STKEYS2", FTexture::TEX_Any),
-		TexMan.GetTexture("STKEYS3", FTexture::TEX_Any)
-	};
-	for(unsigned int i = 0;i < 3;++i)
-	{
-		FTexture *tex;
-		if(presentKeys & (1<<i))
-			tex = TexMan(Keys[i+1]);
-		else
-			tex = TexMan(Keys[0]);
+	//static FTextureID Keys[4] = {
+	//	TexMan.GetTexture("STKEYS0", FTexture::TEX_Any),
+	//	TexMan.GetTexture("STKEYS1", FTexture::TEX_Any),
+	//	TexMan.GetTexture("STKEYS2", FTexture::TEX_Any),
+	//	TexMan.GetTexture("STKEYS3", FTexture::TEX_Any)
+	//};
+	//for(unsigned int i = 0;i < 3;++i)
+	//{
+	//	FTexture *tex;
+	//	if(presentKeys & (1<<i))
+	//		tex = TexMan(Keys[i+1]);
+	//	else
+	//		tex = TexMan(Keys[0]);
 
-		stx = 120+16*i;
-		sty = 179;
-		stw = tex->GetScaledWidthDouble();
-		sth = tex->GetScaledHeightDouble();
-		screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
-		screen->DrawTexture(tex, stx, sty,
-			DTA_DestWidthF, stw,
-			DTA_DestHeightF, sth,
-			TAG_DONE);
-	}
+	//	stx = 120+16*i;
+	//	sty = 179;
+	//	stw = tex->GetScaledWidthDouble();
+	//	sth = tex->GetScaledHeightDouble();
+	//	screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
+	//	screen->DrawTexture(tex, stx, sty,
+	//		DTA_DestWidthF, stw,
+	//		DTA_DestHeightF, sth,
+	//		TAG_DONE);
+	//}
 }
 
 void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center) const

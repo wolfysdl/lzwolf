@@ -138,41 +138,41 @@ graphics
 	"N_DASH",          // 131
 	"DIMLIGHT",        // 132
 	"BRILIGHT",        // 133
-	"ECGHGOOD",        // 134
-	"ECGHBAD",         // 135
-	"ECGGPIEC",        // 136
+	"ECGHGOOD",        // 134 ECG_HEART_GOOD
+	"ECGHBAD",         // 135 ECG_HEART_BAD
+	"ECGGPIEC",        // 136 ECG_GRID_PIECE
 	"AMNUBKGR",        // 137
-	"ECGHBE00",        // 138
-	"ECGHBE01",        // 139
-	"ECGHBE02",        // 140
-	"ECGHBE03",        // 141
-	"ECGHBE04",        // 142
-	"ECGHBE05",        // 143
-	"ECGHBE06",        // 144
-	"ECGHBE07",        // 145
-	"ECGHBE08",        // 146
-	"ECGHBE09",        // 147
-	"ECGHBE10",        // 148
-	"ECGHBE11",        // 149
-	"ECGHBE12",        // 150
-	"ECGHBE13",        // 151
-	"ECGHBE14",        // 152
-	"ECGHBE15",        // 153
-	"ECGHBE16",        // 154
-	"ECGHBE17",        // 155
-	"ECGHBE18",        // 156
-	"ECGHBE19",        // 157
-	"ECGHBE20",        // 158
-	"ECGHBE21",        // 159
-	"ECGHBE22",        // 160
-	"ECGHBE23",        // 161
-	"ECGHBE24",        // 162
-	"ECGHBE25",        // 163
-	"ECGHBE26",        // 164
-	"ECGHBE27",        // 165
+	"ECGHBE00",        // 138 ECG_HEARTBEAT_00
+	"ECGHBE01",        // 139 ECG_HEARTBEAT_01
+	"ECGHBE02",        // 140 ECG_HEARTBEAT_02
+	"ECGHBE03",        // 141 ECG_HEARTBEAT_03
+	"ECGHBE04",        // 142 ECG_HEARTBEAT_04
+	"ECGHBE05",        // 143 ECG_HEARTBEAT_05
+	"ECGHBE06",        // 144 ECG_HEARTBEAT_06
+	"ECGHBE07",        // 145 ECG_HEARTBEAT_07
+	"ECGHBE08",        // 146 ECG_HEARTBEAT_08
+	"ECGHBE09",        // 147 ECG_HEARTBEAT_09
+	"ECGHBE10",        // 148 ECG_HEARTBEAT_10
+	"ECGHBE11",        // 149 ECG_HEARTBEAT_11
+	"ECGHBE12",        // 150 ECG_HEARTBEAT_12
+	"ECGHBE13",        // 151 ECG_HEARTBEAT_13
+	"ECGHBE14",        // 152 ECG_HEARTBEAT_14
+	"ECGHBE15",        // 153 ECG_HEARTBEAT_15
+	"ECGHBE16",        // 154 ECG_HEARTBEAT_16
+	"ECGHBE17",        // 155 ECG_HEARTBEAT_17
+	"ECGHBE18",        // 156 ECG_HEARTBEAT_18
+	"ECGHBE19",        // 157 ECG_HEARTBEAT_19
+	"ECGHBE20",        // 158 ECG_HEARTBEAT_20
+	"ECGHBE21",        // 159 ECG_HEARTBEAT_21
+	"ECGHBE22",        // 160 ECG_HEARTBEAT_22
+	"ECGHBE23",        // 161 ECG_HEARTBEAT_23
+	"ECGHBE24",        // 162 ECG_HEARTBEAT_24
+	"ECGHBE25",        // 163 ECG_HEARTBEAT_25
+	"ECGHBE26",        // 164 ECG_HEARTBEAT_26
+	"ECGHBE27",        // 165 ECG_HEARTBEAT_27
 	"INFOAREA",        // 166
-	"TOP_SBAR",        // 167
-	"SBAR",            // 168
+	"STTOP",           // 167
+	"STBAR",           // 168
 	"TILE8",           // 169
 	"",                // 170
 	"APOGPAL",         // 171
