@@ -32,6 +32,7 @@
 **
 */
 
+#include <deque>
 #include "wl_def.h"
 #include "a_inventory.h"
 #include "a_keys.h"
@@ -39,6 +40,7 @@
 #include "id_ca.h"
 #include "id_us.h"
 #include "id_vh.h"
+#include "id_sd.h"
 #include "g_mapinfo.h"
 #include "v_font.h"
 #include "v_video.h"
@@ -53,6 +55,225 @@ enum
 	STATUSLINES = 48,
 	STATUSTOPLINES = 16
 };
+
+CVAR (Bool, aog_heartbeatsnd, false, CVAR_ARCHIVE)
+
+class BlakeAOGHealthMonitor
+{
+public:
+	void Draw();
+
+private:
+	static inline FTextureID TexID(const char *name)
+	{
+		return TexMan.GetTexture(name, FTexture::TEX_Any);
+	}
+
+	int GetHp() const
+	{
+		return players[0].health;
+	}
+
+	const FTextureID ECG_GRID_PIECE = TexID("ECGGPIEC");
+	const FTextureID ECG_HEART_GOOD = TexID("ECGHGOOD");
+	const FTextureID ECG_HEART_BAD = TexID("ECGHBAD");
+
+	int ecg_scroll_tics = 0;
+	int ecg_next_scroll_tics = 0;
+	std::deque<int> ecg_legend = std::deque<int>(6);
+	std::deque<int> ecg_segments = std::deque<int>(6);
+
+	FTextureID heart_picture_index = ECG_GRID_PIECE;
+	int heart_sign_tics = 0;
+	int heart_sign_next_tics = 0;
+
+	static constexpr auto HEALTH_SCROLL_RATE = 7;
+	static constexpr auto HEALTH_PULSE = 70;
+};
+
+// Draws electrocardiogram (ECG) and the heart sign
+void BlakeAOGHealthMonitor::Draw()
+{
+	//
+	// ECG
+	//
+
+	// ECG segment indices:
+	// 0 - silence
+	// 1..8 - shape #1 (health 66%-100%)
+	// 9..17 - shape #2 (health 33%-65%)
+	// 18..27 - shape #3 (health 0%-32%)
+
+	// ECG segment legend:
+	// 0 - silence
+	// 1 - signal #1 (health 66%-100%)
+	// 2 - signal #2 (health 33%-65%)
+	// 3 - signal #3 (health 0%-32%)
+
+	if (ecg_scroll_tics >= ecg_next_scroll_tics)
+	{
+		ecg_scroll_tics = 0;
+		ecg_next_scroll_tics = HEALTH_SCROLL_RATE;
+
+		bool carry = false;
+
+		for (int i = 5; i >= 0; --i)
+		{
+			if (carry)
+			{
+				carry = false;
+				ecg_legend[i] = ecg_legend[i + 1];
+				ecg_segments[i] = ecg_segments[i + 1] - 4;
+			}
+			else if (ecg_segments[i] != 0)
+			{
+				ecg_segments[i] += 1;
+
+				bool use_carry = false;
+
+				if (ecg_legend[i] == 1 && ecg_segments[i] == 5)
+				{
+					use_carry = true;
+				}
+				else if (ecg_legend[i] == 2 && ecg_segments[i] == 13)
+				{
+					use_carry = true;
+				}
+				if (ecg_legend[i] == 3 &&
+					(ecg_segments[i] == 22 || ecg_segments[i] == 27))
+				{
+					use_carry = true;
+				}
+
+				if (use_carry)
+				{
+					carry = true;
+				}
+				else
+				{
+					bool skip = false;
+
+					if (ecg_legend[i] == 1 && ecg_segments[i] > 8)
+					{
+						skip = true;
+					}
+					else if (ecg_legend[i] == 2 && ecg_segments[i] > 17)
+					{
+						skip = true;
+					}
+					if (ecg_legend[i] == 3 && ecg_segments[i] > 27)
+					{
+						skip = true;
+					}
+
+					if (skip)
+					{
+						ecg_legend[i] = 0;
+						ecg_segments[i] = 0;
+					}
+				}
+			}
+		}
+
+		if (GetHp() > 0 && ecg_legend[5] == 0)
+		{
+			if (GetHp() < 33)
+			{
+				ecg_legend[5] = 3;
+				ecg_segments[5] = 18;
+			}
+			else if (GetHp() >= 66)
+			{
+				if (ecg_legend[4] == 0 || ecg_legend[4] != 1)
+				{
+					ecg_legend[5] = 1;
+					ecg_segments[5] = 1;
+				}
+			}
+			else
+			{
+				ecg_legend[5] = 2;
+				ecg_segments[5] = 9;
+			}
+		}
+	}
+	else
+	{
+		ecg_scroll_tics += tics;
+	}
+
+	auto draw_hudpic = []( FTextureID texid, double hx, double hy ) {
+		auto tex = TexMan(texid);
+
+		double x = hx;
+		double y = 200 - STATUSLINES + hy;
+		double w = tex->GetScaledWidthDouble();
+		double h = tex->GetScaledHeightDouble();
+
+		screen->VirtualToRealCoords(x, y, w, h, 320, 200, true, true);
+
+		screen->DrawTexture(tex, x, y,
+			DTA_DestWidthF, w,
+			DTA_DestHeightF, h,
+			TAG_DONE);
+	};
+
+	for (int i = 0; i < 6; ++i)
+	{
+		FString hbstr;
+		hbstr.Format("ECGHBE%02d", ecg_segments[i]);
+		auto texid = TexID(hbstr.GetChars());
+		draw_hudpic(texid, 120 + (i * 8), 8);
+	}
+
+
+	//
+	// Heart sign
+	//
+
+	bool reset_heart_tics = false;
+
+	if (GetHp() <= 0)
+	{
+		reset_heart_tics = true;
+		heart_picture_index = ECG_GRID_PIECE;
+	}
+	else if (GetHp() < 40)
+	{
+		reset_heart_tics = true;
+		heart_picture_index = ECG_HEART_BAD;
+	}
+	else if (heart_sign_tics >= heart_sign_next_tics)
+	{
+		reset_heart_tics = true;
+
+		if (heart_picture_index == ECG_GRID_PIECE)
+		{
+			heart_picture_index = ECG_HEART_GOOD;
+
+			if (aog_heartbeatsnd)
+			{
+				SD_PlaySound("misc/heartbeat");
+			}
+		}
+		else
+		{
+			heart_picture_index = ECG_GRID_PIECE;
+		}
+	}
+
+	if (reset_heart_tics)
+	{
+		heart_sign_tics = 0;
+		heart_sign_next_tics = HEALTH_PULSE / 2;
+	}
+	else
+	{
+		heart_sign_tics += 1;
+	}
+
+	draw_hudpic(heart_picture_index, 120, 32);
+}
 
 class BlakeAOGStatusBar : public DBaseStatusBar
 {
@@ -80,6 +301,7 @@ protected:
 
 private:
 	int CurrentScore;
+	BlakeAOGHealthMonitor HealthMonitor;
 };
 
 DBaseStatusBar *CreateStatusBar_BlakeAOG() { return new BlakeAOGStatusBar(); }
@@ -284,6 +506,8 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	//		DTA_DestHeightF, sth,
 	//		TAG_DONE);
 	//}
+
+	HealthMonitor.Draw();
 }
 
 void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center) const
