@@ -345,7 +345,7 @@ MENU_LISTENER(AdjustViewSize)
 void CreateMenus()
 {
 	// HACK: Determine menu style by IWAD
-	if(IWad::CheckGameFilter("Blake"))
+	if(IWad::CheckGameFilter("Blake") || IWad::CheckGameFilter("BlakeAOG"))
 		MenuStyle = MENUSTYLE_Blake;
 
 	// Extract the palette

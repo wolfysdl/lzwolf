@@ -78,6 +78,7 @@ static void Thrust (APlayerPawn *player, angle_t angle, int32_t speed);
 DBaseStatusBar *StatusBar;
 
 DBaseStatusBar *CreateStatusBar_Blake();
+DBaseStatusBar *CreateStatusBar_BlakeAOG();
 DBaseStatusBar *CreateStatusBar_Wolf3D();
 
 void DestroyStatusBar() { delete StatusBar; }
@@ -85,6 +86,8 @@ void CreateStatusBar()
 {
 	if(IWad::CheckGameFilter("Blake"))
 		StatusBar = CreateStatusBar_Blake();
+	else if(IWad::CheckGameFilter("BlakeAOG"))
+		StatusBar = CreateStatusBar_BlakeAOG();
 	else
 		StatusBar = CreateStatusBar_Wolf3D();
 	atterm(DestroyStatusBar);

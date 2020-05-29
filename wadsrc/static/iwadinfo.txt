@@ -21,7 +21,7 @@ IWad
 	Name = "Aliens of Gold"
 	Mapinfo = "mapinfo/planet.txt"
 	MustContain = "TELEBACK"
-	Game = "Blake"
+	Game = "BlakeAOG"
 }
 
 IWad

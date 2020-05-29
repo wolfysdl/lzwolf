@@ -162,6 +162,7 @@ list(APPEND HEADER_FILES ${CMAKE_CURRENT_BINARY_DIR}/versiondefs.h)
 set(SOURCE_FILES
 	g_blake/a_smartanim.cpp
 	g_blake/blake_sbar.cpp
+	g_blake/blakeaog_sbar.cpp
 	g_shared/a_armor.cpp
 	g_shared/a_action.cpp
 	g_shared/a_deathcam.cpp

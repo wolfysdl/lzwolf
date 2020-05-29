@@ -389,6 +389,10 @@ $ifblake
 misc/health_pkup			{ DSHEAL1 ALHEAL1 PCHEAL1 }
 $endif
 
+$ifblakeaog
+misc/health_pkup			{ DSHEAL1 ALHEAL1 PCHEAL1 }
+$endif
+
 doors/heavy_open		{ DSDR2OPN ALDR2OPN PCDR2OPN }
 doors/heavy_close		{ DSDR2CLS ALDR2CLS PCDR2CLS }
 
