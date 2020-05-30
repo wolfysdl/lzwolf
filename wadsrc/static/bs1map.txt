@@ -224,13 +224,7 @@ sprites
 
 	// Props and Pickups
 	"WPUDA0", // Water Puddle
-	"CCANA0", // Toxic Waste Can
 	"LUNTA0", // Lunch Table
-	"FLRLA0", // Floor Lamp
-	"LABTA0", // Lab Table
-	"PILRA0", // Blue Pillar
-	"BPUDA0", // Blood Puddle
-	"PISSA0", // Urine Puddle
 	"FICSA0", // Potted Tree
 	"HFECA0", // Half-Eaten Corpse
 	"WFNTA0", // "Water Fountain" (Sink)
@@ -239,30 +233,19 @@ sprites
 	"GENTA0", // Generic Table
 	"CLT1A0", // Ceiling Light 1
 	"GENCA0", // Generic Chair
-	"KTRHA0", // Kitchen Trash Can
-	"OTRHA0", // Office Trash Can
 	"PLT2A0", // Potted Plant 2
-	"GURNA0", // Empty Gurney
-	"IDHSA0", // Large Ceiling Light
-	"EXITA0", // Exit Sign
-	"TNSPA0", // Transporter
-	"BDYCA0", // Bloody Bucket
 	"SFPPA0", // Slow-Fire Protector
-	"MSTTA0", // Mutant Statue
 	"CHGUA0", // Charge Pack (1-8)
 	"RAWPA0", // Rapid Assault Weapon
 	"DNDPA0", // Dual Neutron Disruptor
 	"FAIDA0", // First Aid Kit
-	"FHELA0", // "Full Heal" (Dummy)
 	"CHRGA0", // Charge Pack (Full)
 	"RACSA0", // Red Access Card
 	"YACSA0", // Yellow Access Card
 	"APCPA0", // Anti-Plasma Cannon
 	"BACSA0", // Blue Access Card
 	"YBOXA0", // Yellow Box
-	"ODSKA0", // Office Desk
 	"OCHRA0", // Office Chair
-	"SDSKA0", // Security Desk
 	"WBWLA0", // Water Bowl
 	"WBWLB0", // - Empty
 	"CKLGA0", // Raw Meat
@@ -281,39 +264,19 @@ sprites
 	"CLT2A0", // Ceiling Light 2
 	"CLT3A0", // Ceiling Light 3
 	"CRT1A0", // Crate 1 (Cardboard)
-	"CRT2B0", // Crate 2 (Bronze)
-	"CRT3C0", // Crate 3 (Steel)
 	"BDYPA0", // Body Parts 1
-	"ORLPA0", // Operation Lamp
-	"OSNKA0", // Operation Sink
 	"BDY2A0", // Body Parts 2
 	"STBLA0", // Cafeteria Table
 	"SCHRA0", // Cafeteria Chair
 	"SSTLA0", // Cafeteria Stool
-	"BDYGA0", // Body Parts 2 (Duplicate)
 	"GLD3A0", // Gold Bars (x3)
 	"GLD2A0", // Gold Bars (x2)
 	"GLD1A0", // Gold Bars (x1)
 	"BRPSA0", // Bronze Post
 	"GRP2A0", // "Greek" Post 2
-	"GNPSA0", // Glowing Post
-	"TDCLA0", // Tall Deco Column
-	"SDCLA0", // Short Deco Column
-	"DBR1A0", // Pulverised Bones 1
-	"DBR2A0", // Pulverised Bones 2
-	"DBR3A0", // Pulverised Bones 3
-	"DBR4A0", // Pulverised Bones 4
 	"CON1A0", // Food Token (1)
 	"CON5A0", // Food Token (5)
 	"ACPPA0", // Auto-Charge Pistol
-	"DBOMA0", // Fission Detonator
-	"DBOMB0",
-	"RUBLA0", // Rubble
-	"BONZA0", // Bonsai Tree
-	"AUTOA0", // Automap Charge
-	"POTPA0", // Terrarium Potted Plant
-	"TUBPA0", // Terrarium Tubed Plant
-	"HTCHA0", // Table and Chairs
 	"AVNTA0", // Ceiling Vent
 	"AVNTB0", // - Dripping Blood
 	"AVNTC0",
@@ -336,9 +299,6 @@ sprites
 	"ALCLC0",
 	"ALCLD0",
 	"ALCLE0", // - Shut Off
-	"RENTN0", // Dead AoG Guard
-	"PROGO0", // Dead AoG Sentinel
-	"SWATT0", // Dead AoG Trooper
 
 	// Sector Guard
 	"SECGA1", // Stand
@@ -604,79 +564,6 @@ sprites
 	"DGLDO0",
 	"DGLDP0",
 
-	// Monstrous Goldfire
-	"MGLDJ0", // Death
-	"MGLDK0",
-	"MGLDL0",
-	"MGLDM0",
-	"MGLDN0",
-	"MGLDI0", // Pain
-	"DGLDQ0", // Morph
-	"DGLDR0",
-	"DGLDS0",
-	"DGLDT0",
-	"DGLDU0",
-	"DGLDV0",
-	"DGLDW0",
-	"DGLDX0",
-	"MGLDA0", // Stand
-	"MGLDB0", // Walk
-	"MGLDC0",
-	"MGLDD0",
-	"MGLDE0",
-	"MGLDF0", // Attack
-	"MGLDG0",
-	"MGLDH0",
-	"MSHTA0", // Missile
-	"MSHTB0",
-	"MSHTC0",
-	"MSHTD0", // - Hit
-	"MSHTE0",
-	"MSHTF0",
-
-	// Volatile Transport
-	"GSCTA1", // Normal
-	"GSCTA2",
-	"GSCTA3",
-	"GSCTA4",
-	"GSCTA5",
-	"GSCTA6",
-	"GSCTA7",
-	"GSCTA8",
-	"GSCTB1", // Damaged
-	"GSCTB2",
-	"GSCTB3",
-	"GSCTB4",
-	"GSCTB5",
-	"GSCTB6",
-	"GSCTB7",
-	"GSCTB8",
-	"GSCTC1", // More Damaged
-	"GSCTC2",
-	"GSCTC3",
-	"GSCTC4",
-	"GSCTC5",
-	"GSCTC6",
-	"GSCTC7",
-	"GSCTC8",
-	"GSCTD1", // Heavily Damaged
-	"GSCTD2",
-	"GSCTD3",
-	"GSCTD4",
-	"GSCTD5",
-	"GSCTD6",
-	"GSCTD7",
-	"GSCTD8",
-	"GSCTE0", // Explode
-	"GSCTF0",
-	"GSCTG0",
-	"GSCTH0",
-	"GSCTI0",
-	"GSCTJ0",
-	"GSCTK0",
-	"GSCTL0",
-	"GSCTM0", // Dead
-
 	// Active PerScan
 	"FSCTA1", // Normal
 	"FSCTA2",
@@ -686,30 +573,6 @@ sprites
 	"FSCTA6",
 	"FSCTA7",
 	"FSCTA8",
-	"FSCTB1", // Damaged
-	"FSCTB2",
-	"FSCTB3",
-	"FSCTB4",
-	"FSCTB5",
-	"FSCTB6",
-	"FSCTB7",
-	"FSCTB8",
-	"FSCTC1", // More Damaged
-	"FSCTC2",
-	"FSCTC3",
-	"FSCTC4",
-	"FSCTC5",
-	"FSCTC6",
-	"FSCTC7",
-	"FSCTC8",
-	"FSCTD1", // Heavily Damaged
-	"FSCTD2",
-	"FSCTD3",
-	"FSCTD4",
-	"FSCTD5",
-	"FSCTD6",
-	"FSCTD7",
-	"FSCTD8",
 	"FSCTE0", // Explode
 	"FSCTF0",
 	"FSCTG0",
@@ -725,27 +588,6 @@ sprites
 	"EXPLC0",
 	"EXPLD0",
 	"EXPLE0",
-
-	// Security Cube
-	"CUBEA0", // Normal
-	"CUBEB0",
-	"CUBEC0",
-	"CUBED0",
-	"CUBEE0",
-	"CUBEF0",
-	"CUBEG0",
-	"CUBEH0",
-	"CUBEI0",
-	"CUBEJ0",
-	"CUBEK0", // Explode
-	"CUBEL0",
-	"CUBEM0",
-	"CUBEN0",
-	"CUBEO0",
-	"CUBEP0",
-	"CUBEQ0",
-	"CUBER0",
-	"CUBES0", // Destroyed
 
 	// Security Light
 	"SECLA0", // Off
@@ -837,56 +679,6 @@ sprites
 	"MSENO0",
 	"MSENP0", 
 
-	// Mutant Human (Gray)
-	"MHUMA0", // Walk
-	"MHUMB0",
-	"MHUMC0",
-	"MHUMD0",
-	"MHUME0", // Attack (Melee)
-	"MHUMF0",
-	"MHUMG0",
-	"MHUMP0", // Dead
-	"MHUML0", // Death
-	"MHUMM0",
-	"MHUMN0",
-	"MHUMO0",
-	"MHUMK0", // Pain
-	"MHUMH0", // Attack (Shoot)
-	"MHUMI0",
-	"MHUMJ0",
-	"MHUMQ0", // Morph
-	"MHUMR0",
-	"MHUMS0",
-	"MHUMT0",
-	"MHUMU0",
-	"MHUMV0",
-	"MHUMW0",
-	"MHUMX0",
-	"MHUMY0",
-
-	// Contained Acid Alien
-	"CNTAA0", // In Canister
-	"CNTAB0", // Escaping
-	"CNTAC0",
-	"CNTAD0",
-	"CNTAE0", // Empty Canister
-	"CNTAF0", // Walk
-	"CNTAG0",
-	"CNTAH0",
-	"CNTAI0",
-	"CNTAJ0", // Attack (Melee)
-	"CNTAK0",
-	"CNTAL0",
-	"CNTAU0", // Dead
-	"CNTAQ0", // Death
-	"CNTAR0",
-	"CNTAS0",
-	"CNTAT0",
-	"CNTAP0", // Pain
-	"CNTAM0", // Attack (Shoot)
-	"CNTAN0",
-	"CNTAO0",
-
 	// Expirimental Alien Critter
 	"CNSAA0", // In Canister
 	"CNSAB0", // Escaping
@@ -909,50 +701,6 @@ sprites
 	"CNSAM0", // Attack (Shoot)
 	"CNSAN0",
 	"CNSAO0",
-
-	// Gurney Mutant
-	"MGURA0", // On Gurney
-	"MGURB0", // Escaping
-	"MGURC0",
-	"MGURD0",
-	"MGURE0", // Empty Gurney
-	"MGURF0", // Walk
-	"MGURG0",
-	"MGURH0",
-	"MGURI0",
-	"MGURJ0", // Attack
-	"MGURK0",
-	"MGURL0",
-	"MGURR0", // Dead
-	"MGURN0", // Death
-	"MGURO0",
-	"MGURP0",
-	"MGURQ0",
-	"MGURM0", // Pain
-
-	// Fluid Alien
-	"LIQAA0", // Puddle
-	"LIQAB0",
-	"LIQAC0",
-	"LIQAD0", // Attack
-	"LIQAE0",
-	"LIQAF0",
-	"LIQAG0",
-	"LIQAH0",
-	"LIQAI0",
-	"LIQAJ0",
-	"LIQAK0",
-	"LIQAL0", // Death
-	"LIQAM0",
-	"LIQAN0",
-	"LIQAO0",
-	"LIQAP0", // Dead
-	"LIQSA0", // Missile
-	"LIQSB0",
-	"LIQSC0",
-	"LIQSD0", // - Hit
-	"LIQSE0",
-	"LIQSF0",
 
 	// Generic Missiles
 	"SPT1A0", // Slime Glob
@@ -1039,40 +787,6 @@ sprites
 	"ELCPC0",
 	"ELCPD0", // Off
 
-	// Vertial Post
-	"VPSTA0", // Open
-	"VPSTB0",
-	"VPSTC0",
-	"VPSTD0",
-	"VPSTE0",
-	"VPSTF0",
-	"VPSTG0",
-	"VPSTH0", // Closed
-
-	// Vertical Spike
-	"VSPKA0", // Open
-	"VSPKB0",
-	"VSPKC0",
-	"VSPKD0",
-	"VSPKE0",
-	"VSPKF0",
-	"VSPKG0",
-	"VSPKH0", // Closed
-
-	// Oozes
-	"OOZ1A0", // Green
-	"OOZ1B0",
-	"OOZ1C0",
-	"OOZ2A0", // Gray
-	"OOZ2B0",
-	"OOZ2C0",
-	"OOZ3A0", // White
-	"OOZ3B0",
-	"OOZ3C0",
-	"OOZ4A0", // Black
-	"OOZ4B0",
-	"OOZ4C0",
-
 	// More Pickups
 	"CNDYA0", // Candy Bar
 	"CNDYB0", // - Eaten
@@ -1104,208 +818,7 @@ sprites
 	"MSPRC0",
 	"MSPRD0", // - Hit
 	"MSPRE0",
-	"MSPRF0",
-	"MSUPN0", // Morph
-	"MSUPO0",
-	"MSUPP0",
-	"MSUPQ0",
-	"MSUPR0",
-	"MSUPS0",
-	"MSUPT0",
-	"MSUPU0",
-	"MSUPV0",
-
-	// Breather Beast
-	"BBSTA0", // Walk
-	"BBSTB0",
-	"BBSTC0",
-	"BBSTD0",
-	"BBSTE0", // Attack
-	"BBSTF0",
-	"BBSTG0",
-	"BBSTM0", // Dead
-	"BBSTI0", // Death
-	"BBSTJ0",
-	"BBSTK0",
-	"BBSTL0",
-	"BBSTH0", // Pain
-
-	// Cyborg Warrior
-	"CYBWA0", // Walk
-	"CYBWB0",
-	"CYBWC0",
-	"CYBWD0",
-	"CYBWE0", // Attack
-	"CYBWF0",
-	"CYBWG0",
-	"CYBWM0", // Dead
-	"CYBWI0", // Death
-	"CYBWJ0",
-	"CYBWK0",
-	"CYBWL0",
-	"CYBWH0", // Pain
-
-	// Reptilian Warrior
-	"REPWA0", // Walk
-	"REPWB0",
-	"REPWC0",
-	"REPWD0",
-	"REPWE0", // Attack
-	"REPWF0",
-	"REPWG0",
-	"REPWM0", // Dead
-	"REPWI0", // Death
-	"REPWJ0",
-	"REPWK0",
-	"REPWL0",
-	"REPWH0", // Pain
-	"REPWN0", // Morph
-	"REPWO0",
-	"REPWP0",
-	"REPWQ0",
-	"REPWR0",
-	"REPWS0",
-	"REPWT0",
-	"REPWU0",
-	"REPWV0",
-
-	// Acid Dragon
-	"ADRGA0", // Walk
-	"ADRGB0",
-	"ADRGC0",
-	"ADRGD0",
-	"ADRGE0", // Attack
-	"ADRGF0",
-	"ADRGG0",
-	"ADRGM0", // Dead
-	"ADRGI0", // Death
-	"ADRGJ0",
-	"ADRGK0",
-	"ADRGL0",
-	"ADRGH0", // Pain
-	"ADPRA0", // Missile
-	"ADPRB0",
-	"ADPRC0",
-	"ADPRE0", // - Hit
-	"ADPRF0",
-	"ADPRG0",
-
-	// Bio-Mech Guardian
-	"BIOMA0", // Walk
-	"BIOMB0",
-	"BIOMC0",
-	"BIOMD0",
-	"BIOME0", // Attack
-	"BIOMF0",
-	"BIOMG0",
-	"BIOMM0", // Dead
-	"BIOMI0", // Death
-	"BIOMJ0",
-	"BIOMK0",
-	"BIOML0",
-	"BIOMH0", // Pain
-
-	// Giant Stalker
-	"STLKA0", // Walk
-	"STLKB0",
-	"STLKC0",
-	"STLKD0",
-	"STLKE0", // Attack
-	"STLKF0",
-	"STLKG0",
-	"STLKM0", // Dead
-	"STLKI0", // Death
-	"STLKJ0",
-	"STLKK0",
-	"STLKL0",
-	"STLKH0", // Pain
-
-	// Spector Demon
-	"SPECA0", // Walk
-	"SPECB0",
-	"SPECC0",
-	"SPECD0",
-	"SPECE0", // Attack
-	"SPECF0",
-	"SPECG0",
-	"SPECI0", // Death
-	"SPECJ0",
-	"SPECK0",
-	"SPECL0",
-	"SPECM0",
-	"SPECH0", // Pain
-
-	// Armored Stalker
-	"ARSTA0", // Walk
-	"ARSTB0",
-	"ARSTC0",
-	"ARSTD0",
-	"ARSTE0", // Attack
-	"ARSTF0",
-	"ARSTG0",
-	"ARSTM0", // Dead
-	"ARSTI0", // Death
-	"ARSTJ0",
-	"ARSTK0",
-	"ARSTL0",
-	"ARSTH0", // Pain
-
-	// Crawler Beast
-	"CRWLA0", // Walk
-	"CRWLB0",
-	"CRWLC0",
-	"CRWLD0",
-	"CRWLE0", // Attack
-	"CRWLF0",
-	"CRWLG0",
-	"CRWLM0", // Dead
-	"CRWLI0", // Death
-	"CRWLJ0",
-	"CRWLK0",
-	"CRWLL0",
-	"CRWLH0", // Pain
-	"SPT4A0", // Missile
-	"SPT4B0",
-	"SPT4C0",
-	"SPT4D0", // - Hit
-	"SPT4E0",
-	"SPT4F0",
-
-	// More Explosions
-	"PEXPA0", // Plasma Detonator
-	"PEXPB0",
-	"PEXPC0",
-	"PEXPD0",
-	"PEXPE0",
-	"PEXPF0",
-	"PEXPG0",
-	"PEXPH0",
-	"CEXPA0", // Clip
-	"CEXPB0",
-	"CEXPC0",
-	"CEXPD0",
-	"CEXPE0",
-	"CEXPF0",
-	"CEXPG0",
-	"CEXPH0",
-
-	// Anti-Plasma Cannon
-	"APCGA0":blakepspr, // Ready
-	"APCGB0":blakepspr, // Fire
-	"APCGC0":blakepspr,
-	"APCGD0":blakepspr,
-	"APCGE0":blakepspr,
-	"APCSA0", // Missile
-	"APCSB0",
-	"APCSC0",
-	"APCSE0", // - Explode
-	"APCSF0",
-	"APCSG0",
-	"APCSH0",
-	"APCSI0",
-	"APCSJ0",
-	"APCSK0",
-	"APCSL0"
+	"MSPRF0"
 }
 
 sounds

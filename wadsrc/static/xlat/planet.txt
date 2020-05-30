@@ -987,7 +987,7 @@ things
 	{172, LargeAlienCanister,       0, 0, 3} // TODO: Replace with LargeAlienCanisterStatic when below skill
 	{173, GurneyMutantSleep,        0, 0, 2} // TODO: Replace with GurneyMutantStatic when below skill
 	{174, ElectricPostBarrierOff,   0, 0, 0}
-	{175, ElectricPostBarrier,      0, 0, 0}
+	//{175, ElectricPostBarrier,      0, 0, 0}
 	// No 176
 	{177, SecurityCube,             0, 0, 0}
 	{178, SteamGrate,               0, 0, 0}
