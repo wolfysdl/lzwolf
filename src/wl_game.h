@@ -185,6 +185,8 @@ extern struct gametype
 	bool		fullmap;
 
 	LegacyHandle<HubWorld>   phubworld;
+
+	short       score_roll_wait;
 } gamestate;
 
 extern  char            demoname[13];

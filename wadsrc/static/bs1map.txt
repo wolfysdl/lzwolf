@@ -121,21 +121,21 @@ graphics
 	"WEAPON5",         // 114
 	"WAIT",            // 115
 	"READY",           // 116
-	"FONTN032",        // 117
-	"FONTN048",        // 118
-	"FONTN049",        // 119
-	"FONTN050",        // 120
-	"FONTN051",        // 121
-	"FONTN052",        // 122
-	"FONTN053",        // 123
-	"FONTN054",        // 124
-	"FONTN055",        // 125
-	"FONTN056",        // 126
-	"FONTN057",        // 127
-	"N_R",             // 128
-	"N_O",             // 129
-	"N_L",             // 130
-	"N_DASH",          // 131
+	"FONTN032",        // 117 (space)
+	"FONTN048",        // 118 (0)
+	"FONTN049",        // 119 (1)
+	"FONTN050",        // 120 (2)
+	"FONTN051",        // 121 (3)
+	"FONTN052",        // 122 (4)
+	"FONTN053",        // 123 (5)
+	"FONTN054",        // 124 (6)
+	"FONTN055",        // 125 (7)
+	"FONTN056",        // 126 (8)
+	"FONTN057",        // 127 (9)
+	"FONTN082",        // 128 (R)
+	"FONTN079",        // 129 (O)
+	"FONTN076",        // 130 (L)
+	"FONTN045",        // 131 (-)
 	"DIMLIGHT",        // 132
 	"BRILIGHT",        // 133
 	"ECGHGOOD",        // 134 ECG_HEART_GOOD

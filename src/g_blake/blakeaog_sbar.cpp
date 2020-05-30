@@ -34,6 +34,7 @@
 
 #include <deque>
 #include "wl_def.h"
+#include "wl_game.h"
 #include "a_inventory.h"
 #include "a_keys.h"
 #include "colormatcher.h"
@@ -304,6 +305,9 @@ protected:
 private:
 	int CurrentScore;
 	BlakeAOGHealthMonitor HealthMonitor;
+
+	static constexpr auto SCORE_ROLL_WAIT = 60 * 10; // Tics
+	static constexpr auto MAX_DISPLAY_SCORE = 9999999;
 };
 
 DBaseStatusBar *CreateStatusBar_BlakeAOG() { return new BlakeAOGStatusBar(); }
@@ -428,7 +432,20 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	health.Format("%3d%%", players[0].health);
 	DrawString(IndexFont, health, 149, 200 - STATUSLINES + 34, false, CR_LIGHTBLUE);
 
-	LatchNumber(256, 3, 7, CurrentScore, false, false);
+	auto draw_score = [this]() {
+		if (CurrentScore > MAX_DISPLAY_SCORE)
+		{
+			if (gamestate.score_roll_wait)
+				LatchString(256, 3, 7, " -ROLL-");
+			else
+				LatchNumber(256, 3, 7, CurrentScore % (MAX_DISPLAY_SCORE + 1), false, false);
+		}
+		else
+		{
+			LatchNumber(256, 3, 7, CurrentScore, false, false);
+		}
+	};
+	draw_score();
 
 	if(players[0].ReadyWeapon)
 	{
@@ -612,4 +629,7 @@ void BlakeAOGStatusBar::Tick()
 		CurrentScore += scoreDelta/4;
 	else
 		CurrentScore += clamp<int>(scoreDelta, 0, 8);
+
+	if (gamestate.score_roll_wait)
+		gamestate.score_roll_wait--;
 }

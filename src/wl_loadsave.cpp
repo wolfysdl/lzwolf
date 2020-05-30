@@ -545,7 +545,8 @@ static void Serialize(FArchive &arc)
 		<< gamestate.killtotal
 		<< gamestate.TimeCount
 		<< gamestate.victoryflag
-		<< *(gamestate.phubworld);
+		<< *(gamestate.phubworld)
+		<< gamestate.score_roll_wait;
 	if(SaveVersion >= 1393719642)
 		arc << gamestate.fullmap;
 	arc << LevelRatios.killratio
