@@ -19,7 +19,7 @@ IWad
 IWad
 {
 	Name = "Aliens of Gold"
-	Mapinfo = "mapinfo/planet.txt"
+	Mapinfo = "mapinfo/aog.txt"
 	MustContain = "TELEBACK"
 	Game = "BlakeAOG"
 }

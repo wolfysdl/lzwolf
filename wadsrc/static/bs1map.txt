@@ -1090,27 +1090,25 @@ digitalsounds
 
 music
 {
-	"CATACOMB",
-	"STICKS",
+	"S2100A",
+	"GOLDA",
 	"APOGFNFM",
-	"PLOT",
-	"CIRCLES",
-	"LASTLAFF",
-	"TOHELL",
-	"FORTRESS",
-	"GIVING",
-	"HARTBEAT",
-	"LURKING",
-	"MAJMIN",
-	"VACCINAP",
-	"DARKNESS",
-	"MONASTRY",
-	"TOMBP",
-	"TIME",
-	"MOURNING",
-	"SERPENT",
-	"HISCORE",
-	"THEME"
+	"DRKHALLA",
+	"FREEDOMA",
+	"GENEFUNK",
+	"TIMEA",
+	"HIDINGA",
+	"INCNRATN",
+	"JUNGLEA",
+	"LEVELA",
+	"MEETINGA",
+	"STRUTA",
+	"RACSHUFL",
+	"RUMBAA",
+	"SEARCHNA",
+	"THEME",
+	"THEWAYA",
+	"INTRIGEA"
 }
 
 textures
