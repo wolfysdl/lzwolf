@@ -33,6 +33,7 @@ public:
 	virtual void DrawActors();
 	virtual void UpdateFace (int damage=0) {}
 	virtual void WeaponGrin () {}
+	virtual void InfoMessage(FString key) {}
 };
 extern DBaseStatusBar *StatusBar;
 void	CreateStatusBar();

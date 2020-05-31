@@ -42,6 +42,7 @@
 #include "id_us.h"
 #include "id_vh.h"
 #include "id_sd.h"
+#include "language.h"
 #include "g_mapinfo.h"
 #include "v_font.h"
 #include "v_video.h"
@@ -276,6 +277,11 @@ void BlakeAOGHealthMonitor::Draw()
 	draw_hudpic(heart_picture_index, 120, 32);
 }
 
+class BlakeAOGInfoArea
+{
+public:
+};
+
 class BlakeAOGStatusBar : public DBaseStatusBar
 {
 public:
@@ -295,6 +301,8 @@ public:
 	}
 
 	void Tick();
+
+	void InfoMessage(FString key);
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
@@ -632,4 +640,10 @@ void BlakeAOGStatusBar::Tick()
 
 	if (gamestate.score_roll_wait)
 		gamestate.score_roll_wait--;
+}
+
+void BlakeAOGStatusBar::InfoMessage(FString key)
+{
+	auto msg = (key[0] == '$') ? language[key.Mid(1)] : key.GetChars();
+	printf("%s\n", msg);
 }

@@ -130,7 +130,7 @@ intermission DemoLoop
 	}
 }
 
-episode "MAP01"
+episode "MAP02"
 {
 }
 

@@ -663,6 +663,7 @@ void APlayerPawn::Cmd_Use()
 	bool doNothing = true;
 	bool isRepeatable = false;
 	BYTE lastTrigger = 0;
+	FString infoMessage;
 	MapSpot spot = map->GetSpot(checkx, checky, 0);
 	for(unsigned int i = 0;i < spot->triggers.Size();++i)
 	{
@@ -673,6 +674,7 @@ void APlayerPawn::Cmd_Use()
 			{
 				isRepeatable |= trig.repeatable;
 				lastTrigger = trig.action;
+				infoMessage = trig.infoMessage;
 				doNothing = false;
 			}
 		}
@@ -681,7 +683,11 @@ void APlayerPawn::Cmd_Use()
 	if(doNothing)
 		SD_PlaySound ("misc/do_nothing");
 	else
+	{
+		if(!infoMessage.IsEmpty())
+			StatusBar->InfoMessage(infoMessage);
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
+	}
 }
 
 /*

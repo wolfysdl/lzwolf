@@ -912,3 +912,5 @@ NOAH_QUIZ_A99A = "135"; // Wrong
 NOAH_QUIZ_A99B = "182"; // Correct
 NOAH_QUIZ_A99C = "199"; // Wrong
 
+// Blake AOG messages
+BLAKE_OPERATING_DOOR = "OPERATING DOOR.";

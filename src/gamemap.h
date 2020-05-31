@@ -127,6 +127,7 @@ class GameMap
 			bool			monsterUse;
 			bool			isSecret;
 			bool			repeatable;
+			FString         infoMessage;
 		};
 		struct Tile
 		{

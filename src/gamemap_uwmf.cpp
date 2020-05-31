@@ -255,6 +255,11 @@ void TextMapParser::ParseTrigger(Scanner &sc, MapTrigger &trigger)
 		sc.MustGetToken(TK_BoolConst);
 		trigger.repeatable = sc->boolean;
 	}
+	else CheckKey("infoMessage")
+	{
+		sc.MustGetToken(TK_StringConst);
+		trigger.infoMessage = sc->str;
+	}
 	else CheckKey("secret")
 	{
 		sc.MustGetToken(TK_BoolConst);
