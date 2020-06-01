@@ -280,7 +280,49 @@ void BlakeAOGHealthMonitor::Draw()
 class BlakeAOGInfoArea
 {
 public:
+	void Push(const std::string &msg);
+
+	void Tick();
+
+	std::string GetActiveMessage() const;
+
+private:
+	static constexpr auto DISPLAY_MSG_TIME = 5*60;
+
+	struct ActiveMsg
+	{
+		std::string str;
+		int ticsleft;
+	};
+	std::deque<ActiveMsg> active_msgs;
 };
+
+void BlakeAOGInfoArea::Push(const std::string &msg)
+{
+	active_msgs.push_front(ActiveMsg{msg, DISPLAY_MSG_TIME});
+}
+
+void BlakeAOGInfoArea::Tick()
+{
+	// tick the currently displayed message
+	if(active_msgs.size() > 0)
+	{
+		auto &am = active_msgs.front();
+		am.ticsleft--;
+		if(am.ticsleft < 0)
+			active_msgs.pop_front();
+	}
+}
+
+std::string BlakeAOGInfoArea::GetActiveMessage() const
+{
+	if(active_msgs.size() > 0)
+	{
+		auto &am = active_msgs.front();
+		return am.str;
+	}
+	return "";
+}
 
 class BlakeAOGStatusBar : public DBaseStatusBar
 {
@@ -306,16 +348,22 @@ public:
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
-	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false) const;
+	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false, bool centerV=false) const;
 	void LatchNumber (int x, int y, unsigned width, int32_t number, bool zerofill, bool cap);
 	void LatchString (int x, int y, unsigned width, const FString &str);
 
 private:
 	int CurrentScore;
 	BlakeAOGHealthMonitor HealthMonitor;
+	BlakeAOGInfoArea InfoArea;
 
 	static constexpr auto SCORE_ROLL_WAIT = 60 * 10; // Tics
 	static constexpr auto MAX_DISPLAY_SCORE = 9999999;
+
+	static constexpr auto INFOAREA_X = 3;
+	static constexpr auto INFOAREA_Y = 200 - STATUSLINES + 3;
+	static constexpr auto INFOAREA_W = 109;
+	static constexpr auto INFOAREA_H = 37;
 };
 
 DBaseStatusBar *CreateStatusBar_BlakeAOG() { return new BlakeAOGStatusBar(); }
@@ -533,15 +581,28 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	//}
 
 	HealthMonitor.Draw();
+
+	auto info_msg = InfoArea.GetActiveMessage();
+	if(info_msg.size() > 0)
+	{
+		FString str;
+		str.Format("%s", info_msg.c_str());
+
+		int x = INFOAREA_X + (INFOAREA_W/2);
+		int y = INFOAREA_Y + (INFOAREA_H/2);
+		DrawString(IndexFont, str, x, y, true, CR_WHITE, true, true);
+	}
 }
 
-void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center) const
+void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center, bool centerV) const
 {
 	word strWidth, strHeight;
 	VW_MeasurePropString(font, string, strWidth, strHeight);
 
 	if(center)
 		x -= strWidth/2.0;
+	if(centerV)
+		y -= strHeight/2.0;
 
 	const double startX = x;
 	FRemapTable *remap = font->GetColorTranslation(color);
@@ -640,10 +701,12 @@ void BlakeAOGStatusBar::Tick()
 
 	if (gamestate.score_roll_wait)
 		gamestate.score_roll_wait--;
+	
+	InfoArea.Tick();
 }
 
 void BlakeAOGStatusBar::InfoMessage(FString key)
 {
 	auto msg = (key[0] == '$') ? language[key.Mid(1)] : key.GetChars();
-	printf("%s\n", msg);
+	InfoArea.Push(msg);
 }
