@@ -284,7 +284,7 @@ public:
 
 	void Tick();
 
-	std::string GetActiveMessage() const;
+	FString GetActiveMessage() const;
 
 private:
 	static constexpr auto DISPLAY_MSG_TIME = 5*60;
@@ -314,14 +314,17 @@ void BlakeAOGInfoArea::Tick()
 	}
 }
 
-std::string BlakeAOGInfoArea::GetActiveMessage() const
+FString BlakeAOGInfoArea::GetActiveMessage() const
 {
 	if(active_msgs.size() > 0)
 	{
 		auto &am = active_msgs.front();
-		return am.str;
+		return am.str.c_str();
 	}
-	return "";
+
+	FString tokens_str;
+	tokens_str.Format("NO MESSAGES.\nFOOD TOKENS: %d", gamestate.tokens);
+	return tokens_str;
 }
 
 class BlakeAOGStatusBar : public DBaseStatusBar
@@ -348,7 +351,8 @@ public:
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
-	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false, bool centerV=false) const;
+	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false) const;
+	void DrawInfoMessage(FFont *font, const char* string, double x, double y, bool shadow) const;
 	void LatchNumber (int x, int y, unsigned width, int32_t number, bool zerofill, bool cap);
 	void LatchString (int x, int y, unsigned width, const FString &str);
 
@@ -583,26 +587,21 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	HealthMonitor.Draw();
 
 	auto info_msg = InfoArea.GetActiveMessage();
-	if(info_msg.size() > 0)
+	if(!info_msg.IsEmpty())
 	{
-		FString str;
-		str.Format("%s", info_msg.c_str());
-
 		int x = INFOAREA_X + (INFOAREA_W/2);
 		int y = INFOAREA_Y + (INFOAREA_H/2);
-		DrawString(IndexFont, str, x, y, true, CR_WHITE, true, true);
+		DrawInfoMessage(IndexFont, info_msg, x, y, true);
 	}
 }
 
-void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center, bool centerV) const
+void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center) const
 {
 	word strWidth, strHeight;
 	VW_MeasurePropString(font, string, strWidth, strHeight);
 
 	if(center)
 		x -= strWidth/2.0;
-	if(centerV)
-		y -= strHeight/2.0;
 
 	const double startX = x;
 	FRemapTable *remap = font->GetColorTranslation(color);
@@ -614,6 +613,96 @@ void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, do
 		{
 			y += font->GetHeight();
 			x = startX;
+			continue;
+		}
+
+		int chWidth;
+		FTexture *tex = font->GetChar(ch, &chWidth);
+		if(tex)
+		{
+			double tx, ty, tw, th;
+
+			if(shadow)
+			{
+				tx = x + 1, ty = y + 1, tw = tex->GetScaledWidthDouble(), th = tex->GetScaledHeightDouble();
+				screen->VirtualToRealCoords(tx, ty, tw, th, 320, 200, true, true);
+				screen->DrawTexture(tex, tx, ty,
+					DTA_DestWidthF, tw,
+					DTA_DestHeightF, th,
+					DTA_FillColor, GPalette.BlackIndex,
+					TAG_DONE);
+			}
+
+			tx = x, ty = y, tw = tex->GetScaledWidthDouble(), th = tex->GetScaledHeightDouble();
+			screen->VirtualToRealCoords(tx, ty, tw, th, 320, 200, true, true);
+			screen->DrawTexture(tex, tx, ty,
+				DTA_DestWidthF, tw,
+				DTA_DestHeightF, th,
+				DTA_Translation, remap,
+				TAG_DONE);
+		}
+		x += chWidth;
+	}
+}
+
+void BlakeAOGStatusBar::DrawInfoMessage(FFont *font, const char* string, double x, double y, bool shadow) const
+{
+	word strWidth = 0, strHeight = 0;
+	word lineSpacing = 6;
+
+	std::deque<word> lineWidths;
+
+	auto p = string;
+	while(*p != '\0')
+	{
+		if(strchr(p, '\n') != NULL)
+		{
+			auto nextp = strchr(p, '\n');
+			FString line(p, nextp - p);
+			p = nextp + 1;
+
+			word pWidth, pHeight;
+			VW_MeasurePropString(font, line.GetChars(), pWidth, pHeight);
+			lineWidths.push_back(pWidth);
+			strWidth = std::max(pWidth, strWidth);
+			strHeight += pHeight + lineSpacing;
+		}
+		else
+		{
+			word pWidth, pHeight;
+			VW_MeasurePropString(font, p, pWidth, pHeight);
+			lineWidths.push_back(pWidth);
+			strWidth = std::max(pWidth, strWidth);
+			strHeight += pHeight;
+			break;
+		}
+	}
+
+
+	auto xmid = x;
+	auto adjust_x_by_line = [&lineWidths, xmid, strWidth](double x, unsigned linenum) {
+		x = xmid;
+		x -= (lineWidths.size() > linenum ? lineWidths[linenum]/2.0 : strWidth/2.0);
+		return x;
+	};
+
+	y -= strHeight/2.0;
+
+	unsigned linenum = 0;
+	x = adjust_x_by_line(x, linenum);
+
+	auto color = CR_GRAY;
+
+	FRemapTable *remap = font->GetColorTranslation(color);
+
+	while(*string != '\0')
+	{
+		char ch = *string++;
+		if(ch == '\n')
+		{
+			y += font->GetHeight() + lineSpacing;
+			linenum++;
+			x = adjust_x_by_line(x, linenum);
 			continue;
 		}
 
