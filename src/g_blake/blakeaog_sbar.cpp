@@ -322,8 +322,20 @@ FString BlakeAOGInfoArea::GetActiveMessage() const
 		return am.str.c_str();
 	}
 
+	auto tokens = []() {
+		if(players[0].mo)
+		{
+			ACoinItem *coins = players[0].mo->FindInventory<ACoinItem>();
+			if(coins)
+			{
+				return coins->amount;
+			}
+		}
+		return (unsigned)0;
+	};
+
 	FString tokens_str;
-	tokens_str.Format("NO MESSAGES.\nFOOD TOKENS: %d", gamestate.tokens);
+	tokens_str.Format("NO MESSAGES.\nFOOD TOKENS: %d", tokens());
 	return tokens_str;
 }
 

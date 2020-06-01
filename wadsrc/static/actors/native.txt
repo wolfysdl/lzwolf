@@ -236,6 +236,13 @@ actor ScoreItem : Inventory native
 	inventory.amount 1
 }
 
+actor CoinItem : Inventory native
+{
+	inventory.amount 1
+	inventory.maxamount 25
+	inventory.pickupsound "misc/foodtoken"
+}
+
 actor Weapon : Inventory native
 {
 	inventory.pickupsound "misc/w_pkup"

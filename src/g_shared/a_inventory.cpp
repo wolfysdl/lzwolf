@@ -317,6 +317,30 @@ bool AHealth::TryPickup(AActor *toucher)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+IMPLEMENT_CLASS(CoinItem)
+
+bool ACoinItem::HandlePickup(AInventory *item, bool &good)
+{
+	auto nativecls = NATIVE_CLASS(CoinItem);
+	auto itemcls = item->GetClass();
+	if(itemcls == nativecls || itemcls->GetParent() == nativecls)
+	{
+		if(amount < maxamount)
+		{
+			amount += item->amount;
+			if(amount > maxamount)
+				amount = maxamount;
+			good = true;
+		}
+		else
+			good = false;
+		return true;
+	}
+	return Super::HandlePickup(item, good);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 IMPLEMENT_CLASS(Ammo)
 
 AInventory *AAmmo::CreateCopy(AActor *holder)
