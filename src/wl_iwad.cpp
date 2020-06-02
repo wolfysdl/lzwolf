@@ -472,8 +472,8 @@ static void ParseIWad(Scanner &sc)
 					iwad.Flags |= IWad::HELPHACK;
 				else if(sc->str.CompareNoCase("Registered") == 0)
 					iwad.Flags |= IWad::REGISTERED;
-				else if(sc->str.CompareNoCase("Preview") == 0)
-					iwad.Flags |= IWad::PREVIEW;
+				//else if(sc->str.CompareNoCase("Preview") == 0)
+				//	iwad.Flags |= IWad::PREVIEW;
 				else if(sc->str.CompareNoCase("Resource") == 0)
 					iwad.Flags |= IWad::RESOURCE;
 				else
