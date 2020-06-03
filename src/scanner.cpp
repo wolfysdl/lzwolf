@@ -741,8 +741,8 @@ bool Scanner::TokensLeft() const
 }
 
 // NOTE: Be sure that '\\' is the first thing in the array otherwise it will re-escape.
-static char escapeCharacters[] = {'\\', '"', 'n', 0};
-static char resultCharacters[] = {'\\', '"', '\n', 0};
+static char escapeCharacters[] = {'\\', '"', 'n', 'r', 0};
+static char resultCharacters[] = {'\\', '"', '\n', '\r', 0};
 const SCString &Scanner::Escape(SCString &str)
 {
 	for(unsigned int i = 0;escapeCharacters[i] != 0;i++)

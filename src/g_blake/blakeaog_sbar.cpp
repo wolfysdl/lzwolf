@@ -33,6 +33,7 @@
 */
 
 #include <deque>
+#include <vector>
 #include "wl_def.h"
 #include "wl_game.h"
 #include "a_inventory.h"
@@ -51,6 +52,8 @@
 #include "wl_play.h"
 #include "xs_Float.h"
 #include "thingdef/thingdef.h"
+
+#define TP_CNVT_CODE(c1, c2) ((c1) | (c2 << 8))
 
 enum
 {
@@ -286,6 +289,12 @@ public:
 
 	FString GetActiveMessage() const;
 
+	std::int16_t x, y;
+	std::int16_t left_margin;
+	enum EColorRange fontcolor;
+	enum EColorRange text_color;
+	enum EColorRange backgr_color;
+
 private:
 	static constexpr auto DISPLAY_MSG_TIME = 5*60;
 
@@ -335,7 +344,7 @@ FString BlakeAOGInfoArea::GetActiveMessage() const
 	};
 
 	FString tokens_str;
-	tokens_str.Format("NO MESSAGES.\nFOOD TOKENS: %d", tokens());
+	tokens_str.Format("%s: %d", language["BLAKE_FOOD_TOKENS"], tokens());
 	return tokens_str;
 }
 
@@ -363,15 +372,21 @@ public:
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
-	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false) const;
-	void DrawInfoMessage(FFont *font, const char* string, double x, double y, bool shadow) const;
+	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false, double *pEndX = nullptr) const;
 	void LatchNumber (int x, int y, unsigned width, int32_t number, bool zerofill, bool cap);
 	void LatchString (int x, int y, unsigned width, const FString &str);
+
+	void DrawInfoArea();
+	char* HandleControlCodes(char* first_ch);
+	std::uint16_t TP_VALUE(const char* ptr, std::int8_t num_nybbles);
+
+	enum EColorRange BlakeToColorRange(int16_t blakecolor) const;
 
 private:
 	int CurrentScore;
 	BlakeAOGHealthMonitor HealthMonitor;
 	BlakeAOGInfoArea InfoArea;
+	double LastDrawX;
 
 	static constexpr auto SCORE_ROLL_WAIT = 60 * 10; // Tics
 	static constexpr auto MAX_DISPLAY_SCORE = 9999999;
@@ -380,6 +395,13 @@ private:
 	static constexpr auto INFOAREA_Y = 200 - STATUSLINES + 3;
 	static constexpr auto INFOAREA_W = 109;
 	static constexpr auto INFOAREA_H = 37;
+
+	static constexpr auto INFOAREA_BCOLOR = 0x01;
+	static constexpr auto INFOAREA_CCOLOR = 0x1A;
+	static constexpr auto INFOAREA_TCOLOR = 0xA6;
+
+	static constexpr auto TP_RETURN_CHAR = '\r';
+	static constexpr auto TP_CONTROL_CHAR = '^';
 };
 
 DBaseStatusBar *CreateStatusBar_BlakeAOG() { return new BlakeAOGStatusBar(); }
@@ -598,16 +620,16 @@ void BlakeAOGStatusBar::DrawStatusBar()
 
 	HealthMonitor.Draw();
 
-	auto info_msg = InfoArea.GetActiveMessage();
-	if(!info_msg.IsEmpty())
-	{
-		int x = INFOAREA_X + (INFOAREA_W/2);
-		int y = INFOAREA_Y + (INFOAREA_H/2);
-		DrawInfoMessage(IndexFont, info_msg, x, y, true);
-	}
+	InfoArea.left_margin = INFOAREA_X;
+	InfoArea.text_color = BlakeToColorRange(INFOAREA_TCOLOR);
+	InfoArea.backgr_color = BlakeToColorRange(INFOAREA_BCOLOR);
+	InfoArea.x = InfoArea.left_margin;
+	InfoArea.y = INFOAREA_Y;
+
+	DrawInfoArea();
 }
 
-void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center) const
+void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center, double *pEndX) const
 {
 	word strWidth, strHeight;
 	VW_MeasurePropString(font, string, strWidth, strHeight);
@@ -655,95 +677,10 @@ void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, do
 		}
 		x += chWidth;
 	}
-}
 
-void BlakeAOGStatusBar::DrawInfoMessage(FFont *font, const char* string, double x, double y, bool shadow) const
-{
-	word strWidth = 0, strHeight = 0;
-	word lineSpacing = 6;
-
-	std::deque<word> lineWidths;
-
-	auto p = string;
-	while(*p != '\0')
+	if(pEndX != nullptr)
 	{
-		if(strchr(p, '\n') != NULL)
-		{
-			auto nextp = strchr(p, '\n');
-			FString line(p, nextp - p);
-			p = nextp + 1;
-
-			word pWidth, pHeight;
-			VW_MeasurePropString(font, line.GetChars(), pWidth, pHeight);
-			lineWidths.push_back(pWidth);
-			strWidth = std::max(pWidth, strWidth);
-			strHeight += pHeight + lineSpacing;
-		}
-		else
-		{
-			word pWidth, pHeight;
-			VW_MeasurePropString(font, p, pWidth, pHeight);
-			lineWidths.push_back(pWidth);
-			strWidth = std::max(pWidth, strWidth);
-			strHeight += pHeight;
-			break;
-		}
-	}
-
-
-	auto xmid = x;
-	auto adjust_x_by_line = [&lineWidths, xmid, strWidth](double x, unsigned linenum) {
-		x = xmid;
-		x -= (lineWidths.size() > linenum ? lineWidths[linenum]/2.0 : strWidth/2.0);
-		return x;
-	};
-
-	y -= strHeight/2.0;
-
-	unsigned linenum = 0;
-	x = adjust_x_by_line(x, linenum);
-
-	auto color = CR_GRAY;
-
-	FRemapTable *remap = font->GetColorTranslation(color);
-
-	while(*string != '\0')
-	{
-		char ch = *string++;
-		if(ch == '\n')
-		{
-			y += font->GetHeight() + lineSpacing;
-			linenum++;
-			x = adjust_x_by_line(x, linenum);
-			continue;
-		}
-
-		int chWidth;
-		FTexture *tex = font->GetChar(ch, &chWidth);
-		if(tex)
-		{
-			double tx, ty, tw, th;
-
-			if(shadow)
-			{
-				tx = x + 1, ty = y + 1, tw = tex->GetScaledWidthDouble(), th = tex->GetScaledHeightDouble();
-				screen->VirtualToRealCoords(tx, ty, tw, th, 320, 200, true, true);
-				screen->DrawTexture(tex, tx, ty,
-					DTA_DestWidthF, tw,
-					DTA_DestHeightF, th,
-					DTA_FillColor, GPalette.BlackIndex,
-					TAG_DONE);
-			}
-
-			tx = x, ty = y, tw = tex->GetScaledWidthDouble(), th = tex->GetScaledHeightDouble();
-			screen->VirtualToRealCoords(tx, ty, tw, th, 320, 200, true, true);
-			screen->DrawTexture(tex, tx, ty,
-				DTA_DestWidthF, tw,
-				DTA_DestHeightF, th,
-				DTA_Translation, remap,
-				TAG_DONE);
-		}
-		x += chWidth;
+		*pEndX = x;
 	}
 }
 
@@ -792,6 +729,18 @@ void BlakeAOGStatusBar::LatchString (int x, int y, unsigned width, const FString
 	}
 }
 
+enum EColorRange BlakeAOGStatusBar::BlakeToColorRange(int16_t blakecolor) const
+{
+	static std::map<int16_t, enum EColorRange> m;
+	if(m.empty())
+	{
+		m[0x01] = CR_DARKGRAY;
+		m[0xA6] = CR_GRAY;
+	}
+	auto it = m.find(blakecolor);
+	return (it != std::end(m) ? it->second : CR_WHITE);
+}
+
 void BlakeAOGStatusBar::Tick()
 {
 	int scoreDelta = players[0].score - CurrentScore;
@@ -810,4 +759,239 @@ void BlakeAOGStatusBar::InfoMessage(FString key)
 {
 	auto msg = (key[0] == '$') ? language[key.Mid(1)] : key.GetChars();
 	InfoArea.Push(msg);
+}
+
+// --------------------------------------------------------------------------
+// DrawInfoArea()
+//
+//
+// Active control codes:
+//
+//  ^ANnn                       - define animation
+//  ^FCnn                       - set font color
+//  ^LMnnn                      - set left margin (if 'nnn' == "fff" uses current x)
+//  ^EP                         - end of page (waits for 'M' to read MORE)
+//  ^PXnnn                      - move x to coordinate 'n'
+//  ^PYnnn                      - move y to coordinate 'n'
+//  ^SHnnn                      - display shape 'n' at current x,y
+//  ^BGn                                - set background color
+//  ^DM                         - Default Margins
+//
+// Other info:
+//
+// All 'n' values are hex numbers (0 - f), case insensitive.
+// The number of N's listed is the number of digits REQUIRED by that control
+// code. (IE: ^LMnnn MUST have 3 values! --> 003, 1a2, 01f, etc...)
+//
+// If a line consists only of control codes, the cursor is NOT advanced
+// to the next line (the ending <CR><LF> is skipped). If just ONE non-control
+// code is added, the number "8" for example, then the "8" is displayed
+// and the cursor is advanced to the next line.
+//
+// The text presenter now handles sprites, but they are NOT masked! Also,
+// sprite animations will be difficult to implement unless all frames are
+// of the same dimensions.
+//
+// --------------------------------------------------------------------------
+
+void BlakeAOGStatusBar::DrawInfoArea()
+{
+	int px = 0;
+	const std::int16_t IA_FONT_HEIGHT = 6;
+
+	char* first_ch;
+	char* scan_ch, temp;
+
+	auto info_msg = InfoArea.GetActiveMessage();
+	auto msg = info_msg.GetChars();
+
+	if (!*msg)
+	{
+		return;
+	}
+
+	std::vector<char> buffer(
+		msg,
+		msg + std::string::traits_type::length(msg) + 1);
+
+	first_ch = &buffer[0];
+
+	static FFont *IndexFont = V_GetFont("INDEXFON");
+	InfoArea.fontcolor = InfoArea.text_color;
+
+	while (first_ch && *first_ch)
+	{
+
+		if (*first_ch != TP_CONTROL_CHAR)
+		{
+			scan_ch = first_ch;
+
+			while ((*scan_ch) && (*scan_ch != '\n') && (*scan_ch != TP_RETURN_CHAR) && (*scan_ch != TP_CONTROL_CHAR))
+			{
+				scan_ch++;
+			}
+
+			// print current line
+			//
+
+			temp = *scan_ch;
+			*scan_ch = 0;
+
+			if (*first_ch != TP_RETURN_CHAR)
+			{
+				px = InfoArea.x;
+
+				double endX = px;
+				DrawString(IndexFont, first_ch, InfoArea.x, InfoArea.y,
+					true, InfoArea.fontcolor, false, &endX);
+				px = static_cast<int>(endX);
+			}
+
+			*scan_ch = temp;
+			first_ch = scan_ch;
+
+			// skip SPACES / RETURNS at end of line
+			//
+
+			if ((*first_ch == ' ') || (*first_ch == TP_RETURN_CHAR))
+			{
+				first_ch++;
+			}
+
+			// TP_CONTROL_CHARs don't advance to next character line
+			//
+
+			if (*scan_ch != TP_CONTROL_CHAR)
+			{
+				InfoArea.x = InfoArea.left_margin;
+				InfoArea.y += IA_FONT_HEIGHT;
+			}
+			else
+			{
+				InfoArea.x = px;
+			}
+		}
+		else
+		{
+			first_ch = HandleControlCodes(first_ch);
+		}
+	}
+}
+
+char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
+{
+	//piShapeInfo* shape;
+	//piAnimInfo* anim;
+	//std::uint16_t shapenum;
+	std::uint16_t left_margin;
+
+	first_ch++;
+
+#ifndef TP_CASE_SENSITIVE
+	*first_ch = toupper(*first_ch);
+	*(first_ch + 1) = toupper(*(first_ch + 1));
+#endif
+
+	std::uint16_t code = *reinterpret_cast<const std::uint16_t*>(first_ch);
+	first_ch += 2;
+
+	switch (code)
+	{
+
+		// INIT ANIMATION ---------------------------------------------------
+		//
+	//case TP_CNVT_CODE('A', 'N'):
+	//	shapenum = TP_VALUE(first_ch, 2);
+	//	first_ch += 2;
+	//	piAnimList[static_cast<int>(InfoAreaSetup.numanims)] = piAnimTable[shapenum];
+	//	anim = &piAnimList[static_cast<int>(InfoAreaSetup.numanims++)];
+	//	shape = &piShapeTable[anim->baseshape + anim->frame]; // BUG!! (assumes "pia_shapetable")
+
+	//	anim->y = InfoAreaSetup.y;
+	//	anim->x = DrawShape(InfoAreaSetup.x, InfoAreaSetup.y, shape->shapenum, shape->shapetype);
+	//	InfoAreaSetup.framecount = 3;
+	//	InfoAreaSetup.left_margin = InfoAreaSetup.x;
+	//	break;
+
+		// DRAW SHAPE -------------------------------------------------------
+		//
+	//case TP_CNVT_CODE('S', 'H'):
+
+	//	// NOTE : This needs to handle the left margin....
+
+	//	shapenum = TP_VALUE(first_ch, 3);
+	//	first_ch += 3;
+	//	shape = &piShapeTable[shapenum];
+
+	//	DrawShape(InfoAreaSetup.x, InfoAreaSetup.y, shape->shapenum, shape->shapetype);
+	//	InfoAreaSetup.left_margin = InfoAreaSetup.x;
+	//	break;
+
+		// FONT COLOR -------------------------------------------------------
+		//
+	case TP_CNVT_CODE('F', 'C'):
+		InfoArea.text_color = BlakeToColorRange(TP_VALUE(first_ch, 2));
+		InfoArea.fontcolor = InfoArea.text_color;
+		first_ch += 2;
+		break;
+
+		// BACKGROUND COLOR -------------------------------------------------
+		//
+	case TP_CNVT_CODE('B', 'G'):
+		InfoArea.backgr_color = BlakeToColorRange(TP_VALUE(first_ch, 2));
+		first_ch += 2;
+		break;
+
+		// DEFAULT MARGINS -------------------------------------------------
+		//
+	case TP_CNVT_CODE('D', 'M'):
+		InfoArea.left_margin = INFOAREA_X;
+		break;
+
+		// LEFT MARGIN ------------------------------------------------------
+		//
+	case TP_CNVT_CODE('L', 'M'):
+		left_margin = TP_VALUE(first_ch, 3);
+		first_ch += 3;
+		if (left_margin == 0xfff)
+		{
+			InfoArea.left_margin = InfoArea.x;
+		}
+		else
+		{
+			InfoArea.left_margin = left_margin;
+		}
+		break;
+	}
+
+	return first_ch;
+
+}
+
+std::uint16_t BlakeAOGStatusBar::TP_VALUE(const char* ptr, std::int8_t num_nybbles)
+{
+	char ch;
+	std::int8_t nybble;
+	std::int8_t shift;
+	std::uint16_t value = 0;
+
+	for (nybble = 0; nybble < num_nybbles; nybble++)
+	{
+		shift = 4 * (num_nybbles - nybble - 1);
+
+		ch = *ptr++;
+		if (isxdigit(ch))
+		{
+			if (isalpha(ch))
+			{
+				value |= (toupper(ch) - 'A' + 10) << shift;
+			}
+			else
+			{
+				value |= (ch - '0') << shift;
+			}
+		}
+	}
+
+	return value;
 }
