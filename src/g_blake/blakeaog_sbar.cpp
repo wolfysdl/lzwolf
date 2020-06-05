@@ -47,6 +47,7 @@
 #include "g_mapinfo.h"
 #include "v_font.h"
 #include "v_video.h"
+#include "r_data/colormaps.h"
 #include "wl_agent.h"
 #include "wl_def.h"
 #include "wl_play.h"
@@ -379,6 +380,7 @@ protected:
 	void DrawInfoArea();
 	char* HandleControlCodes(char* first_ch);
 	std::uint16_t TP_VALUE(const char* ptr, std::int8_t num_nybbles);
+	void ScaleSprite2D(FTexture *tex, int xcenter, int topoffset, unsigned height);
 
 	enum EColorRange BlakeToColorRange(int16_t blakecolor) const;
 
@@ -895,6 +897,22 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 	std::uint16_t code = *reinterpret_cast<const std::uint16_t*>(first_ch);
 	first_ch += 2;
 
+	auto draw_shape = [this](const char *texname) {
+		auto texid = TexMan.GetTexture(texname, FTexture::TEX_Sprite);
+		auto tex = TexMan(texid);
+
+		double stx = InfoArea.x + 0.5;
+		double sty = InfoArea.y + 0.5;
+		double stw = 37 - 0.5;
+		double sth = 37 - 0.5;
+		screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
+
+		VWB_Clear(0, stx, sty, stx+stw, sty+sth);
+		ScaleSprite2D(tex, static_cast<int>(stx + (stw/2)), FLOAT2FIXED(sty)>>13, FLOAT2FIXED(sth)>>13);
+
+		InfoArea.x += 37;
+	};
+
 	switch (code)
 	{
 
@@ -915,17 +933,15 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 
 		// DRAW SHAPE -------------------------------------------------------
 		//
-	//case TP_CNVT_CODE('S', 'H'):
+	case TP_CNVT_CODE('S', 'H'):
 
-	//	// NOTE : This needs to handle the left margin....
+		// NOTE : This needs to handle the left margin....
 
-	//	shapenum = TP_VALUE(first_ch, 3);
-	//	first_ch += 3;
-	//	shape = &piShapeTable[shapenum];
+		draw_shape(FString(first_ch, 6));
+		first_ch += 6;
 
-	//	DrawShape(InfoAreaSetup.x, InfoAreaSetup.y, shape->shapenum, shape->shapetype);
-	//	InfoAreaSetup.left_margin = InfoAreaSetup.x;
-	//	break;
+		InfoArea.left_margin = InfoArea.x;
+		break;
 
 		// FONT COLOR -------------------------------------------------------
 		//
@@ -994,4 +1010,41 @@ std::uint16_t BlakeAOGStatusBar::TP_VALUE(const char* ptr, std::int8_t num_nybbl
 	}
 
 	return value;
+}
+
+void BlakeAOGStatusBar::ScaleSprite2D(FTexture *tex, int xcenter, int topoffset, unsigned height)
+{
+	auto vbuf = screen->GetBuffer();
+	auto vbufPitch = screen->GetPitch();
+
+	// height is a 13.3 fixed point number indicating the number of screen
+	const double dyScale = (height/256.0);
+	const int upperedge = topoffset + height - static_cast<int>((tex->GetScaledTopOffsetDouble())*dyScale*8);
+
+	const double dxScale = (height/256.0);
+	const int actx = static_cast<int>(xcenter - tex->GetScaledLeftOffsetDouble()*dxScale);
+
+	const unsigned int startX = -MIN(actx, 0);
+	const unsigned int startY = -MIN(upperedge>>3, 0);
+	const fixed xStep = static_cast<fixed>(tex->xScale/dxScale);
+	const fixed yStep = static_cast<fixed>(tex->yScale/dyScale);
+	const fixed xRun = tex->GetWidth()<<FRACBITS;
+	const fixed yRun = tex->GetHeight()<<FRACBITS;
+
+	const BYTE *src;
+	byte *destBase = vbuf + actx + startX + vbufPitch*(upperedge>>3);
+	byte *dest = destBase;
+	unsigned int i;
+	fixed x, y;
+	for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i, dest = ++destBase)
+	{
+		src = tex->GetColumn((x>>FRACBITS), NULL);
+
+		for(y = startY*yStep;y < yRun;y += yStep)
+		{
+			if(src[y>>FRACBITS])
+				*dest = src[y>>FRACBITS];
+			dest += vbufPitch;
+		}
+	}
 }

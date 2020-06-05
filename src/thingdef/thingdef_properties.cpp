@@ -376,6 +376,12 @@ HANDLE_PROPERTY(height)
 	// For forwards compatibility solid actors should have a height of 64
 }
 
+HANDLE_PROPERTY(hitobituary)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString (AMETA_HitObituary, str);
+}
+
 HANDLE_PROPERTY(icon)
 {
 	STRING_PARAM(icon, 0);
@@ -387,6 +393,12 @@ HANDLE_PROPERTY(ignorearmor)
 {
 	INT_PARAM(ignorearmor, 0);
 	((ADamage *)defaults)->ignorearmor = ignorearmor?true:false;
+}
+
+HANDLE_PROPERTY(infomessage)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString(AMETA_InfoMessage, str);
 }
 
 HANDLE_PROPERTY(interhubamount)
@@ -531,12 +543,6 @@ HANDLE_PROPERTY(obituary)
 {
 	STRING_PARAM(str, 0);
 	cls->Meta.SetMetaString (AMETA_Obituary, str);
-}
-
-HANDLE_PROPERTY(hitobituary)
-{
-	STRING_PARAM(str, 0);
-	cls->Meta.SetMetaString (AMETA_HitObituary, str);
 }
 
 HANDLE_PROPERTY(overheadicon)
@@ -854,6 +860,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(hitobituary, Actor, T),
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
+	DEFINE_PROP(infomessage, Inventory, T),
 	DEFINE_PROP(interhubamount, Inventory, I),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),

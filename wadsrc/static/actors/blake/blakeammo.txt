@@ -3,6 +3,7 @@ actor ChargeUnit : Ammo
 	inventory.pickupsound "misc/ammo_pickup"
 	inventory.amount 8
 	inventory.maxamount 100
+	inventory.infomessage "$BLAKE_CHARGEUNIT"
 	states
 	{
 		Spawn:

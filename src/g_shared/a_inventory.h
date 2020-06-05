@@ -58,6 +58,7 @@ class AInventory : public AActor
 		virtual bool	Use();
 		virtual void	AbsorbDamage (int damage, FName damageType, int &newdamage);
 		virtual const char *PickupMessage ();
+		virtual const char *InfoMessage ();
 
 		ItemFlags		itemFlags;
 		TObjPtr<AActor>	owner;

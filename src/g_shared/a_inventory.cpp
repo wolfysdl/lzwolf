@@ -180,6 +180,11 @@ const char *AInventory::PickupMessage ()
 	return GetClass()->Meta.GetMetaString (AMETA_PickupMessage);
 }
 
+const char *AInventory::InfoMessage ()
+{
+	return GetClass()->Meta.GetMetaString (AMETA_InfoMessage);
+}
+
 void AInventory::Serialize(FArchive &arc)
 {
 	arc << itemFlags
@@ -219,6 +224,12 @@ void AInventory::Touch(AActor *toucher)
 	if(message != NULL)
 	{
 		Printf (PRINT_LOW, "%s\n", message);
+	}
+
+	const char *infomessage = InfoMessage ();
+	if(infomessage != NULL)
+	{
+		StatusBar->InfoMessage(infomessage);
 	}
 
 	PlaySoundLocActor(pickupsound, toucher);

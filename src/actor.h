@@ -67,6 +67,7 @@ enum
 	AMETA_ZoneLights,
 	AMETA_EnemyFactions,
 	AMETA_PickupMessage,
+	AMETA_InfoMessage,
 	AMETA_Obituary,			// string (player was killed by this actor)
 	AMETA_HitObituary,		// string (player was killed by this actor in melee)
 };
