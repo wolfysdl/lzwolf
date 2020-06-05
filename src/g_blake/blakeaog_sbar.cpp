@@ -908,7 +908,7 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 		screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
 
 		VWB_Clear(0, stx, sty, stx+stw, sty+sth);
-		ScaleSprite2D(tex, static_cast<int>(stx + (stw/2)), FLOAT2FIXED(sty)>>13, FLOAT2FIXED(sth)>>13);
+		ScaleSprite2D(tex, static_cast<int>(stx + (stw/2)), FLOAT2FIXED(sty+sth/2)>>13, FLOAT2FIXED(sth)>>14);
 
 		InfoArea.x += 37;
 	};
@@ -1021,7 +1021,7 @@ void BlakeAOGStatusBar::ScaleSprite2D(FTexture *tex, int xcenter, int topoffset,
 	const double dyScale = (height/256.0);
 	const int upperedge = topoffset + height - static_cast<int>((tex->GetScaledTopOffsetDouble())*dyScale*8);
 
-	const double dxScale = (height/256.0);
+	const double dxScale = (height/256.0)*FIXED2FLOAT(FixedDiv(FRACUNIT, yaspect));
 	const int actx = static_cast<int>(xcenter - tex->GetScaledLeftOffsetDouble()*dxScale);
 
 	const unsigned int startX = -MIN(actx, 0);

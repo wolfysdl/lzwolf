@@ -97,6 +97,7 @@ actor DualNeutronDisruptor : BlakeWeapon
 	attacksound "weapon/dualneutrondisruptor/attack"
 	inventory.icon "STWEAP4"
 	inventory.pickupsound "weapon/dualneutrondisruptor/pickup"
+	inventory.infomessage "$BLAKE_DUALNEUTRONDISRUPTOR"
 	states
 	{
 		Ready:
