@@ -685,7 +685,7 @@ void APlayerPawn::Cmd_Use()
 	else
 	{
 		if(!infoMessage.IsEmpty())
-			StatusBar->InfoMessage(infoMessage);
+			StatusBar->InfoMessage(infoMessage, FTextureID{});
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
 	}
 }

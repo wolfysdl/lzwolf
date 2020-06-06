@@ -38,6 +38,7 @@
 #include "templates.h"
 #include "thinker.h"
 #include "thingdef/thingdef.h"
+#include "r_sprites.h"
 #include "wl_def.h"
 #include "wl_agent.h"
 #include "wl_game.h"
@@ -203,6 +204,8 @@ void AInventory::Touch(AActor *toucher)
 	if(!(toucher->flags & FL_PICKUP))
 		return;
 
+	auto infomsg_texid = R_GetCurActorFrame(this);
+
 	if(!CallTryPickup(toucher))
 		return;
 
@@ -229,7 +232,7 @@ void AInventory::Touch(AActor *toucher)
 	const char *infomessage = InfoMessage ();
 	if(infomessage != NULL)
 	{
-		StatusBar->InfoMessage(infomessage);
+		StatusBar->InfoMessage(infomessage, infomsg_texid);
 	}
 
 	PlaySoundLocActor(pickupsound, toucher);

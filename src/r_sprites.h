@@ -82,5 +82,6 @@ public:
 
 void R_DrawZoomer(FTextureID texID);
 void R_DrawSpriteAsGraphic (AActor *actor);
+FTextureID R_GetCurActorFrame (AActor *actor);
 
 #endif

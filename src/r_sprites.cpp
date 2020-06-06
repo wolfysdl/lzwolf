@@ -805,3 +805,15 @@ void R_DrawSpriteAsGraphic (AActor *actor)
 
 	VWB_DrawGraphic(tex, actor->picX, actor->picY);
 }
+
+FTextureID R_GetCurActorFrame (AActor *actor)
+{
+	if(actor->sprite == SPR_NONE ||
+			loadedSprites[actor->sprite].numFrames == 0)
+	{
+		return FTextureID();
+	}
+	const auto &spr = spriteFrames[loadedSprites[actor->sprite].frames +
+		actor->state->frame];
+	return spr.texture[0];
+};

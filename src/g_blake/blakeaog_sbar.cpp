@@ -284,52 +284,60 @@ void BlakeAOGHealthMonitor::Draw()
 class BlakeAOGInfoArea
 {
 public:
-	void Push(const std::string &msg);
+	struct TActiveMessage
+	{
+		FString str;
+		FTextureID texid;
+	};
+
+	void Push(const std::pair<std::string, FTextureID> &msg);
 
 	void Tick();
 
-	FString GetActiveMessage() const;
+	TActiveMessage GetActiveMessage() const;
 
 	std::int16_t x, y;
 	std::int16_t left_margin;
 	enum EColorRange fontcolor;
 	enum EColorRange text_color;
 	enum EColorRange backgr_color;
+	FTextureID texid;
 
 private:
 	static constexpr auto DISPLAY_MSG_TIME = 5*60;
 
-	struct ActiveMsg
+	struct TPendingMsg
 	{
 		std::string str;
 		int ticsleft;
+		FTextureID texid;
 	};
-	std::deque<ActiveMsg> active_msgs;
+	std::deque<TPendingMsg> pending_msgs;
 };
 
-void BlakeAOGInfoArea::Push(const std::string &msg)
+void BlakeAOGInfoArea::Push(const std::pair<std::string, FTextureID> &msg)
 {
-	active_msgs.push_front(ActiveMsg{msg, DISPLAY_MSG_TIME});
+	pending_msgs.push_front(TPendingMsg{msg.first, DISPLAY_MSG_TIME, msg.second});
 }
 
 void BlakeAOGInfoArea::Tick()
 {
 	// tick the currently displayed message
-	if(active_msgs.size() > 0)
+	if(pending_msgs.size() > 0)
 	{
-		auto &am = active_msgs.front();
+		auto &am = pending_msgs.front();
 		am.ticsleft--;
 		if(am.ticsleft < 0)
-			active_msgs.pop_front();
+			pending_msgs.pop_front();
 	}
 }
 
-FString BlakeAOGInfoArea::GetActiveMessage() const
+auto BlakeAOGInfoArea::GetActiveMessage() const -> TActiveMessage
 {
-	if(active_msgs.size() > 0)
+	if(pending_msgs.size() > 0)
 	{
-		auto &am = active_msgs.front();
-		return am.str.c_str();
+		auto &pm = pending_msgs.front();
+		return TActiveMessage{pm.str.c_str(), pm.texid};
 	}
 
 	auto tokens = []() {
@@ -346,7 +354,7 @@ FString BlakeAOGInfoArea::GetActiveMessage() const
 
 	FString tokens_str;
 	tokens_str.Format("%s: %d", language["BLAKE_FOOD_TOKENS"], tokens());
-	return tokens_str;
+	return TActiveMessage{tokens_str, FTextureID{}};
 }
 
 class BlakeAOGStatusBar : public DBaseStatusBar
@@ -369,7 +377,7 @@ public:
 
 	void Tick();
 
-	void InfoMessage(FString key);
+	void InfoMessage(FString key, FTextureID texid);
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
@@ -757,10 +765,10 @@ void BlakeAOGStatusBar::Tick()
 	InfoArea.Tick();
 }
 
-void BlakeAOGStatusBar::InfoMessage(FString key)
+void BlakeAOGStatusBar::InfoMessage(FString key, FTextureID texid)
 {
 	auto msg = (key[0] == '$') ? language[key.Mid(1)] : key.GetChars();
-	InfoArea.Push(msg);
+	InfoArea.Push({msg, texid});
 }
 
 // --------------------------------------------------------------------------
@@ -805,7 +813,8 @@ void BlakeAOGStatusBar::DrawInfoArea()
 	char* scan_ch, temp;
 
 	auto info_msg = InfoArea.GetActiveMessage();
-	auto msg = info_msg.GetChars();
+	auto msg = info_msg.str.GetChars();
+	auto texid = info_msg.texid;
 
 	if (!*msg)
 	{
@@ -820,6 +829,7 @@ void BlakeAOGStatusBar::DrawInfoArea()
 
 	static FFont *IndexFont = V_GetFont("INDEXFON");
 	InfoArea.fontcolor = InfoArea.text_color;
+	InfoArea.texid = texid;
 
 	while (first_ch && *first_ch)
 	{
@@ -897,8 +907,7 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 	std::uint16_t code = *reinterpret_cast<const std::uint16_t*>(first_ch);
 	first_ch += 2;
 
-	auto draw_shape = [this](const char *texname) {
-		auto texid = TexMan.GetTexture(texname, FTexture::TEX_Sprite);
+	auto draw_shape = [this](FTextureID texid) {
 		auto tex = TexMan(texid);
 
 		double stx = InfoArea.x + 0.5;
@@ -937,8 +946,8 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 
 		// NOTE : This needs to handle the left margin....
 
-		draw_shape(FString(first_ch, 6));
-		first_ch += 6;
+		draw_shape(InfoArea.texid);
+		first_ch += 3; // do not use the 3-digit shapenum
 
 		InfoArea.left_margin = InfoArea.x;
 		break;
