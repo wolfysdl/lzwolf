@@ -340,20 +340,8 @@ auto BlakeAOGInfoArea::GetActiveMessage() const -> TActiveMessage
 		return TActiveMessage{pm.str.c_str(), pm.texid};
 	}
 
-	auto tokens = []() {
-		if(players[0].mo)
-		{
-			ACoinItem *coins = players[0].mo->FindInventory<ACoinItem>();
-			if(coins)
-			{
-				return coins->amount;
-			}
-		}
-		return (unsigned)0;
-	};
-
 	FString tokens_str;
-	tokens_str.Format("%s: %d", language["BLAKE_FOOD_TOKENS"], tokens());
+	tokens_str.Format("%s", language["BLAKE_FOOD_TOKENS"]);
 	return TActiveMessage{tokens_str, FTextureID{}};
 }
 
@@ -897,6 +885,18 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 	//std::uint16_t shapenum;
 	std::uint16_t left_margin;
 
+	auto tokens = []() {
+		if(players[0].mo)
+		{
+			ACoinItem *coins = players[0].mo->FindInventory<ACoinItem>();
+			if(coins)
+			{
+				return coins->amount;
+			}
+		}
+		return (unsigned)0;
+	};
+
 	first_ch++;
 
 #ifndef TP_CASE_SENSITIVE
@@ -985,6 +985,15 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 		else
 		{
 			InfoArea.left_margin = left_margin;
+		}
+		break;
+
+	case TP_CNVT_CODE('F', 'T'):
+		{
+			FString tokens_str;
+			tokens_str.Format("%2d", tokens());
+			first_ch[0] = tokens_str[0];
+			first_ch[1] = tokens_str[1];
 		}
 		break;
 	}
