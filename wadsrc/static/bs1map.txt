@@ -242,9 +242,9 @@ sprites
 	"CHRGA0", // Charge Pack (Full)
 	"RACSA0", // Red Access Card
 	"YACSA0", // Yellow Access Card
-	"APCPA0", // Anti-Plasma Cannon
+	"GACSA0", // Green Access Card
 	"BACSA0", // Blue Access Card
-	"YBOXA0", // Yellow Box
+	"OACSA0", // Gold Access Card
 	"OCHRA0", // Office Chair
 	"WBWLA0", // Water Bowl
 	"WBWLB0", // - Empty

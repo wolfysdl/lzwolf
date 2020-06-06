@@ -575,46 +575,60 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	//}
 
 	// Find keys in inventory
-	//int presentKeys = 0;
-	//if(players[0].mo)
-	//{
-	//	for(AInventory *item = players[0].mo->inventory;item != NULL;item = item->inventory)
-	//	{
-	//		if(item->IsKindOf(NATIVE_CLASS(Key)))
-	//		{
-	//			int slot = static_cast<AKey *>(item)->KeyNumber;
-	//			if(slot <= 3)
-	//				presentKeys |= 1<<(slot-1);
-	//			if(presentKeys == 0x7)
-	//				break;
-	//		}
-	//	}
-	//}
+	int presentKeys = 0;
+	if(players[0].mo)
+	{
+		for(AInventory *item = players[0].mo->inventory;item != NULL;item = item->inventory)
+		{
+			if(item->IsKindOf(NATIVE_CLASS(Key)))
+			{
+				int slot = static_cast<AKey *>(item)->KeyNumber;
+				if(slot <= 5)
+					presentKeys |= 1<<(slot-1);
+				if(presentKeys == 0x1f)
+					break;
+			}
+		}
+	}
 
-	//static FTextureID Keys[4] = {
-	//	TexMan.GetTexture("STKEYS0", FTexture::TEX_Any),
-	//	TexMan.GetTexture("STKEYS1", FTexture::TEX_Any),
-	//	TexMan.GetTexture("STKEYS2", FTexture::TEX_Any),
-	//	TexMan.GetTexture("STKEYS3", FTexture::TEX_Any)
-	//};
-	//for(unsigned int i = 0;i < 3;++i)
-	//{
-	//	FTexture *tex;
-	//	if(presentKeys & (1<<i))
-	//		tex = TexMan(Keys[i+1]);
-	//	else
-	//		tex = TexMan(Keys[0]);
+	auto draw_keys = [](int keys) {
+		static constexpr auto NUMKEYS = 5;
+		static const int indices[NUMKEYS] = {
+			0, 1, 3, 2, 4,
+		}; // indices
 
-	//	stx = 120+16*i;
-	//	sty = 179;
-	//	stw = tex->GetScaledWidthDouble();
-	//	sth = tex->GetScaledHeightDouble();
-	//	screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
-	//	screen->DrawTexture(tex, stx, sty,
-	//		DTA_DestWidthF, stw,
-	//		DTA_DestHeightF, sth,
-	//		TAG_DONE);
-	//}
+		static const std::uint8_t off_colors[NUMKEYS] = {
+			0x11, 0x31, 0x91, 0x51, 0x21,
+		}; // off_colors
+
+		static const std::uint8_t on_colors[NUMKEYS] = {
+			0xC9, 0xB9, 0x9C, 0x5B, 0x2B,
+		}; // on_colors
+
+		for (auto i = 0; i < 5; ++i)
+		{
+			int index = indices[i];
+			std::uint8_t color = 0;
+
+			if (keys & (1<<i))
+			{
+				color = on_colors[index];
+			}
+			else
+			{
+				color = off_colors[index];
+			}
+
+			double stx = 257 + (i * 8);
+			double sty = 200 - STATUSLINES + 25;
+			double stw = 7;
+			double sth = 7;
+			screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
+
+			VWB_Clear(color, stx, sty, stx+stw, sty+sth);
+		}
+	};
+	draw_keys(presentKeys);
 
 	HealthMonitor.Draw();
 

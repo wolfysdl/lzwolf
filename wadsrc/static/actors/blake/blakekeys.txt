@@ -33,3 +33,27 @@ actor BlueAccessKey : Key
 			stop
 	}
 }
+
+actor GreenAccessKey : Key
+{
+	inventory.infomessage "$BLAKE_GREENACCESSKEY"
+	+INVENTORY.ALWAYSPICKUP
+	states
+	{
+		Spawn:
+			GACS A -1
+			stop
+	}
+}
+
+actor GoldAccessKey : Key
+{
+	inventory.infomessage "$BLAKE_GOLDACCESSKEY"
+	+INVENTORY.ALWAYSPICKUP
+	states
+	{
+		Spawn:
+			OACS A -1
+			stop
+	}
+}

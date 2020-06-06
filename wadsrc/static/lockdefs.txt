@@ -90,12 +90,24 @@ Lock 2 BlakeAOG
 
 Lock 3 BlakeAOG
 {
+	GreenAccessKey
+}
+
+Lock 4 BlakeAOG
+{
 	BlueAccessKey
+}
+
+Lock 5 BlakeAOG
+{
+	GoldAccessKey
 }
 
 Lock 101 BlakeAOG
 {
 	RedAccessKey
 	YellowAccessKey
+	GreenAccessKey
 	BlueAccessKey
+	GoldAccessKey
 }
