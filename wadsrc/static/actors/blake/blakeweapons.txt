@@ -45,6 +45,7 @@ actor SlowFireProtector : BlakeWeapon
 	attacksound "weapon/slowfireprotector/attack"
 	inventory.icon "STWEAP2"
 	inventory.pickupsound "weapon/slowfireprotector/pickup"
+	inventory.infomessage "$BLAKE_SLOWFIREPROTECTOR"
 	+WEAPON.NOAUTOFIRE
 	states
 	{
@@ -67,6 +68,7 @@ actor RapidAssaultWeapon : BlakeWeapon
 	attacksound "weapon/rapidassaultweapon/attack"
 	inventory.icon "STWEAP3"
 	inventory.pickupsound "weapon/rapidassaultweapon/pickup"
+	inventory.infomessage "$BLAKE_RAPIDASSAULTWEAPON"
 	states
 	{
 		Ready:
@@ -149,6 +151,7 @@ actor PlasmaDischargeUnit : BlakeWeapon
 {
 	inventory.icon "STWEAP5"
 	inventory.pickupsound "weapon/plasmadischargeunit/pickup"
+	inventory.infomessage "$BLAKE_PLASMADISCHARGEUNIT"
 	weapon.ammouse1 4
 	states
 	{
@@ -194,6 +197,7 @@ actor AntiPlasmaCannon : BlakeWeapon
 {
 	inventory.icon "STWEAP6"
 	inventory.pickupsound "weapon/antiplasmacannon/pickup"
+	inventory.infomessage "$BLAKE_ANTIPLASMACANNON"
 	weapon.ammouse1 8
 	states
 	{

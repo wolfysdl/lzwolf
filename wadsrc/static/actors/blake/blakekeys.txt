@@ -1,5 +1,6 @@
 actor RedAccessKey : Key
 {
+	inventory.infomessage "$BLAKE_REDACCESSKEY"
 	+INVENTORY.ALWAYSPICKUP
 	states
 	{
@@ -11,6 +12,7 @@ actor RedAccessKey : Key
 
 actor YellowAccessKey : Key
 {
+	inventory.infomessage "$BLAKE_YELLOWACCESSKEY"
 	+INVENTORY.ALWAYSPICKUP
 	states
 	{
@@ -22,6 +24,7 @@ actor YellowAccessKey : Key
 
 actor BlueAccessKey : Key
 {
+	inventory.infomessage "$BLAKE_BLUEACCESSKEY"
 	+INVENTORY.ALWAYSPICKUP
 	states
 	{

@@ -88,15 +88,3 @@ actor Gold1Bar : ScoreItem
 			stop
 	}
 }
-
-actor FoodToken : CoinItem
-{
-	inventory.amount 1
-	inventory.infomessage "$BLAKE_FOODTOKEN"
-	states
-	{
-		Spawn:
-			CON1 A -1
-			stop
-	}
-}
