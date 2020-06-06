@@ -198,6 +198,7 @@ class AActor : public Thinker,
 
 		virtual void	Tick();
 		virtual void	Touch(AActor *toucher) {}
+		virtual const char *InfoMessage ();
 
 		fixed           &GetCoordRef (unsigned int axis);
 

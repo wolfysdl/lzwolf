@@ -894,6 +894,11 @@ int32_t AActor::SpawnHealth() const
 	return GetClass()->Meta.GetMetaInt(AMETA_DefaultHealth1 + gamestate.difficulty->SpawnFilter, health);
 }
 
+const char *AActor::InfoMessage ()
+{
+	return GetClass()->Meta.GetMetaString (AMETA_InfoMessage);
+}
+
 DEFINE_SYMBOL(Actor, angle)
 DEFINE_SYMBOL(Actor, health)
 DEFINE_SYMBOL(Actor, loaded)

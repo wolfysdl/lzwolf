@@ -3,7 +3,7 @@ actor ChargeUnit : Ammo
 	inventory.pickupsound "misc/ammo_pickup"
 	inventory.amount 8
 	inventory.maxamount 100
-	inventory.infomessage "$BLAKE_CHARGEUNIT"
+	infomessage "$BLAKE_CHARGEUNIT"
 	states
 	{
 		Spawn:
@@ -14,7 +14,7 @@ actor ChargeUnit : Ammo
 
 actor ChargePack : ChargeUnit
 {
-	inventory.infomessage "$BLAKE_CHARGEPACK"
+	infomessage "$BLAKE_CHARGEPACK"
 	states
 	{
 		Spawn:
@@ -29,7 +29,7 @@ actor ChargePack : ChargeUnit
 actor ConcessionCoin : CoinItem
 {
 	inventory.pickupsound "misc/coin_pickup"
-	inventory.infomessage "$BLAKE_FOODTOKEN"
+	infomessage "$BLAKE_FOODTOKEN"
 	states
 	{
 		Spawn:
@@ -42,7 +42,7 @@ actor ConcessionCoin5 : CoinItem
 {
 	inventory.pickupsound "misc/coin_pickup"
 	inventory.amount 5
-	inventory.infomessage "$BLAKE_FOODTOKEN5"
+	infomessage "$BLAKE_FOODTOKEN5"
 	states
 	{
 		Spawn:

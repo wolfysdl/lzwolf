@@ -860,7 +860,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(hitobituary, Actor, T),
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
-	DEFINE_PROP(infomessage, Inventory, T),
+	DEFINE_PROP(infomessage, Actor, T),
 	DEFINE_PROP(interhubamount, Inventory, I),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),

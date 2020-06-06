@@ -19,6 +19,7 @@
 #include "m_random.h"
 #include "g_mapinfo.h"
 #include "thinker.h"
+#include "r_sprites.h"
 #include "wl_draw.h"
 #include "wl_game.h"
 #include "wl_iwad.h"
@@ -330,6 +331,16 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 		mo->inventory->AbsorbDamage(points,
 			damagetype ? damagetype->GetName() : FName(), newdam);
 		points = newdam;
+	}
+
+	if (attacker)
+	{
+		auto infomessage = attacker->InfoMessage();
+		if (infomessage != NULL)
+		{
+			auto infomsg_texid = R_GetCurActorFrame(attacker);
+			StatusBar->InfoMessage(infomessage, infomsg_texid);
+		}
 	}
 
 	if (!godmode)

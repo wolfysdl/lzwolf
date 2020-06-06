@@ -941,18 +941,12 @@ char* BlakeAOGStatusBar::HandleControlCodes(char* first_ch)
 
 		// INIT ANIMATION ---------------------------------------------------
 		//
-	//case TP_CNVT_CODE('A', 'N'):
-	//	shapenum = TP_VALUE(first_ch, 2);
-	//	first_ch += 2;
-	//	piAnimList[static_cast<int>(InfoAreaSetup.numanims)] = piAnimTable[shapenum];
-	//	anim = &piAnimList[static_cast<int>(InfoAreaSetup.numanims++)];
-	//	shape = &piShapeTable[anim->baseshape + anim->frame]; // BUG!! (assumes "pia_shapetable")
+	case TP_CNVT_CODE('A', 'N'):
+		draw_shape(InfoArea.texid);
+		first_ch += 2; // do not use the 2-digit animnum
 
-	//	anim->y = InfoAreaSetup.y;
-	//	anim->x = DrawShape(InfoAreaSetup.x, InfoAreaSetup.y, shape->shapenum, shape->shapetype);
-	//	InfoAreaSetup.framecount = 3;
-	//	InfoAreaSetup.left_margin = InfoAreaSetup.x;
-	//	break;
+		InfoArea.left_margin = InfoArea.x;
+		break;
 
 		// DRAW SHAPE -------------------------------------------------------
 		//

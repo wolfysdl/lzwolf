@@ -57,6 +57,7 @@ actor SectorGuard : RentACop
 	attacksound "sectorguard/attack"
 	seesound "sectorguard/sight"
 	deathsound "sectorguard/death"
+	infomessage "$BLAKE_SECTORGUARD"
 	states
 	{
 		Spawn:

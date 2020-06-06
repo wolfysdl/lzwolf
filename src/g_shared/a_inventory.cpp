@@ -181,11 +181,6 @@ const char *AInventory::PickupMessage ()
 	return GetClass()->Meta.GetMetaString (AMETA_PickupMessage);
 }
 
-const char *AInventory::InfoMessage ()
-{
-	return GetClass()->Meta.GetMetaString (AMETA_InfoMessage);
-}
-
 void AInventory::Serialize(FArchive &arc)
 {
 	arc << itemFlags
