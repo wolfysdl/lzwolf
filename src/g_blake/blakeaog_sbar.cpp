@@ -284,13 +284,14 @@ void BlakeAOGHealthMonitor::Draw()
 class BlakeAOGInfoArea
 {
 public:
+	using TTexIDs = std::vector<FTextureID>;
 	struct TActiveMessage
 	{
 		FString str;
-		FTextureID texid;
+		TTexIDs texids;
 	};
 
-	void Push(const std::pair<std::string, FTextureID> &msg);
+	void Push(const std::pair<std::string, TTexIDs> &msg);
 
 	void Tick();
 
@@ -310,12 +311,12 @@ private:
 	{
 		std::string str;
 		int ticsleft;
-		FTextureID texid;
+		TTexIDs texids;
 	};
 	std::deque<TPendingMsg> pending_msgs;
 };
 
-void BlakeAOGInfoArea::Push(const std::pair<std::string, FTextureID> &msg)
+void BlakeAOGInfoArea::Push(const std::pair<std::string, TTexIDs> &msg)
 {
 	pending_msgs.push_front(TPendingMsg{msg.first, DISPLAY_MSG_TIME, msg.second});
 }
@@ -337,12 +338,12 @@ auto BlakeAOGInfoArea::GetActiveMessage() const -> TActiveMessage
 	if(pending_msgs.size() > 0)
 	{
 		auto &pm = pending_msgs.front();
-		return TActiveMessage{pm.str.c_str(), pm.texid};
+		return TActiveMessage{pm.str.c_str(), pm.texids};
 	}
 
 	FString tokens_str;
 	tokens_str.Format("%s", language["BLAKE_FOOD_TOKENS"]);
-	return TActiveMessage{tokens_str, FTextureID{}};
+	return TActiveMessage{tokens_str, TTexIDs{}};
 }
 
 class BlakeAOGStatusBar : public DBaseStatusBar
@@ -365,7 +366,7 @@ public:
 
 	void Tick();
 
-	void InfoMessage(FString key, FTextureID texid);
+	void InfoMessage(FString key, const std::vector<FTextureID> &texids);
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
@@ -767,10 +768,10 @@ void BlakeAOGStatusBar::Tick()
 	InfoArea.Tick();
 }
 
-void BlakeAOGStatusBar::InfoMessage(FString key, FTextureID texid)
+void BlakeAOGStatusBar::InfoMessage(FString key, const std::vector<FTextureID>& texids)
 {
 	auto msg = (key[0] == '$') ? language[key.Mid(1)] : key.GetChars();
-	InfoArea.Push({msg, texid});
+	InfoArea.Push({msg, texids});
 }
 
 // --------------------------------------------------------------------------
@@ -816,7 +817,11 @@ void BlakeAOGStatusBar::DrawInfoArea()
 
 	auto info_msg = InfoArea.GetActiveMessage();
 	auto msg = info_msg.str.GetChars();
-	auto texid = info_msg.texid;
+	const auto &texids = info_msg.texids;
+
+	unsigned int millis = gamestate.TimeCount*1000/70;
+	const auto texid = (texids.size() < 1 ? FTextureID() :
+			texids[(millis / 300) % texids.size()]);
 
 	if (!*msg)
 	{

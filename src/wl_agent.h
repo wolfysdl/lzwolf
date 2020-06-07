@@ -1,6 +1,7 @@
 #ifndef __WL_AGENT__
 #define __WL_AGENT__
 
+#include <vector>
 #include "wl_def.h"
 #include "a_playerpawn.h"
 #include "weaponslots.h"
@@ -33,7 +34,8 @@ public:
 	virtual void DrawActors();
 	virtual void UpdateFace (int damage=0) {}
 	virtual void WeaponGrin () {}
-	virtual void InfoMessage(FString key, FTextureID texid) {}
+	virtual void InfoMessage(FString key,
+			const std::vector<FTextureID> &texids) {}
 };
 extern DBaseStatusBar *StatusBar;
 void	CreateStatusBar();

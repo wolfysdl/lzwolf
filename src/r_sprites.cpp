@@ -817,3 +817,31 @@ FTextureID R_GetCurActorFrame (AActor *actor)
 		actor->state->frame];
 	return spr.texture[0];
 };
+
+std::vector<FTextureID> R_GetPathFrames (AActor *actor)
+{
+	if(actor->PathState == NULL)
+	{
+		return std::vector<FTextureID>(1, R_GetCurActorFrame(actor));
+	}
+
+	std::vector<FTextureID> texids;
+
+	auto frame = actor->PathState;
+	auto start_frame = frame;
+	do
+	{
+		if(loadedSprites[frame->spriteInf].numFrames > 0)
+		{
+			const auto &spr = spriteFrames[loadedSprites[
+				frame->spriteInf].frames + frame->frame];
+			auto texid = spr.texture[spr.rotations == 8 ? 7 : 0];
+			if(texids.empty() || texid != texids.back())
+				texids.push_back(texid);
+		}
+		frame = frame->next;
+	}
+	while (frame != NULL && frame != start_frame);
+
+	return texids;
+};

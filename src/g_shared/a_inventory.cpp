@@ -227,7 +227,7 @@ void AInventory::Touch(AActor *toucher)
 	const char *infomessage = InfoMessage ();
 	if(infomessage != NULL)
 	{
-		StatusBar->InfoMessage(infomessage, infomsg_texid);
+		StatusBar->InfoMessage(infomessage, {infomsg_texid});
 	}
 
 	PlaySoundLocActor(pickupsound, toucher);

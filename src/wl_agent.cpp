@@ -338,8 +338,8 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 		auto infomessage = attacker->InfoMessage();
 		if (infomessage != NULL)
 		{
-			auto infomsg_texid = R_GetCurActorFrame(attacker);
-			StatusBar->InfoMessage(infomessage, infomsg_texid);
+			auto infomsg_texids = R_GetPathFrames(attacker);
+			StatusBar->InfoMessage(infomessage, infomsg_texids);
 		}
 	}
 
@@ -696,7 +696,7 @@ void APlayerPawn::Cmd_Use()
 	else
 	{
 		if(!infoMessage.IsEmpty())
-			StatusBar->InfoMessage(infoMessage, FTextureID{});
+			StatusBar->InfoMessage(infoMessage, {});
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
 	}
 }
