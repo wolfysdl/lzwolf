@@ -85,6 +85,6 @@ void R_DrawZoomer(FTextureID texID);
 void R_DrawSpriteAsGraphic (AActor *actor);
 
 FTextureID R_GetCurActorFrame (AActor *actor);
-std::vector<FTextureID> R_GetPathFrames (AActor *actor);
+std::vector<FTextureID> R_GetAttackingFrames (AActor *actor);
 
 #endif

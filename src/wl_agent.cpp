@@ -338,7 +338,7 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 		auto infomessage = attacker->InfoMessage();
 		if (infomessage != NULL)
 		{
-			auto infomsg_texids = R_GetPathFrames(attacker);
+			auto infomsg_texids = R_GetAttackingFrames(attacker);
 			StatusBar->InfoMessage(infomessage, infomsg_texids);
 		}
 	}

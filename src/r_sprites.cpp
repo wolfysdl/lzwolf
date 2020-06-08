@@ -818,16 +818,16 @@ FTextureID R_GetCurActorFrame (AActor *actor)
 	return spr.texture[0];
 };
 
-std::vector<FTextureID> R_GetPathFrames (AActor *actor)
+std::vector<FTextureID> R_GetAttackingFrames (AActor *actor)
 {
-	if(actor->PathState == NULL)
+	if(actor->PathState == NULL && actor->SeeState == NULL)
 	{
 		return std::vector<FTextureID>(1, R_GetCurActorFrame(actor));
 	}
 
 	std::vector<FTextureID> texids;
 
-	auto frame = actor->PathState;
+	auto frame = (actor->PathState != NULL ? actor->PathState : actor->SeeState);
 	auto start_frame = frame;
 	do
 	{
