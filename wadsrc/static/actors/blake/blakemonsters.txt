@@ -111,6 +111,7 @@ actor ProGuard : WolfensteinMonster
 	dropitem "RapidAssaultWeapon"
 	dropitem "ChargePack"
 	dropitem "ConcessionCoin", 64
+	infomessage "$BLAKE_STARSENTINEL"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -160,6 +161,7 @@ actor TechWarrior : ProGuard
 	attacksound "techwarrior/attack"
 	seesound "techwarrior/sight"
 	deathsound "techwarrior/death"
+	infomessage "$BLAKE_TECHWARRIOR"
 	states
 	{
 		Spawn:
@@ -217,6 +219,7 @@ actor STARTrooper : WolfensteinMonster
 	dropitem "RapidAssaultWeapon"
 	dropitem "ChargePack"
 	dropitem "ConcessionCoin", 64
+	infomessage "$BLAKE_STARTROOPER"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -275,6 +278,7 @@ actor AlienProtector : STARTrooper
 	attacksound "alienprotector/attack"
 	seesound "alienprotector/sight"
 	deathsound "alienprotector/death"
+	infomessage "$BLAKE_ALIENPROTECTOR"
 	states
 	{
 		Spawn:
@@ -340,6 +344,7 @@ actor GeneralScientist : WolfensteinMonster
 	deathsound "scientist/death"
 	dropitem "ConcessionCoin", 64
 	dropitem "ChargePack"
+	infomessage "$BLAKE_GENERALSCIENTIST"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -483,6 +488,7 @@ actor GeneticGuard : WolfensteinMonster
 	deathsound "geneticguard/death"
 	dropitem "SlowFireProtector"
 	dropitem "ChargePack"
+	infomessage "$BLAKE_GENETICGUARD"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -532,6 +538,7 @@ actor CyborgWarrior : WolfensteinMonster
 	seesound "cyborgwarrior/sight"
 	deathsound "cyborgwarrior/death"
 	dropitem "ChargePack"
+	infomessage "$BLAKE_CYBORGWARRIOR"
 	states
 	{
 		Spawn:
@@ -601,6 +608,7 @@ actor SpiderMutant : WolfensteinMonster
 	sighttime 1
 	seesound "spidermutant/sight"
 	deathsound "spidermutant/death"
+	infomessage "$BLAKE_SPIDERMUTANT"
 	states
 	{
 		Spawn:
@@ -690,6 +698,7 @@ actor AcidDragon : WolfensteinMonster
 	sighttime 1
 	seesound "aciddragon/sight"
 	deathsound "aciddragon/death"
+	infomessage "$BLAKE_ACIDDRAGON"
 	states
 	{
 		Spawn:
@@ -733,6 +742,7 @@ actor BreatherBeast : WolfensteinMonster
 	attacksound "breatherbeast/attack"
 	seesound "breatherbeast/sight"
 	deathsound "breatherbeast/death"
+	infomessage "$BLAKE_BREATHERBEAST"
 	states
 	{
 		Spawn:
@@ -777,6 +787,7 @@ actor BioMechGuardian : WolfensteinMonster
 	attacksound "biomechguardian/attack"
 	seesound "biomechguardian/sight"
 	deathsound "biomechguardian/death"
+	infomessage "$BLAKE_BIOMECHGUARDIAN"
 	states
 	{
 		Spawn:
@@ -821,6 +832,7 @@ actor ReptilianWarrior : WolfensteinMonster
 	attacksound "reptilianwarrior/attack"
 	seesound "reptilianwarrior/sight"
 	deathsound "reptilianwarrior/death"
+	infomessage "$BLAKE_REPTILIANWARRIOR"
 	states
 	{
 		Spawn:
@@ -885,6 +897,7 @@ actor MechSentinel : WolfensteinMonster
 	attacksound "mechsentinel/attack"
 	seesound "mechsentinel/sight"
 	deathsound "mechsentinel/death"
+	infomessage "$BLAKE_MECHSENTINEL"
 	states
 	{
 		Spawn:
@@ -927,6 +940,7 @@ actor MutantHuman : WolfensteinMonster
 	sighttime 1
 	seesound "mutanthuman/sight"
 	deathsound "mutanthuman/death"
+	infomessage "$BLAKE_MUTANTHUMAN"
 	states
 	{
 		Spawn:
@@ -1018,6 +1032,7 @@ actor SmallCanisterAlien : WolfensteinMonster
 	sighttime 1
 	seesound "smallcanisteralien/sight"
 	deathsound "smallcanisteralien/death"
+	infomessage "$BLAKE_EXPERIMENTALALIEN"
 	states
 	{
 		Spawn:
@@ -1114,6 +1129,7 @@ actor LargeCanisterAlien : WolfensteinMonster
 	sighttime 1
 	seesound "largecanisteralien/sight"
 	deathsound "largecanisteralien/death"
+	infomessage "$BLAKE_EXPERIMENTALALIEN"
 	states
 	{
 		Spawn:
@@ -1184,6 +1200,7 @@ actor GurneyMutant : WolfensteinMonster
 	attacksound "gurneymutant/attack"
 	seesound "gurneymutant/sight"
 	deathsound "gurneymutant/death"
+	infomessage "$BLAKE_GURNEYMUTANT"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -1247,6 +1264,7 @@ actor PODAlien : WolfensteinMonster
 	sighttime 1
 	seesound "podalien/sight"
 	deathsound "podalien/death"
+	infomessage "$BLAKE_PODALIEN"
 	states
 	{
 		Spawn:
@@ -1368,6 +1386,7 @@ actor GiantStalker : WolfensteinMonster
 	deathsound "giantstalker/death"
 	dropitem "SlowFireProtector"
 	dropitem "ChargePack"
+	infomessage "$BLAKE_GIANTSTALKER"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -1434,6 +1453,7 @@ actor SpectorDemon : WolfensteinMonster
 	sighttime 1
 	seesound "spectordemon/sight"
 	deathsound "spectordemon/death"
+	infomessage "$BLAKE_SPECTORDEMON"
 	states
 	{
 		Spawn:
@@ -1476,6 +1496,7 @@ actor ArmoredStalker : WolfensteinMonster
 	attacksound "armoredstalker/attack"
 	seesound "armoredstalker/sight"
 	deathsound "armoredstalker/death"
+	infomessage "$BLAKE_ARMOREDSTALKER"
 	states
 	{
 		Spawn:
@@ -1541,6 +1562,7 @@ actor CrawlerBeast : WolfensteinMonster
 	sighttime 1
 	seesound "crawlerbeast/sight"
 	deathsound "crawlerbeast/death"
+	infomessage "$BLAKE_CRAWLERBEAST"
 	states
 	{
 		Spawn:
@@ -1605,6 +1627,7 @@ actor LiquidAlien : WolfensteinMonster
 	sighttime 1, 6
 	meleerange 90
 	deathsound "liquidalien/death"
+	infomessage "$BLAKE_LIQUIDALIEN"
 	-CANUSEWALLS
 	-SHOOTABLE
 	-SOLID
@@ -1683,6 +1706,7 @@ actor ElectroAlien : WolfensteinMonster
 	points 5150
 	health 13, 37, 112, 150
 	speed 1
+	infomessage "$BLAKE_ELECTROALIEN"
 	states
 	{
 		Spawn:
