@@ -328,7 +328,7 @@ else()
 endif()
 
 add_dependencies(lzwolf revision_check)
-target_link_libraries(lzwolf ${EXTRA_LIBRARIES} SDL2::SDL2_mixer SDL2::SDL2_net SDL2::SDL2 ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${JPEG_LIBRARIES} lzma gdtoa)
+target_link_libraries(lzwolf ${EXTRA_LIBRARIES} SDL2::SDL2_mixer SDL2::SDL2_net SDL2::SDL2 ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${JPEG_LIBRARIES} lzma gdtoa -lrt -lpthread)
 target_include_directories(lzwolf PRIVATE
 	${ZLIB_INCLUDE_DIR}
 	${BZIP2_INCLUDE_DIR}

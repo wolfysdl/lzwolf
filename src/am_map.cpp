@@ -52,6 +52,208 @@
 #include "wl_play.h"
 #include "mapedit.h"
 #include "c_console.h"
+#include "c_dispatch.h"
+
+#include <cstddef>
+#include <string>
+#include <thread>
+#include <mutex>
+#include <memory>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>       
+#include <fcntl.h>          
+#include <unistd.h>
+#include <semaphore.h>
+#include <string.h>
+
+class CSharedMemReader
+{
+public:
+    static constexpr auto BackingFile = "/shMemEx";
+    static constexpr auto ByteSize = 512;
+    static constexpr auto SemaphoreName = "mysemaphore";
+    static constexpr auto AccessPerms = 0644;
+
+    struct CExitException
+    {
+        std::string what;
+    };
+
+    void report_and_exit( const char* msg )
+    {
+        perror( msg );
+        exit( -1 );
+    }
+
+    void report_and_throw( const char* msg )
+    {
+        perror( msg );
+        throw CExitException{std::string( msg )};
+    }
+
+    CSharedMemReader()
+    {
+        fd =
+            shm_open( BackingFile, O_RDWR, AccessPerms ); /* empty to begin */
+        if( fd < 0 )
+            report_and_throw( "Can't get file descriptor..." );
+
+        /* get a pointer to memory */
+        memptr = reinterpret_cast< caddr_t >(
+            mmap( NULL,     /* let system pick where to put segment */
+                  ByteSize, /* how many bytes */
+                  PROT_READ | PROT_WRITE, /* access protections */
+                  MAP_SHARED, /* mapping visible to other processes */
+                  fd,         /* file descriptor */
+                  0 ) );      /* offset: start at 1st byte */
+        if( ( caddr_t ) -1 == memptr )
+            report_and_throw( "Can't access segment..." );
+    }
+
+    ~CSharedMemReader()
+    {
+        /* cleanup */
+        munmap( memptr, ByteSize );
+        close( fd );
+        shm_unlink( BackingFile );
+    }
+
+    bool Recv( char* out, int n )
+    {
+        bool res = false;
+
+        /* create a semaphore for mutual exclusion */
+        sem_t* semptr = sem_open( SemaphoreName, /* name */
+                                  O_CREAT,       /* create the semaphore */
+                                  AccessPerms,   /* protection perms */
+                                  0 );           /* initial value */
+        if( semptr == ( void* ) -1 )
+        {
+            perror( "sem_open" );
+            return false;
+        }
+
+        /* use semaphore as a mutex (lock) by waiting for writer to increment it
+         */
+        struct timespec ts;
+        if( clock_gettime( CLOCK_REALTIME, &ts ) == -1 )
+        {
+            /* handle error */
+            return -1;
+        }
+        ts.tv_sec += 1;
+
+        if( !sem_timedwait( semptr, &ts ) )
+        { /* wait until semaphore != 0 */
+            memcpy( out, memptr, n );
+            //sem_post( semptr );
+            res = true;
+        }
+        else
+        {
+            //perror( "sem_timedwait" );
+        }
+
+        sem_close( semptr );
+        return res;
+    }
+
+private:
+    int fd;
+    caddr_t memptr;
+};
+
+class CSharedMemReaderThread
+{
+public:
+    using TReader = CSharedMemReader;
+
+    CSharedMemReaderThread( std::size_t bytes )
+        : m_data{0}
+        , m_bytes( bytes )
+    {
+        m_thread = std::thread( [&] { Worker(); } );
+    }
+
+    ~CSharedMemReaderThread()
+    {
+        if( m_thread.get_id() != std::thread::id{} )
+        {
+            {
+                std::lock_guard< std::mutex > lk( m_mut );
+                m_abortloop = true;
+            }
+
+            m_thread.join();
+        }
+    }
+
+    void Worker()
+    {
+        char data[ TReader::ByteSize ];
+        std::unique_ptr< TReader > p_reader;
+
+        while( !m_abortloop )
+        {
+            bool got_data = false;
+
+            if( p_reader.get() == nullptr )
+            {
+                try
+                {
+                    printf("thread making reader\n");
+                    p_reader.reset( new TReader );
+                }
+                catch( CSharedMemReader::CExitException exc )
+                {
+                    printf("thread got exception making reader\n");
+                    std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+                }
+            }
+
+            if( p_reader )
+            {
+                if( p_reader->Recv( data, m_bytes ) )
+                {
+                    got_data = true;
+                }
+            }
+            else
+            {
+                printf("thread waiting for reader\n");
+                std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+            }
+
+            if( got_data )
+            {
+                printf("thread updating data\n");
+                std::lock_guard< std::mutex > lk( m_mut );
+                memcpy( m_data, data, m_bytes );
+            }
+        }
+    }
+
+    void GetData( char* out )
+    {
+        std::lock_guard< std::mutex > lk( m_mut );
+        memcpy( out, m_data, m_bytes );
+    }
+
+private:
+    std::thread m_thread;
+    std::mutex m_mut;
+    bool m_abortloop = false;
+    char m_data[ TReader::ByteSize ];
+    const std::size_t m_bytes;
+};
+std::unique_ptr<CSharedMemReaderThread> led_reader_thread;
+
+CCMD(clearledreader)
+{
+	led_reader_thread.reset(nullptr);
+}
 
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
 {
@@ -367,6 +569,13 @@ void AutoMap::Draw()
 		fullRefresh = false;
 	}
 
+	char led_str[ 64 ] = {0};
+	if(led_reader_thread.get() == nullptr)
+	{
+		led_reader_thread.reset(new CSharedMemReaderThread(64));
+	}
+	led_reader_thread->GetData( led_str );
+
 	const fixed pany = FixedMul(ampany, amcos) - FixedMul(ampanx, amsin);
 	const fixed panx = FixedMul(ampany, amsin) + FixedMul(ampanx, amcos);
 	const fixed ofsx = playerx - panx;
@@ -392,7 +601,17 @@ void AutoMap::Draw()
 				FTexture *tex;
 				Color *color = NULL;
 				int brightness;
-				if(spot->tile && !spot->pushAmount && !spot->pushReceptor)
+				if(my == 0 && mx < 5)
+				{
+					// #RRGGBB
+					FString cpt_str(&led_str[mx * 8], 7);
+					FTextureID texid = TexMan.GetTexture(cpt_str, FTexture::TEX_Flat);
+					if( texid.isValid() )
+						tex = TexMan(texid);
+					else
+						tex = NULL;
+				}
+				else if(spot->tile && !spot->pushAmount && !spot->pushReceptor)
 				{
 					brightness = 256;
 					if((amFlags & AMF_DrawTexturedWalls))
