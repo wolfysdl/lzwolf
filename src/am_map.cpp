@@ -96,13 +96,18 @@ public:
         exit( -1 );
     }
 
+    void report_and_throw( const char* msg )
+    {
+        perror( msg );
+        throw CExitException{std::string( msg )};
+    }
+
     CSharedMemReader()
     {
-        fd = shm_open( BackingFile,
-                       O_RDWR,           /* read/write, create if needed */
-                       AccessPerms );    /* access permissions (0644) */
+        fd =
+            shm_open( BackingFile, O_RDWR, AccessPerms ); /* empty to begin */
         if( fd < 0 )
-            report_and_exit( "Can't get file descriptor..." );
+            report_and_throw( "Can't get file descriptor..." );
 
         /* get a pointer to memory */
         memptr = reinterpret_cast< caddr_t >(
@@ -113,7 +118,7 @@ public:
                   fd,         /* file descriptor */
                   0 ) );      /* offset: start at 1st byte */
         if( ( caddr_t ) -1 == memptr )
-            report_and_exit( "Can't access segment..." );
+            report_and_throw( "Can't access segment..." );
     }
 
     ~CSharedMemReader()
@@ -197,13 +202,42 @@ public:
     void Worker()
     {
         char data[ TReader::ByteSize ];
-        CSharedMemReader reader;
+        std::unique_ptr< TReader > p_reader;
 
         while( !m_abortloop )
         {
-            if( reader.Recv( data, m_bytes ) )
+            bool got_data = false;
+
+            if( p_reader.get() == nullptr )
             {
-                printf("thread updating data\n");
+                try
+                {
+                    printf("thread making reader\n");
+                    p_reader.reset( new TReader );
+                }
+                catch( CSharedMemReader::CExitException exc )
+                {
+                    printf("thread got exception making reader\n");
+                    std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+                }
+            }
+
+            if( p_reader )
+            {
+                if( p_reader->Recv( data, m_bytes ) )
+                {
+                    got_data = true;
+                }
+            }
+            else
+            {
+                printf("thread waiting for reader\n");
+                std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+            }
+
+            if( got_data )
+            {
+                //printf("thread updating data\n");
                 std::lock_guard< std::mutex > lk( m_mut );
                 memcpy( m_data, data, m_bytes );
             }
@@ -223,7 +257,12 @@ private:
     char m_data[ TReader::ByteSize ];
     const std::size_t m_bytes;
 };
-CSharedMemReaderThread led_reader_thread(64);
+std::unique_ptr<CSharedMemReaderThread> led_reader_thread;
+
+CCMD(clearledreader)
+{
+	led_reader_thread.reset(nullptr);
+}
 
 class CIPCHandlerThread
 {
@@ -655,8 +694,12 @@ void AutoMap::Draw()
 		fullRefresh = false;
 	}
 
-	char led_str[64] = {0};
-	led_reader_thread.GetData( led_str );
+	char led_str[ 64 ] = {0};
+	if(led_reader_thread.get() == nullptr)
+	{
+		led_reader_thread.reset(new CSharedMemReaderThread(64));
+	}
+	led_reader_thread->GetData( led_str );
 
 	auto msg = ipc_handler_thread.GetMsg();
 	if(msg)
