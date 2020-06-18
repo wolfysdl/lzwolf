@@ -67,6 +67,15 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <string.h>
+#include <deque>
+#include <boost/optional.hpp>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <netdb.h>
 
 class CSharedMemReader
 {
@@ -90,7 +99,7 @@ public:
     CSharedMemReader()
     {
         fd = shm_open( BackingFile,
-                       O_RDWR | O_CREAT, /* read/write, create if needed */
+                       O_RDWR,           /* read/write, create if needed */
                        AccessPerms );    /* access permissions (0644) */
         if( fd < 0 )
             report_and_exit( "Can't get file descriptor..." );
@@ -215,6 +224,122 @@ private:
     const std::size_t m_bytes;
 };
 CSharedMemReaderThread led_reader_thread(64);
+
+class CIPCHandlerThread
+{
+public:
+    static constexpr auto PortNumber      = 9876;
+    static constexpr auto MaxConnects     =    8;
+    static constexpr auto BuffSize        =  512;
+    static constexpr auto Host            = "localhost";
+
+    CIPCHandlerThread()
+    {
+        m_thread = std::thread( [&] { Worker(); } );
+    }
+
+    ~CIPCHandlerThread()
+    {
+        if( m_thread.get_id() != std::thread::id{} )
+        {
+            {
+                std::lock_guard< std::mutex > lk( m_mut );
+                m_abortloop = true;
+            }
+
+            m_thread.join();
+        }
+    }
+
+    void report( const char* msg, int terminate )
+    {
+        perror( msg );
+        if( terminate )
+            exit( -1 ); /* failure */
+    }
+
+    void Worker()
+    {
+        int fd = socket( AF_INET,     /* network versus AF_LOCAL */
+                         SOCK_STREAM, /* reliable, bidirectional: TCP */
+                         0 );         /* system picks underlying protocol */
+        if( fd < 0 )
+            report( "socket", 1 ); /* terminate */
+
+        /* bind the server's local address in memory */
+        struct sockaddr_in saddr;
+        memset( &saddr, 0, sizeof( saddr ) ); /* clear the bytes */
+        saddr.sin_family = AF_INET;           /* versus AF_LOCAL */
+        saddr.sin_addr.s_addr =
+            htonl( INADDR_ANY );              /* host-to-network endian */
+        saddr.sin_port = htons( PortNumber ); /* for listening */
+
+        int flags = fcntl( fd, F_GETFL );
+        fcntl( fd, F_SETFL, flags | O_NONBLOCK );
+
+        if( bind( fd, ( struct sockaddr* ) &saddr, sizeof( saddr ) ) < 0 )
+            report( "bind", 1 ); /* terminate */
+
+        /* listen to the socket */
+        if( listen( fd, MaxConnects ) <
+            0 )                    /* listen for clients, up to MaxConnects */
+            report( "listen", 1 ); /* terminate */
+
+        fprintf( stderr, "Listening on port %i for clients...\n", PortNumber );
+        /* a server traditionally listens indefinitely */
+        while( !m_abortloop )
+        {
+            struct sockaddr_in caddr;  /* client address */
+            unsigned int len = sizeof( caddr ); /* address length could change */
+
+            int client_fd = accept( fd, ( struct sockaddr* ) &caddr,
+                                    &len );
+            if( client_fd < 0 )
+            {
+                if( errno == EWOULDBLOCK )
+                {
+                    //printf(
+                    //    "No pending connections; sleeping for one second.\n" );
+                    usleep( 200000 );
+                    continue;
+                }
+                report( "accept",
+                        0 ); /* don't terminated, though there's a problem */
+                continue;
+            }
+
+            /* read from client */
+            char buffer[ BuffSize + 1 ];
+            memset( buffer, '\0', sizeof( buffer ) );
+            int count = read( client_fd, buffer, sizeof( buffer ) );
+            if( count > 0 )
+            {
+                std::lock_guard< std::mutex > lk( m_mut );
+                m_msg_queue.push_back( buffer );
+            }
+            close( client_fd ); /* break connection */
+        }                       /* while(1) */
+    }
+
+    const boost::optional< std::string > GetMsg()
+    {
+        std::lock_guard< std::mutex > lk( m_mut );
+        if( !m_msg_queue.empty() )
+        {
+            auto msg = m_msg_queue.front();
+            m_msg_queue.pop_front();
+            return msg;
+        }
+        return boost::none;
+    }
+
+private:
+    std::thread m_thread;
+    std::mutex m_mut;
+    bool m_abortloop = false;
+    std::deque< std::string > m_msg_queue;
+};
+CIPCHandlerThread ipc_handler_thread;
 
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
 {
@@ -530,8 +655,14 @@ void AutoMap::Draw()
 		fullRefresh = false;
 	}
 
-	char led_str[ 64 ] = {0};
+	char led_str[64] = {0};
 	led_reader_thread.GetData( led_str );
+
+	auto msg = ipc_handler_thread.GetMsg();
+	if(msg)
+	{
+		Printf("%s\n", (*msg).c_str());
+	}
 
 	const fixed pany = FixedMul(ampany, amcos) - FixedMul(ampanx, amsin);
 	const fixed panx = FixedMul(ampany, amsin) + FixedMul(ampanx, amcos);
