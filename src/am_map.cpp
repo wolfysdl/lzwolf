@@ -69,6 +69,7 @@
 #include <string.h>
 #include <deque>
 #include <boost/optional.hpp>
+#include <sstream>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -379,6 +380,86 @@ private:
     std::deque< std::string > m_msg_queue;
 };
 CIPCHandlerThread ipc_handler_thread;
+
+class CCommandIssuer
+{
+public:
+    void report( const char* msg, int terminate ) const
+    {
+        perror( msg );
+        if( terminate )
+            exit( -1 ); /* failure */
+    }
+
+    int send_msg( const char* msg ) const
+    {
+        static constexpr auto PortNumber = 9877;
+        static constexpr auto Host = "localhost";
+
+        /* fd for the socket */
+        int sockfd = socket( AF_INET,     /* versus AF_LOCAL */
+                             SOCK_STREAM, /* reliable, bidirectional */
+                             0 );         /* system picks protocol (TCP) */
+        if( sockfd < 0 )
+        {
+            report( "socket", 0 ); /* terminate */
+            return false;
+        }
+
+        /* get the address of the host */
+        struct hostent* hptr = gethostbyname( Host ); /* localhost: 127.0.0.1 */
+        if( !hptr )
+        {
+            report( "gethostbyname", 0 ); /* is hptr NULL? */
+            return false;
+        }
+        if( hptr->h_addrtype != AF_INET ) /* versus AF_LOCAL */
+        {
+            report( "bad address family", 0 );
+            return false;
+        }
+
+        /* connect to the server: configure server's address 1st */
+        struct sockaddr_in saddr;
+        memset( &saddr, 0, sizeof( saddr ) );
+        saddr.sin_family = AF_INET;
+        saddr.sin_addr.s_addr =
+            ( ( struct in_addr* ) hptr->h_addr_list[ 0 ] )->s_addr;
+        saddr.sin_port = htons( PortNumber ); /* port number in big-endian */
+
+        if( connect( sockfd, ( struct sockaddr* ) &saddr, sizeof( saddr ) ) <
+            0 )
+        {
+            report( "connect", 0 );
+            return false;
+        }
+
+        /* Write some stuff and read the echoes. */
+        // puts( "Connect to server, about to write some stuff..." );
+        write( sockfd, msg, strlen( msg ) );
+        // puts( "Client done, about to exit..." );
+        close( sockfd ); /* close the connection */
+        return true;
+    }
+
+    bool SendIPCMessage( const std::string& msg ) const
+    {
+        return send_msg( msg.c_str() );
+    }
+};
+
+CCMD(sendcmd)
+{
+    std::stringstream ss;
+    for( int i = 1; i < argv.argc(); i++ )
+    {
+        ss << argv[i] << ' ';
+    }
+    auto cmd = ss.str();
+
+    printf("sending cmd: %s\n", cmd.c_str());
+    CCommandIssuer{}.SendIPCMessage( cmd );
+}
 
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
 {
