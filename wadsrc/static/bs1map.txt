@@ -32,7 +32,7 @@ graphics
 	"TELEON09",        // 25
 	"TELEON10",        // 26
 	"TELETXBG",        // 27
-	"BACKGRSC",        // 28
+	"M_OPTION",        // 28
 	"APOGEE",          // 29
 	"PC13",            // 30
 	"LOSE",            // 31
