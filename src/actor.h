@@ -306,6 +306,7 @@ class AActor : public Thinker,
 		TObjPtr<AInventory>	inventory;
 
 		const Dialog::Page *conversation;
+		const ClassDef  *damagetype;
 
 		static EmbeddedList<AActor>::List actors;
 		typedef EmbeddedList<AActor>::Iterator Iterator;
