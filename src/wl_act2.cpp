@@ -274,7 +274,7 @@ void T_Projectile (AActor *self)
 					lastHit = check;
 					if(check->flags & FL_SHOOTABLE)
 					{
-						DamageActor(check, self->target, self->GetDamage());
+						DamageActor(check, self->target, self->GetDamage(), self->damagetype);
 
 						if(!(self->flags & FL_RIPPER) || (check->flags & FL_DONTRIP))
 						{

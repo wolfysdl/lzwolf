@@ -202,7 +202,6 @@ class AWeapon : public AInventory
 		unsigned int	ammouse[2];
 		fixed			yadjust;
 		float			fovscale;
-		const ClassDef  *damagetype;
 
 		// Inventory instance variables
 		FireMode		mode;

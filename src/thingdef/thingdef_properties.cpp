@@ -236,9 +236,9 @@ HANDLE_PROPERTY(damagetype)
 {
 	STRING_PARAM(type, 0);
 	if(stricmp(type, "none") == 0 || *type == '\0')
-		((AWeapon *)defaults)->damagetype = NULL;
+		defaults->damagetype = NULL;
 	else
-		((AWeapon *)defaults)->damagetype = ClassDef::FindClassTentative(type, NATIVE_CLASS(Damage));
+		defaults->damagetype = ClassDef::FindClassTentative(type, NATIVE_CLASS(Damage));
 }
 
 HANDLE_PROPERTY(deathsound)
@@ -816,7 +816,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(damage, Actor, I),
 	DEFINE_PROP(damageresistance, Actor, S_I),
 	DEFINE_PROP_PREFIX(damagescreencolor, Actor, Player, S),
-	DEFINE_PROP(damagetype, Weapon, S),
+	DEFINE_PROP(damagetype, Actor, S),
 	DEFINE_PROP(deathsound, Actor, S),
 	DEFINE_PROP_PREFIX(displayname, PlayerPawn, Player, S),
 	DEFINE_PROP(dropitem, Actor, S_II),
