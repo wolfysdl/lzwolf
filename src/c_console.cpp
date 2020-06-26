@@ -135,7 +135,7 @@ static GameAtExit *ExitCmdList;
 #define SCROLLDN 2
 #define SCROLLNO 0
 
-CVAR (Bool, show_messages, true, CVAR_ARCHIVE)
+CVAR (Bool, show_messages, false, CVAR_ARCHIVE)
 
 static unsigned int TickerAt, TickerMax;
 static bool TickerPercent;
