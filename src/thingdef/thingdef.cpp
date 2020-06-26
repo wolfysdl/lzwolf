@@ -1173,15 +1173,21 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 		int ret = stricmp(properties[mid].name, propName);
 		if(ret == 0)
 		{
+			auto ref_cls = (className != NULL ?
+					ClassDef::FindClass(className) : NULL);
 			if
 				(
-					!cls->IsDescendantOf(properties[mid].className) ||
-					(
-						className != NULL &&
-						stricmp(properties[mid].prefix, className) != 0
+					!(
+						cls->IsDescendantOf(properties[mid].className) &&
+						(
+							className == NULL ||
+							stricmp(properties[mid].prefix, className) == 0 ||
+							ref_cls->IsDescendantOf(properties[mid].className)
+						)
 					)
 				)
 			{
+				//printf("prefix=%s className=%s cls=%s\n", properties[mid].prefix, className, cls->GetName().GetChars() );
 				sc.ScriptMessage(Scanner::ERROR, "Property %s.%s not available in this scope.\n", properties[mid].className->name.GetChars(), propName);
 			}
 
