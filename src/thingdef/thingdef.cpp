@@ -1174,6 +1174,20 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 		{
 			auto ref_cls = (className != NULL ?
 					ClassDef::FindClass(className) : NULL);
+			auto validate_ref_cls =
+				[&sc,className,propName,mid](const ClassDef *ref_cls) {
+					if(ref_cls == NULL)
+					{
+						sc.ScriptMessage(Scanner::ERROR,
+								"Class %s is unknown in property %s.%s.\n",
+								className,
+								properties[mid].className->name.GetChars(),
+								propName);
+						return false;
+					}
+					return true;
+				};
+
 			if
 				(
 					!(
@@ -1181,7 +1195,10 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 						(
 							className == NULL ||
 							stricmp(properties[mid].prefix, className) == 0 ||
-							ref_cls->IsDescendantOf(properties[mid].className)
+							(
+								validate_ref_cls(ref_cls) &&
+								ref_cls->IsDescendantOf(properties[mid].className)
+							)
 						)
 					)
 				)
