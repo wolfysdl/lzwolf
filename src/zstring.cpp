@@ -117,12 +117,17 @@ char *FString::LockNewBuffer(size_t len)
 	return &(*CharsPtr)[0];
 }
 
-char *FString::LockBuffer()
+void FString::CopyOnWrite()
 {
 	if (CharsPtr.use_count() > 1)
 	{
 		CharsPtr = std::make_shared<std::string>(*CharsPtr);
 	}
+}
+
+char *FString::LockBuffer()
+{
+	CopyOnWrite();
 	LockCount++;
 	return &(*CharsPtr)[0];
 }
@@ -197,6 +202,7 @@ void FString::VAppendFormat (const char *fmt, va_list arglist)
 int FString::FormatHelper (void *data, const char *cstr, int len)
 {
 	FString *str = (FString *)data;
+	str->CopyOnWrite();
 	str->AppendCStrPart(cstr, len);
 	return len;
 }
@@ -228,24 +234,28 @@ FString operator + (char head, const FString &tail)
 
 FString &FString::operator += (const FString &tail)
 {
+	CopyOnWrite();
 	(*CharsPtr) += *(tail.CharsPtr);
 	return *this;
 }
 
 FString &FString::operator += (const char *tail)
 {
+	CopyOnWrite();
 	(*CharsPtr) += tail;
 	return *this;
 }
 
 FString &FString::operator += (char tail)
 {
+	CopyOnWrite();
 	(*CharsPtr) += tail;
 	return *this;
 }
 
 FString &FString::AppendCStrPart (const char *tail, size_t tailLen)
 {
+	CopyOnWrite();
 	(*CharsPtr) += std::string(tail, tailLen);
 	return *this;
 }
@@ -254,6 +264,7 @@ void FString::Truncate (long newlen)
 {
 	if (newlen >= 0 && newlen < (long)Len())
 	{
+		CopyOnWrite();
 		(*CharsPtr).erase(newlen);
 	}
 }
@@ -477,10 +488,7 @@ void FString::Insert (size_t index, const char *instr, size_t instrlen)
 	{
 		index = mylen;
 	}
-	if (CharsPtr.use_count() > 1)
-	{
-		CharsPtr = std::make_shared<std::string>(*CharsPtr);
-	}
+	CopyOnWrite();
 	(*CharsPtr).insert(index, instr, instrlen);
 }
 

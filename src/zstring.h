@@ -208,6 +208,8 @@ protected:
 
 	void AttachToOther (const FString &other);
 
+	void CopyOnWrite();
+
 	std::shared_ptr<std::string> CharsPtr;
 	int LockCount;
 
