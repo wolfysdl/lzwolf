@@ -1173,15 +1173,38 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 		int ret = stricmp(properties[mid].name, propName);
 		if(ret == 0)
 		{
+			auto ref_cls = (className != NULL ?
+					ClassDef::FindClass(className) : NULL);
+			auto validate_ref_cls =
+				[&sc,className,propName,mid](const ClassDef *ref_cls) {
+					if(ref_cls == NULL)
+					{
+						sc.ScriptMessage(Scanner::ERROR,
+								"Class %s is unknown in property %s.%s.\n",
+								className,
+								properties[mid].className->name.GetChars(),
+								propName);
+						return false;
+					}
+					return true;
+				};
+
 			if
 				(
-					!cls->IsDescendantOf(properties[mid].className) ||
-					(
-						className != NULL &&
-						stricmp(properties[mid].prefix, className) != 0
+					!(
+						cls->IsDescendantOf(properties[mid].className) &&
+						(
+							className == NULL ||
+							stricmp(properties[mid].prefix, className) == 0 ||
+							(
+								validate_ref_cls(ref_cls) &&
+								ref_cls->IsDescendantOf(properties[mid].className)
+							)
+						)
 					)
 				)
 			{
+				//printf("prefix=%s className=%s cls=%s\n", properties[mid].prefix, className, cls->GetName().GetChars() );
 				sc.ScriptMessage(Scanner::ERROR, "Property %s.%s not available in this scope.\n", properties[mid].className->name.GetChars(), propName);
 			}
 
