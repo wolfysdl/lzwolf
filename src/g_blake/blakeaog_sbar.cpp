@@ -32,6 +32,7 @@
 **
 */
 
+#include <algorithm>
 #include <deque>
 #include <vector>
 #include "wl_def.h"
@@ -293,6 +294,8 @@ public:
 
 	void Push(const std::pair<std::string, TTexIDs> &msg);
 
+	void Clear();
+
 	void Tick();
 
 	TActiveMessage GetActiveMessage() const;
@@ -318,7 +321,13 @@ private:
 
 void BlakeAOGInfoArea::Push(const std::pair<std::string, TTexIDs> &msg)
 {
+	pending_msgs.clear();
 	pending_msgs.push_front(TPendingMsg{msg.first, DISPLAY_MSG_TIME, msg.second});
+}
+
+void BlakeAOGInfoArea::Clear()
+{
+	pending_msgs.clear();
 }
 
 void BlakeAOGInfoArea::Tick()
@@ -367,6 +376,8 @@ public:
 	void Tick();
 
 	void InfoMessage(FString key, const std::vector<FTextureID> &texids);
+
+	void ClearInfoMessages();
 
 protected:
 	void DrawLed(double percent, double x, double y) const;
@@ -772,6 +783,11 @@ void BlakeAOGStatusBar::InfoMessage(FString key, const std::vector<FTextureID>& 
 {
 	auto msg = (key[0] == '$') ? language[key.Mid(1)] : key.GetChars();
 	InfoArea.Push({msg, texids});
+}
+
+void BlakeAOGStatusBar::ClearInfoMessages()
+{
+	InfoArea.Clear();
 }
 
 // --------------------------------------------------------------------------
