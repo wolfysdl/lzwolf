@@ -42,6 +42,7 @@ class Language
 {
 	public:
 		void		SetupStrings(const char* language=NULL);
+		void		SetGameLanguage(FString str);
 
 		const char*	operator[] (const char* index) const;
 
@@ -51,6 +52,7 @@ class Language
 
 	private:
 		TMap<FName, FString>	strings;
+		FString	gamelanguage;
 };
 
 extern Language language;

@@ -45,7 +45,7 @@ void MenuItem::draw()
 	if(picture)
 		VWB_DrawGraphic(picture, pictureX == -1 ? menu->getX() + 32 : pictureX, pictureY == -1 ? PrintY : pictureY, MENU_CENTER);
 
-	US_Print(BigFont, getString(), getTextColor());
+	US_Print(menu->makeFont(), getString(), getTextColor());
 	PrintX = menu->getX() + menu->getIndent();
 }
 
@@ -554,11 +554,11 @@ void Menu::eraseGun(int x, int y)
 	}
 }
 
-Menu::Menu(int x, int y, int w, int indent, MENU_LISTENER_PROTOTYPE(entryListener)) :
+Menu::Menu(int x, int y, int w, int indent, TFontFactory fontFactory, MENU_LISTENER_PROTOTYPE(entryListener)) :
 	entryListener(entryListener), animating(false), controlHeaders(false),
 	curPos(0), headPicture(NULL), headTextInStripes(false),
 	headPictureIsAlternate(false), height(0), indent(indent), x(x), y(y), w(w),
-	itemOffset(0)
+	itemOffset(0), fontFactory(fontFactory)
 {
 	for(unsigned int i = 0;i < 36;i++)
 		headText[i] = '\0';
@@ -1111,6 +1111,15 @@ void Menu::show()
 
 	if(!Menu::areMenusClosed())
 		MenuFadeOut ();
+}
+
+FFont *Menu::makeFont() const
+{
+	if( fontFactory )
+	{
+		return fontFactory();
+	}
+	return BigFont;
 }
 
 void Menu::validateCurPos()

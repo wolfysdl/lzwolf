@@ -89,10 +89,10 @@ graphics
 	"C_SEL",           // 82
 	"C_NSELHI",        // 83
 	"C_SELHI",         // 84
-	"C_BABY",          // 85
-	"C_EASY",          // 86
-	"C_NORMAL",        // 87
-	"C_HARD",          // 88
+	"M_BABY",          // 85
+	"M_EASY",          // 86
+	"M_NORMAL",        // 87
+	"M_HARD",          // 88
 	"C_EPI1",          // 89
 	"C_EPI2",          // 90
 	"C_EPI3",          // 91

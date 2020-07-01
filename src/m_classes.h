@@ -201,6 +201,8 @@ class Menu
 		const int			w;
 
 		unsigned int			itemOffset; // scrolling menus
+		std::function<FFont *()> fontFactory;
+
 		static unsigned int		lastIndexDrawn;
 
 		static FTexture			*cursor;
@@ -210,7 +212,8 @@ class Menu
 		virtual void handleDelete() {}
 
 	public:
-		Menu(int x, int y, int w, int indent, MENU_LISTENER_PROTOTYPE(entryListener)=NULL);
+		using TFontFactory = std::function<FFont *()>;
+		Menu(int x, int y, int w, int indent, TFontFactory fontFactory=nullptr, MENU_LISTENER_PROTOTYPE(entryListener)=NULL);
 		virtual ~Menu();
 
 		void			addItem(MenuItem *item);
@@ -237,6 +240,7 @@ class Menu
 		void			setHeadPicture(const char* picture, bool isAlt=false);
 		void			setHeadText(const char text[36], bool drawInStripes=false);
 		void			show();
+		FFont			*makeFont() const;
 		/**
 		 * Should this menu show the Key, Mse. and Joy headers?
 		 */

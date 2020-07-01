@@ -410,6 +410,11 @@ static void InitGame()
 	G_ParseMapInfo(true);
 
 	//
+	// Gameinfo provides game language for the language system
+	//
+	language.SetGameLanguage(gameinfo.GameLanguage);
+
+	//
 	// Init texture manager
 	//
 

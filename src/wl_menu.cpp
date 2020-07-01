@@ -50,19 +50,28 @@ EMenuStyle MenuStyle = MENUSTYLE_Wolf;
 
 MENU_LISTENER(EnterControlBase);
 
-Menu mainMenu(MENU_X, MENU_Y, MENU_W, 24);
-Menu optionsMenu(80, 80, 190, 28);
-Menu soundBase(24, 45, 284, 24);
-Menu controlBase(CTL_X, CTL_Y, CTL_W, 56, EnterControlBase);
-Menu displayMenu(20, 75, 285, 56);
-Menu automapMenu(40, 55, 260, 56);
-Menu mouseSensitivity(20, 50, 300, 24);
-Menu joySensitivity(20, 30, 300, 24);
-Menu playerClasses(NM_X, NM_Y, NM_W, 24);
-Menu episodes(NE_X+4, NE_Y-1, NE_W+7, 83);
-Menu skills(NM_X, NM_Y, NM_W, 24);
-Menu controls(15, 70, 310, 24);
-Menu resolutionMenu(90, 25, 150, 24);
+FFont *MenuFontFactory()
+{
+	if(MenuStyle == MENUSTYLE_Blake)
+	{
+		return SmallFont;
+	}
+	return BigFont;
+}
+
+Menu mainMenu(MENU_X, MENU_Y, MENU_W, 24, MenuFontFactory);
+Menu optionsMenu(80, 80, 190, 28, MenuFontFactory);
+Menu soundBase(24, 45, 284, 24, MenuFontFactory);
+Menu controlBase(CTL_X, CTL_Y, CTL_W, 56, MenuFontFactory, EnterControlBase);
+Menu displayMenu(20, 75, 285, 56, MenuFontFactory);
+Menu automapMenu(40, 55, 260, 56, MenuFontFactory);
+Menu mouseSensitivity(20, 50, 300, 24, MenuFontFactory);
+Menu joySensitivity(20, 30, 300, 24, MenuFontFactory);
+Menu playerClasses(NM_X, NM_Y, NM_W, 24, MenuFontFactory);
+Menu episodes(NE_X+4, NE_Y-1, NE_W+7, 83, MenuFontFactory);
+Menu skills(NM_X, NM_Y, NM_W, 24, MenuFontFactory);
+Menu controls(15, 70, 310, 24, MenuFontFactory);
+Menu resolutionMenu(90, 25, 150, 24, MenuFontFactory);
 
 MENU_LISTENER(PlayDemosOrReturnToGame)
 {
@@ -410,6 +419,7 @@ void CreateMenus()
 	}
 
 	skills.setHeadText(language["STR_HOWTOUGH"]);
+	skills.setHeadPicture("M_OPTION");
 	skills.setHeadPicture("M_HOWTGH", true);
 	for(unsigned int i = 0;i < SkillInfo::GetNumSkills();++i)
 	{

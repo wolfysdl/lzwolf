@@ -804,6 +804,8 @@ protected:
 			ParseColorAssignment(gameinfo.parallaxskyfloorcolor);
 		else if(key.CompareNoCase("parallaxskyceilcolor") == 0)
 			ParseColorAssignment(gameinfo.parallaxskyceilcolor);
+		else if(key.CompareNoCase("gamelanguage") == 0)
+			ParseStringAssignment(gameinfo.GameLanguage);
 		else
 			return false;
 		return true;

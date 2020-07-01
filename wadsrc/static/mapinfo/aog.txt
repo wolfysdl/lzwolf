@@ -40,6 +40,7 @@ gameinfo
 	quitmessages = "$ENDSTR01", "$ENDSTR02", "$ENDSTR03", "$ENDSTR04", "$ENDSTR05", "$ENDSTR06", "$ENDSTR07", "$ENDSTR08", "$ENDSTR09"
 	gamecolormap = "COLORMAP"
 	deathtransition = "Fizzle"
+	gamelanguage = "BLAKE"
 }
 
 automap
@@ -54,7 +55,7 @@ automap
 
 skill baby
 {
-	name = "$STR_DADDY"
+	name = "$BLAKE_SKILL_LEVEL1"
 	picname = "M_BABY"
 	spawnfilter = 1
 	damagefactor = 0.25
@@ -62,21 +63,21 @@ skill baby
 
 skill easy
 {
-	name = "$STR_HURTME"
+	name = "$BLAKE_SKILL_LEVEL2"
 	picname = "M_EASY"
 	spawnfilter = 2
 }
 
 skill normal
 {
-	name = "$STR_BRINGEM"
+	name = "$BLAKE_SKILL_LEVEL3"
 	picname = "M_NORMAL"
 	spawnfilter = 3
 }
 
 skill hard
 {
-	name = "$STR_DEATH"
+	name = "$BLAKE_SKILL_LEVEL4"
 	picname = "M_HARD"
 	spawnfilter = 4
 }
