@@ -183,7 +183,7 @@ CUSTOM_CVAR(Float, con_alpha, 0.75f, CVAR_ARCHIVE)
 // Command to run when Ctrl-D is pressed at start of line
 CVAR (String, con_ctrl_d, "", CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
-#define NUMNOTIFIES 4
+#define NUMNOTIFIES 18
 #define NOTIFYFADETIME 6
 
 static struct NotifyText

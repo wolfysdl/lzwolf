@@ -81,7 +81,7 @@
 class CSharedMemReader
 {
 public:
-    static constexpr auto BackingFile = "/shMemEx";
+    static constexpr auto BackingFile = "/shMemEx3";
     static constexpr auto ByteSize = 512;
     static constexpr auto SemaphoreName = "mysemaphore";
     static constexpr auto AccessPerms = 0644;
@@ -529,11 +529,11 @@ void AM_CheckKeys()
 		const fixed PAN_ANALOG_MULTIPLIER = PAN_AMOUNT/100;
 		fixed panx = 0, pany = 0;
 
-		if(control[ConsolePlayer].ambuttonstate[bt_panleft])
+		//if(control[ConsolePlayer].ambuttonstate[bt_panleft])
 			panx += PAN_AMOUNT;
 		if(control[ConsolePlayer].ambuttonstate[bt_panright])
 			panx -= PAN_AMOUNT;
-		if(control[ConsolePlayer].ambuttonstate[bt_panup])
+		//if(control[ConsolePlayer].ambuttonstate[bt_panup])
 			pany += PAN_AMOUNT;
 		if(control[ConsolePlayer].ambuttonstate[bt_pandown])
 			pany -= PAN_AMOUNT;
@@ -663,7 +663,7 @@ AutoMap::AutoMap(unsigned int flags) :
 	minmaxSel = 0;
 	amsin = 0;
 	amcos = FRACUNIT;
-	absscale = FRACUNIT/4;
+	absscale = FRACUNIT;
 	rottable[0][0] = 1.0;
 	rottable[0][1] = 0.0;
 	rottable[1][0] = 1.0;

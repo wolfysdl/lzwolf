@@ -206,7 +206,7 @@ void ReadConfig(void)
 	char joySettingName[50] = {0};
 	char keySettingName[50] = {0};
 	char mseSettingName[50] = {0};
-	forcegrabmouse = config.GetSetting("ForceGrabMouse")->GetInteger() != 0;
+	//forcegrabmouse = config.GetSetting("ForceGrabMouse")->GetInteger() != 0;
 	mouseenabled = config.GetSetting("MouseEnabled")->GetInteger() != 0;
 	joystickenabled = config.GetSetting("JoystickEnabled")->GetInteger() != 0;
 	for(unsigned int i = 0;controlScheme[i].button != bt_nobutton;i++)
