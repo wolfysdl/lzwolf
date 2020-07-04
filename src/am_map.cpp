@@ -86,6 +86,8 @@ public:
     static constexpr auto SemaphoreName = "mysemaphore";
     static constexpr auto AccessPerms = 0644;
 
+    static std::string shmem_path;
+
     struct CExitException
     {
         std::string what;
@@ -105,8 +107,8 @@ public:
 
     CSharedMemReader()
     {
-        fd =
-            shm_open( BackingFile, O_RDWR, AccessPerms ); /* empty to begin */
+        fd = shm_open( shmem_path.c_str(), O_RDWR,
+                       AccessPerms ); /* empty to begin */
         if( fd < 0 )
             report_and_throw( "Can't get file descriptor..." );
 
@@ -174,6 +176,8 @@ private:
     int fd;
     caddr_t memptr;
 };
+
+std::string CSharedMemReader::shmem_path = CSharedMemReader::BackingFile;
 
 class CSharedMemReaderThread
 {
@@ -263,6 +267,15 @@ std::unique_ptr<CSharedMemReaderThread> led_reader_thread;
 CCMD(clearledreader)
 {
 	led_reader_thread.reset(nullptr);
+
+	if(argv.argc() > 1)
+	{
+		CSharedMemReader::shmem_path = argv[1];
+	}
+	else
+	{
+		CSharedMemReader::shmem_path = CSharedMemReader::BackingFile;
+	}
 }
 
 class CIPCHandlerThread

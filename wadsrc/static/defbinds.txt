@@ -9,3 +9,5 @@ bind "z" "sendcmd led.stop alert"
 bind "w" "sendcmd led.setpri active-waking 2; sendcmd led.play active-waking 1"
 bind "e" "sendcmd led.setpri active-ending 2; sendcmd led.play active-ending 1"
 bind "l" "clearledreader; clear"
+
+bind "t" "sendcmd btn.notify action press"
