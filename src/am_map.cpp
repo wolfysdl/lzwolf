@@ -81,7 +81,7 @@
 class CSharedMemReader
 {
 public:
-    static constexpr auto BackingFile = "/shMemEx3";
+    static constexpr auto BackingFile = "/shMemEx";
     static constexpr auto ByteSize = 512;
     static constexpr auto SemaphoreName = "mysemaphore";
     static constexpr auto AccessPerms = 0644;
