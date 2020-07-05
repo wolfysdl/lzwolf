@@ -53,6 +53,7 @@
 #include "mapedit.h"
 #include "c_console.h"
 #include "c_dispatch.h"
+#include "v_text.h"
 
 #include <cstddef>
 #include <string>
@@ -129,7 +130,7 @@ public:
         /* cleanup */
         munmap( memptr, ByteSize );
         close( fd );
-        shm_unlink( BackingFile );
+        shm_unlink( shmem_path.c_str() );
     }
 
     bool Recv( char* out, int n )
@@ -276,7 +277,85 @@ CCMD(clearledreader)
 	{
 		CSharedMemReader::shmem_path = CSharedMemReader::BackingFile;
 	}
+	Printf( "Using shmem path %s\n", CSharedMemReader::shmem_path.c_str() );
 }
+
+class CLogControl
+{
+public:
+    bool Rejects( const std::string& msg )
+    {
+        auto extract_prefix = []( const std::string& msg )
+        {
+            if( msg.find( TEXTCOLOR_ESCAPE ) == 0 &&
+                msg.find( TEXTCOLOR_NORMAL, 2 ) != std::string::npos &&
+                msg.find( TEXTCOLOR_NORMAL, 2 ) > 2 )
+            {
+                return msg.substr( 2, msg.find( TEXTCOLOR_NORMAL, 2 ) - 2 );
+            }
+            return std::string();
+        };
+
+        auto prefix = extract_prefix( msg );
+        if( prefix.empty() )
+        {
+            return false;
+        }
+
+        UpdateInfo( prefix );
+
+        const auto& info = m_prefix_infos[ prefix ];
+        return !info.m_accept;
+    }
+
+private:
+    using TLogPrefix = std::string;
+    struct CPrefixInfo
+    {
+        bool m_accept = true;
+        std::shared_ptr< FConsoleCommand > m_enable_cmd;
+        std::shared_ptr< FConsoleCommand > m_disable_cmd;
+    };
+
+    void UpdateInfo( const std::string& prefix )
+    {
+        if( m_prefix_infos.find( prefix ) == std::end( m_prefix_infos ) )
+        {
+            auto run_enable_cmd = [prefix, this]( FCommandLine&, APlayerPawn*,
+                                                  int ) {
+                auto it = this->m_prefix_infos.find( prefix );
+                if( it != std::end( this->m_prefix_infos ) )
+                {
+                    it->second.m_accept = true;
+                    Printf( "Enabled logs in %s\n", prefix.c_str() );
+                }
+            };
+            auto run_disable_cmd = [prefix, this]( FCommandLine&, APlayerPawn*,
+                                                   int ) {
+                auto it = this->m_prefix_infos.find( prefix );
+                if( it != std::end( this->m_prefix_infos ) )
+                {
+                    it->second.m_accept = false;
+                    Printf( "Disabled logs in %s\n", prefix.c_str() );
+                }
+            };
+            auto enable_cmd_name = // i know these are dangling pointers
+                strdup( ( std::string( "log-enable-" ) + prefix ).c_str() );
+            auto disable_cmd_name =
+                strdup( ( std::string( "log-disable-" ) + prefix ).c_str() );
+            CPrefixInfo info{
+                true,
+                std::make_shared< FConsoleCommand >(
+                    enable_cmd_name, run_enable_cmd ),
+                std::make_shared< FConsoleCommand >(
+                    disable_cmd_name, run_disable_cmd ),
+            };
+            m_prefix_infos.insert( std::make_pair( prefix, info ) );
+        }
+    }
+
+    std::map< TLogPrefix, CPrefixInfo > m_prefix_infos;
+};
 
 class CIPCHandlerThread
 {
@@ -381,6 +460,10 @@ public:
         {
             auto msg = m_msg_queue.front();
             m_msg_queue.pop_front();
+            if( m_log_control.Rejects( msg ) )
+            {
+                return boost::none;
+            }
             return msg;
         }
         return boost::none;
@@ -391,6 +474,7 @@ private:
     std::mutex m_mut;
     bool m_abortloop = false;
     std::deque< std::string > m_msg_queue;
+    CLogControl m_log_control;
 };
 CIPCHandlerThread ipc_handler_thread;
 

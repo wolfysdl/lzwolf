@@ -34,6 +34,7 @@
 #ifndef __C_DISPATCH_H__
 #define __C_DISPATCH_H__
 
+#include <functional>
 #include <limits.h>
 #include "tarray.h"
 #include "name.h"
@@ -100,7 +101,7 @@ void C_ClearAliases ();
 // build a single string out of multiple strings
 FString BuildString (int argc, FString *argv);
 
-typedef void (*CCmdRun) (FCommandLine &argv, APlayerPawn *instigator, int key);
+using CCmdRun = std::function<void(FCommandLine &, APlayerPawn *, int)>;
 
 class FConsoleCommand
 {
