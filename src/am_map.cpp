@@ -71,6 +71,8 @@
 #include <deque>
 #include <boost/optional.hpp>
 #include <sstream>
+#include <iostream>
+#include <iomanip>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -455,6 +457,28 @@ public:
 
     const boost::optional< std::string > GetMsg()
     {
+        auto now = SDL_GetTicks();
+        if( now < m_last_ticks )
+        {
+            m_last_ticks = now;
+            return boost::none;
+        }
+
+        auto ticks_prefix = []( auto delta_ticks ) {
+            std::stringstream ss;
+            if( delta_ticks >= 1000 )
+            {
+                ss << TEXTCOLOR_BOLD << std::left << std::setw( 3 )
+                   << std::min( delta_ticks / 1000, ( Uint32 ) 999 )
+                   << TEXTCOLOR_NORMAL << " ";
+            }
+            else
+            {
+                ss << std::left << std::setw( 3 ) << delta_ticks << " ";
+            }
+            return ss.str();
+        };
+
         std::lock_guard< std::mutex > lk( m_mut );
         if( !m_msg_queue.empty() )
         {
@@ -464,7 +488,10 @@ public:
             {
                 return boost::none;
             }
-            return msg;
+
+            auto delta_ticks = now - m_last_ticks;
+            m_last_ticks = now;
+            return ticks_prefix( delta_ticks ) + msg;
         }
         return boost::none;
     }
@@ -475,6 +502,7 @@ private:
     bool m_abortloop = false;
     std::deque< std::string > m_msg_queue;
     CLogControl m_log_control;
+    Uint32 m_last_ticks = 0;
 };
 CIPCHandlerThread ipc_handler_thread;
 
