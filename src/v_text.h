@@ -76,6 +76,9 @@ struct FBrokenLines
 #define TEXTCOLOR_CHAT			"\034*"
 #define TEXTCOLOR_TEAMCHAT		"\034!"
 
+#define TEXTCOLOR_NONOTIFY_BEGIN	"\034("
+#define TEXTCOLOR_NONOTIFY_END		"\034)"
+
 FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *str, bool preservecolor = false);
 void V_FreeBrokenLines (FBrokenLines *lines);
 inline FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const char *str, bool preservecolor = false)

@@ -564,23 +564,38 @@ int PrintString (int printlevel, const char *outline)
 		return 0;
 	}
 
+	std::string notify_str( outline );
+	auto console_str = notify_str;
+	auto nonotify_bounds = std::make_pair(
+			notify_str.find( TEXTCOLOR_NONOTIFY_BEGIN ),
+			notify_str.find( TEXTCOLOR_NONOTIFY_END ) );
+	if( nonotify_bounds.first != std::string::npos &&
+			nonotify_bounds.second != std::string::npos &&
+			nonotify_bounds.first + 2 < nonotify_bounds.second )
+	{
+		notify_str.erase( nonotify_bounds.first,
+				nonotify_bounds.second + 2 - nonotify_bounds.first );
+		console_str.erase( nonotify_bounds.second, 2 );
+		console_str.erase( nonotify_bounds.first, 2 );
+	}
+
 	if (printlevel != PRINT_LOG)
 	{
 		//I_PrintStr (outline);
 
-		AddToConsole (printlevel, outline);
+		AddToConsole (printlevel, console_str.c_str());
 		if (vidactive && screen && SmallFont)
 		{
-			C_AddNotifyString (printlevel, outline);
+			C_AddNotifyString (printlevel, notify_str.c_str());
 			maybedrawnow (false, false);
 		}
 	}
 	else if (Logfile != NULL)
 	{
-		fputs (outline, Logfile);
+		fputs (console_str.c_str(), Logfile);
 		fflush (Logfile);
 	}
-	return (int)strlen (outline);
+	return (int)strlen (console_str.c_str());
 }
 
 extern bool gameisdead;

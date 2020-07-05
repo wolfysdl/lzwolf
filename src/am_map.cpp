@@ -315,42 +315,29 @@ private:
     struct CPrefixInfo
     {
         bool m_accept = true;
-        std::shared_ptr< FConsoleCommand > m_enable_cmd;
-        std::shared_ptr< FConsoleCommand > m_disable_cmd;
+        std::shared_ptr< FConsoleCommand > m_toggle_cmd;
     };
 
     void UpdateInfo( const std::string& prefix )
     {
         if( m_prefix_infos.find( prefix ) == std::end( m_prefix_infos ) )
         {
-            auto run_enable_cmd = [prefix, this]( FCommandLine&, APlayerPawn*,
+            auto run_toggle_cmd = [prefix, this]( FCommandLine&, APlayerPawn*,
                                                   int ) {
                 auto it = this->m_prefix_infos.find( prefix );
                 if( it != std::end( this->m_prefix_infos ) )
                 {
-                    it->second.m_accept = true;
-                    Printf( "Enabled logs in %s\n", prefix.c_str() );
+                    it->second.m_accept = !it->second.m_accept;
+                    Printf( "Logs %s %s\n", prefix.c_str(),
+                            it->second.m_accept ? "ENABLED" : "DISABLED" );
                 }
             };
-            auto run_disable_cmd = [prefix, this]( FCommandLine&, APlayerPawn*,
-                                                   int ) {
-                auto it = this->m_prefix_infos.find( prefix );
-                if( it != std::end( this->m_prefix_infos ) )
-                {
-                    it->second.m_accept = false;
-                    Printf( "Disabled logs in %s\n", prefix.c_str() );
-                }
-            };
-            auto enable_cmd_name = // i know these are dangling pointers
-                strdup( ( std::string( "log-enable-" ) + prefix ).c_str() );
-            auto disable_cmd_name =
-                strdup( ( std::string( "log-disable-" ) + prefix ).c_str() );
+            auto toggle_cmd_name = // i know these are dangling pointers
+                strdup( ( std::string( "togglelog-" ) + prefix ).c_str() );
             CPrefixInfo info{
                 true,
                 std::make_shared< FConsoleCommand >(
-                    enable_cmd_name, run_enable_cmd ),
-                std::make_shared< FConsoleCommand >(
-                    disable_cmd_name, run_disable_cmd ),
+                    toggle_cmd_name, run_toggle_cmd ),
             };
             m_prefix_infos.insert( std::make_pair( prefix, info ) );
         }
@@ -468,13 +455,15 @@ public:
             std::stringstream ss;
             if( delta_ticks >= 1000 )
             {
-                ss << TEXTCOLOR_BOLD << std::left << std::setw( 3 )
+                ss << TEXTCOLOR_NONOTIFY_BEGIN << TEXTCOLOR_BOLD << std::left
+                   << std::setw( 3 )
                    << std::min( delta_ticks / 1000, ( Uint32 ) 999 )
-                   << TEXTCOLOR_NORMAL << " ";
+                   << TEXTCOLOR_NORMAL << " " << TEXTCOLOR_NONOTIFY_END;
             }
             else
             {
-                ss << std::left << std::setw( 3 ) << delta_ticks << " ";
+                ss << TEXTCOLOR_NONOTIFY_BEGIN << std::left << std::setw( 3 )
+                   << delta_ticks << " " << TEXTCOLOR_NONOTIFY_END;
             }
             return ss.str();
         };
@@ -1070,7 +1059,7 @@ void AutoMap::Draw()
 		}
 	}
 
-	DrawStats();
+	//DrawStats();
 }
 
 void AutoMap::DrawActor(AActor *actor, fixed x, fixed y, fixed scale)
