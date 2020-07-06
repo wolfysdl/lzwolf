@@ -80,59 +80,46 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
+#include <stdio.h> 
+#include <sys/shm.h> 
+
+static constexpr auto shared_segment_size = 0x6400;
+static constexpr auto SemaphoreName = "mysemaphore";
+static constexpr auto AccessPerms = 0644;
 
 class CSharedMemReader
 {
 public:
-    static constexpr auto BackingFile = "/shMemEx";
-    static constexpr auto ByteSize = 512;
-    static constexpr auto SemaphoreName = "mysemaphore";
-    static constexpr auto AccessPerms = 0644;
-
-    static std::string shmem_path;
-
-    struct CExitException
-    {
-        std::string what;
-    };
-
     void report_and_exit( const char* msg )
     {
         perror( msg );
         exit( -1 );
     }
 
-    void report_and_throw( const char* msg )
+    explicit CSharedMemReader( key_t shmkey )
     {
-        perror( msg );
-        throw CExitException{std::string( msg )};
-    }
-
-    CSharedMemReader()
-    {
-        fd = shm_open( shmem_path.c_str(), O_RDWR,
-                       AccessPerms ); /* empty to begin */
-        if( fd < 0 )
-            report_and_throw( "Can't get file descriptor..." );
-
-        /* get a pointer to memory */
-        memptr = reinterpret_cast< caddr_t >(
-            mmap( NULL,     /* let system pick where to put segment */
-                  ByteSize, /* how many bytes */
-                  PROT_READ | PROT_WRITE, /* access protections */
-                  MAP_SHARED, /* mapping visible to other processes */
-                  fd,         /* file descriptor */
-                  0 ) );      /* offset: start at 1st byte */
-        if( ( caddr_t ) -1 == memptr )
-            report_and_throw( "Can't access segment..." );
+        /* Allocate a shared memory segment.  */
+        segment_id = shmget( shmkey, shared_segment_size,
+                             IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR );
+        if( segment_id == -1 )
+        {
+            report_and_exit( "shmget" );
+        }
+        /* Attach the shared memory segment.  */
+        shared_memory = ( char* ) shmat( segment_id, 0, 0 );
+        if( shared_memory == ( char* ) -1 )
+        {
+            report_and_exit( "shmat" );
+        }
+        printf( "shared memory attached at address %p\n", shared_memory );
     }
 
     ~CSharedMemReader()
     {
-        /* cleanup */
-        munmap( memptr, ByteSize );
-        close( fd );
-        shm_unlink( shmem_path.c_str() );
+        /* Detach the shared memory segment.  */
+        shmdt( shared_memory );
+        /* Deallocate the shared memory segment.  */
+        shmctl( segment_id, IPC_RMID, 0 );
     }
 
     bool Recv( char* out, int n )
@@ -152,17 +139,9 @@ public:
 
         /* use semaphore as a mutex (lock) by waiting for writer to increment it
          */
-        struct timespec ts;
-        if( clock_gettime( CLOCK_REALTIME, &ts ) == -1 )
-        {
-            /* handle error */
-            return -1;
-        }
-        ts.tv_sec += 1;
-
-        if( !sem_timedwait( semptr, &ts ) )
+        if( sem_trywait( semptr ) != -1 )
         { /* wait until semaphore != 0 */
-            memcpy( out, memptr, n );
+            memcpy( out, shared_memory, n );
             //sem_post( semptr );
             res = true;
         }
@@ -176,110 +155,29 @@ public:
     }
 
 private:
-    int fd;
-    caddr_t memptr;
+    int segment_id;
+    char* shared_memory;
 };
 
-std::string CSharedMemReader::shmem_path = CSharedMemReader::BackingFile;
-
-class CSharedMemReaderThread
-{
-public:
-    using TReader = CSharedMemReader;
-
-    CSharedMemReaderThread( std::size_t bytes )
-        : m_data{0}
-        , m_bytes( bytes )
-    {
-        m_thread = std::thread( [&] { Worker(); } );
-    }
-
-    ~CSharedMemReaderThread()
-    {
-        if( m_thread.get_id() != std::thread::id{} )
-        {
-            {
-                std::lock_guard< std::mutex > lk( m_mut );
-                m_abortloop = true;
-            }
-
-            m_thread.join();
-        }
-    }
-
-    void Worker()
-    {
-        char data[ TReader::ByteSize ];
-        std::unique_ptr< TReader > p_reader;
-
-        while( !m_abortloop )
-        {
-            bool got_data = false;
-
-            if( p_reader.get() == nullptr )
-            {
-                try
-                {
-                    printf("thread making reader\n");
-                    p_reader.reset( new TReader );
-                }
-                catch( CSharedMemReader::CExitException exc )
-                {
-                    printf("thread got exception making reader\n");
-                    std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
-                }
-            }
-
-            if( p_reader )
-            {
-                if( p_reader->Recv( data, m_bytes ) )
-                {
-                    got_data = true;
-                }
-            }
-            else
-            {
-                printf("thread waiting for reader\n");
-                std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
-            }
-
-            if( got_data )
-            {
-                //printf("thread updating data\n");
-                std::lock_guard< std::mutex > lk( m_mut );
-                memcpy( m_data, data, m_bytes );
-            }
-        }
-    }
-
-    void GetData( char* out )
-    {
-        std::lock_guard< std::mutex > lk( m_mut );
-        memcpy( out, m_data, m_bytes );
-    }
-
-private:
-    std::thread m_thread;
-    std::mutex m_mut;
-    bool m_abortloop = false;
-    char m_data[ TReader::ByteSize ];
-    const std::size_t m_bytes;
-};
-std::unique_ptr<CSharedMemReaderThread> led_reader_thread;
+key_t shmkey = 1234;
+std::unique_ptr< CSharedMemReader > led_reader;
+char led_str[ 64 ] = {0};
 
 CCMD(clearledreader)
 {
-	led_reader_thread.reset(nullptr);
+	led_reader.reset(nullptr);
 
 	if(argv.argc() > 1)
 	{
-		CSharedMemReader::shmem_path = argv[1];
+		shmkey = atoi(argv[1]);
 	}
 	else
 	{
-		CSharedMemReader::shmem_path = CSharedMemReader::BackingFile;
+		shmkey = 1234;
 	}
-	Printf( "Using shmem path %s\n", CSharedMemReader::shmem_path.c_str() );
+	Printf( "Using shkey %d\n", shmkey );
+
+	led_reader = std::make_unique< CSharedMemReader >( shmkey );
 }
 
 class CLogControl
@@ -889,12 +787,10 @@ void AutoMap::Draw()
 		fullRefresh = false;
 	}
 
-	char led_str[ 64 ] = {0};
-	if(led_reader_thread.get() == nullptr)
+	if( led_reader )
 	{
-		led_reader_thread.reset(new CSharedMemReaderThread(64));
+		led_reader->Recv( led_str, 40 );
 	}
-	led_reader_thread->GetData( led_str );
 
 	auto msg = ipc_handler_thread.GetMsg();
 	if(msg)
