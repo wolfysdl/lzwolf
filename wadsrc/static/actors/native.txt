@@ -195,6 +195,7 @@ actor Damage : Inventory native
 	damage.ignorearmor 0
 	damage.noxdeath 0
 	damage.silent 0
+	damage.melee 0
 }
 
 actor ExtraLifeItem : Inventory native

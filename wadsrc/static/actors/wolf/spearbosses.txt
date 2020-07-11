@@ -7,6 +7,7 @@ actor Trans : WolfensteinMonster 23
 	deathsound "trans/death"
 	attacksound "trans/attack"
 	dropitem "GoldKey"
+	obituary "$OB_TRANS"
 	+AMBUSH
 	states
 	{
@@ -40,6 +41,7 @@ actor SubmarineWilly : Trans 99
 	deathsound "subwilly/death"
 	attacksound "subwilly/attack"
 	dropitem "YellowKey"
+	obituary "$OB_SUBMARINE"
 	states
 	{
 		Spawn:
@@ -75,6 +77,7 @@ actor UberMutant : WolfensteinMonster 24
 	deathsound "uber/death"
 	attacksound "uber/attack"
 	dropitem "GoldKey"
+	obituary "$OB_UBERMUTANT"
 	+AMBUSH
 	states
 	{
@@ -162,6 +165,7 @@ actor Wilhelm : WolfensteinMonster 25
 	deathsound "will/death"
 	attacksound "will/attack"
 	dropitem "GoldKey"
+	obituary "$OB_WILHELM"
 	+AMBUSH
 	states
 	{
@@ -198,6 +202,7 @@ actor ProfessorQuarkblitz : Wilhelm 100
 	deathsound "professor/death"
 	attacksound "professor/attack"
 	dropitem "YellowKey"
+	obituary "$OB_QUARKBLITZ"
 	states
 	{
 		Spawn:
@@ -238,6 +243,7 @@ actor DeathKnight : WolfensteinMonster 26
 	deathsound "knight/death"
 	attacksound "knight/attack"
 	dropitem "GoldKey"
+	obituary "$OB_DEATHKNIGHT"
 	+AMBUSH
 	states
 	{
@@ -276,6 +282,7 @@ actor Robot : DeathKnight 102
 	deathsound "robot/death"
 	attacksound "robot/attack"
 	dropitem "YellowKey"
+	obituary "$OB_ROBOT"
 	states
 	{
 		Spawn:

@@ -360,3 +360,28 @@ void APlayerPawn::TickHeightAnim()
 		viewheight = FixedMul(ha.startpos, FRACUNIT - t) + FixedMul(ha.endpos, t);
 	}
 }
+
+void APlayerPawn::ObituaryMessage(AActor *attacker)
+{
+	ADamage *killerDamage = static_cast<ADamage *>(FindInventory(killerdamagetype));
+	const bool killed_by_melee = (killerDamage && killerDamage->melee);
+
+	const char *message;
+	if(killed_by_melee)
+	{
+		message = attacker->GetClass()->Meta.GetMetaString (AMETA_HitObituary);
+		if (message == NULL)
+		{
+			message = attacker->GetClass()->Meta.GetMetaString (AMETA_Obituary);
+		}
+	}
+	else
+	{
+		message = attacker->GetClass()->Meta.GetMetaString (AMETA_Obituary);
+	}
+
+	if(message != NULL && strlen(message) > 0)
+	{
+		Printf (/*PRINT_MEDIUM, */"%s\n", message);
+	}
+}

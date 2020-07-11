@@ -276,6 +276,12 @@ void AActor::Die()
 		NetDPrintf("%s %d points with no target\n", __FUNCTION__, points);
 	}
 
+	// obituary
+	if(target)
+	{
+		ObituaryMessage(target);
+	}
+
 	if(flags & FL_COUNTKILL)
 	{
 		gamestate.killcount++;

@@ -75,6 +75,7 @@ class APlayerPawn : public AActor
 		void		Tick();
 		void		TickPSprites();
 		void		TickHeightAnim();
+		void		ObituaryMessage(AActor *attacker);
 
 		static PointerIndexTable<DropList> startInventory;
 
