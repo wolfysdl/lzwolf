@@ -8,6 +8,7 @@ gameinfo
 	titlemusic = "NAZI_NOR"
 	scoresmusic = "ROSTER"
 	drawreadthis = true
+	//drawgamemessage = true
 	gamepalette = "WOLFPAL"
 	titlepage = "TITLEPIC"
 	menufontcolor_disabled = "DarkRed"

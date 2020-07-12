@@ -26,6 +26,7 @@
 #include "wl_state.h"
 #include "a_inventory.h"
 #include "thingdef/thingdef.h"
+#include "wl_menu.h"
 
 /*
 =============================================================================
@@ -1349,4 +1350,7 @@ void    ThreeDRefresh (void)
 			fps_frames=0;
 		}
 	}
+
+	if (gameinfo.DrawGameMessage)
+		DrawGameMessage ();
 }

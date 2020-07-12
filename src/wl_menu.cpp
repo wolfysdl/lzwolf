@@ -1205,3 +1205,58 @@ void ShowMenu(Menu &menu)
 	if (MousePresent && IN_IsInputGrabbed())
 		IN_CenterMouse();     // Clear accumulated mouse movement
 }
+
+struct TGameMessage
+{
+	std::string currentMessage;
+	int32_t ticsLeft = 0;
+};
+static TGameMessage GameMessageData;
+
+////////////////////////////////////////////////////////////////////
+//
+// ADD A GAME MESSAGE FOR SCREEN DISPLAY
+//
+////////////////////////////////////////////////////////////////////
+void GameMessage (const char *string)
+{
+	auto &data = GameMessageData;
+	data.currentMessage = std::string(string);
+	data.ticsLeft = 200;
+}
+
+////////////////////////////////////////////////////////////////////
+//
+// CLEAR GAME MESSAGE FROM SCREEN DISPLAY
+//
+////////////////////////////////////////////////////////////////////
+void ClearGameMessage ()
+{
+	auto &data = GameMessageData;
+	data = TGameMessage{};
+}
+
+////////////////////////////////////////////////////////////////////
+//
+// PRINT A GAME MESSAGE ON SCREEN
+//
+////////////////////////////////////////////////////////////////////
+void DrawGameMessage ()
+{
+	auto &data = GameMessageData;
+	data.ticsLeft -= (int32_t)tics;
+	if (data.ticsLeft > 0)
+	{
+		auto string = data.currentMessage.c_str();
+
+		//word width, height;
+
+		//FString measureString;
+		//measureString.Format("%s_", string);
+		//VW_MeasurePropString(ConFont, measureString, width, height);
+		px = 5;
+		py = 3;
+		VWB_DrawPropString(ConFont, string, CR_GRAY);
+	}
+}
+

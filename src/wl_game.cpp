@@ -337,6 +337,8 @@ void SetupGameLevel (void)
 		if(players[0].mo == NULL)
 			throw CRecoverableError("No player 1 start!");
 	}
+
+	ClearGameMessage ();
 }
 
 
@@ -798,6 +800,8 @@ void Died (void)
 
 	if ((players[0].lives > -1) || (gamestate.difficulty->LivesCount < 0))
 		players[0].state = player_t::PST_REBORN;
+
+	ClearGameMessage ();
 }
 
 //==========================================================================
@@ -1050,6 +1054,8 @@ restartgame:
 				if(dointermission)
 					VW_FadeOut ();
 				if(viewsize == 21) DrawPlayScreen();
+
+				ClearGameMessage ();
 
 				if(next.CompareNoCase("EndDemo") == 0)
 				{

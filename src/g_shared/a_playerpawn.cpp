@@ -40,6 +40,7 @@
 #include "wl_game.h"
 #include "wl_main.h"
 #include "wl_play.h"
+#include "wl_menu.h"
 
 #include <climits>
 
@@ -383,5 +384,6 @@ void APlayerPawn::ObituaryMessage(AActor *attacker)
 	if(message != NULL && strlen(message) > 0)
 	{
 		Printf (/*PRINT_MEDIUM, */"%s\n", message);
+		GameMessage (message);
 	}
 }
