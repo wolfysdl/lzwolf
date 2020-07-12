@@ -55,6 +55,7 @@ public:
 	int		PsychedColors[2];
 	int 	PsychedOffset;
 	bool	DrawReadThis;
+	bool	DrawGameMessage;
 	bool	TrackHighScores;
 
 	int		TitleTime;
