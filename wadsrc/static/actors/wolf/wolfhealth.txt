@@ -2,6 +2,7 @@ actor DogFood : Health 39
 {
 	inventory.amount 4
 	inventory.pickupsound "misc/dogfood_pkup"
+	inventory.pickupmessage "$GOTDOGFOOD"
 	states
 	{
 		Spawn:
@@ -22,6 +23,7 @@ actor DogFood2 : DogFood 111
 actor Food : Health 57
 {
 	inventory.amount 10
+	inventory.pickupmessage "$GOTFOOD"
 	states
 	{
 		Spawn:
@@ -43,6 +45,7 @@ actor Medikit : Health 58
 {
 	inventory.amount 25
 	inventory.pickupsound "misc/medkit_pkup"
+	inventory.pickupmessage "$GOTMEDKIT"
 	states
 	{
 		Spawn:
@@ -67,6 +70,7 @@ actor OneUpHealth : Health
 actor OneUp : CustomInventory 66
 {
 	inventory.pickupsound "misc/1up"
+	inventory.pickupmessage "$GOTONEUP"
 	+COUNTITEM
 	+INVENTORY.ALWAYSPICKUP
 	states
@@ -96,6 +100,7 @@ actor Blood : Health 67
 	inventory.amount 1
 	inventory.maxamount 11
 	inventory.pickupsound "misc/slurpie"
+	inventory.pickupmessage "$GOTBLOOD"
 	states
 	{
 		Spawn:
@@ -119,6 +124,7 @@ actor Gibs : Health 71
 	inventory.amount 1
 	inventory.maxamount 11
 	inventory.pickupsound "misc/slurpie"
+	inventory.pickupmessage "$GOTGIBS"
 	states
 	{
 		Spawn:
