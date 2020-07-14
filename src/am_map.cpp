@@ -185,13 +185,16 @@ class CLogControl
 public:
     bool Rejects( const std::string& msg )
     {
-        auto extract_prefix = []( const std::string& msg )
-        {
-            if( msg.find( TEXTCOLOR_ESCAPE ) == 0 &&
-                msg.find( TEXTCOLOR_NORMAL, 2 ) != std::string::npos &&
-                msg.find( TEXTCOLOR_NORMAL, 2 ) > 2 )
+        auto extract_prefix = []( const std::string& msg ) {
+            auto esc_ind = msg.find( TEXTCOLOR_ESCAPE );
+            if( esc_ind != std::string::npos &&
+                msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) !=
+                    std::string::npos &&
+                msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) > esc_ind + 2 )
             {
-                return msg.substr( 2, msg.find( TEXTCOLOR_NORMAL, 2 ) - 2 );
+                return msg.substr( esc_ind + 2,
+                                   msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) -
+                                       ( esc_ind + 2 ) );
             }
             return std::string();
         };
