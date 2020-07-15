@@ -159,8 +159,9 @@ private:
     char* shared_memory;
 };
 
-key_t shmkey = 1234;
-std::unique_ptr< CSharedMemReader > led_reader;
+key_t shmkey = 1111;
+std::unique_ptr< CSharedMemReader > led_reader =
+    std::make_unique< CSharedMemReader >( shmkey );
 char led_str[ 64 ] = {0};
 
 CCMD(clearledreader)
@@ -186,17 +187,23 @@ public:
     bool Rejects( const std::string& msg )
     {
         auto extract_prefix = []( const std::string& msg ) {
+            std::vector< std::string > res;
+            if( msg.find( '[' ) == 0 && msg.find( "]:" ) == 2 )
+            {
+                res.push_back( std::string( "mach" ) + msg.substr( 1, 1 ) );
+            }
             auto esc_ind = msg.find( TEXTCOLOR_ESCAPE );
             if( esc_ind != std::string::npos &&
                 msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) !=
                     std::string::npos &&
                 msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) > esc_ind + 2 )
             {
-                return msg.substr( esc_ind + 2,
-                                   msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) -
-                                       ( esc_ind + 2 ) );
+                res.push_back(
+                    msg.substr( esc_ind + 2,
+                                msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) -
+                                    ( esc_ind + 2 ) ) );
             }
-            return std::string();
+            return res;
         };
 
         auto prefix = extract_prefix( msg );
@@ -205,10 +212,20 @@ public:
             return false;
         }
 
-        UpdateInfo( prefix );
+        bool accept_msg = true;
 
-        const auto& info = m_prefix_infos[ prefix ];
-        return !info.m_accept;
+        for( auto p: prefix )
+        {
+            UpdateInfo( p );
+
+            const auto& info = m_prefix_infos[ p ];
+            if( !info.m_accept )
+            {
+                accept_msg = false;
+            }
+        }
+
+        return !accept_msg;
     }
 
 private:
