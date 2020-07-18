@@ -691,7 +691,13 @@ void APlayerPawn::Cmd_Use()
 		}
 	}
 
-	if(doNothing)
+	TicCmd_t &cmd = control[player - players];
+	if(doNothing && (!cmd.buttonheld[bt_use] && Interrogate()))
+	{
+		cmd.buttonheld[bt_use] = true;
+		// nothing yet
+	}
+	else if(doNothing)
 		SD_PlaySound ("misc/do_nothing");
 	else
 	{
@@ -699,6 +705,53 @@ void APlayerPawn::Cmd_Use()
 			StatusBar->InfoMessage(infoMessage, {});
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
 	}
+}
+
+/*
+===============
+=
+= Interrogate
+=
+===============
+*/
+
+bool APlayerPawn::Interrogate()
+{
+	const double range = 64;
+
+	int dist = 0x7fffffff;
+	AActor *closest = NULL;
+	for(AActor::Iterator check = AActor::GetIterator();check.Next();)
+	{
+		if(check == this)
+			continue;
+
+		if ( (check->flags & FL_SHOOTABLE) && (check->flags & FL_VISABLE)
+			&& abs(check->viewx-centerx) < shootdelta)
+		{
+			if (check->transx < dist)
+			{
+				dist = check->transx;
+				closest = check;
+			}
+		}
+	}
+
+	if (!closest || dist-(FRACUNIT/2) > (range/64)*FRACUNIT)
+	{
+		// missed
+		return false;
+	}
+
+	// hit something
+	auto intgState = closest->FindState("Interrogate");
+	if(intgState)
+	{
+		closest->SetState(intgState);
+		return true;
+	}
+
+	return false;
 }
 
 /*

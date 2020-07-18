@@ -383,6 +383,9 @@ actor GeneralScientist : WolfensteinMonster
 			GSCI LMN 7.5 // T_BlowBack
 			GSCI O -1
 			stop
+		//Interrogate:
+		//	GSCI K -1 NOP
+		//	stop
 	}
 }
 
