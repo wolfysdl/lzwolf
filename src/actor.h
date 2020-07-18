@@ -163,6 +163,8 @@ class AActor : public Thinker,
 			public:
 				FString			infoMessage;
 				FName           dropItem;
+				int             probability;
+				int             amount;
 		};
 		typedef LinkedList<InterrogateItem> InterrogateItemList;
 

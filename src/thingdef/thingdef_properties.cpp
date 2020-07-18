@@ -411,6 +411,8 @@ HANDLE_PROPERTY(interrogate)
 {
 	STRING_PARAM(infoMessage, 0);
 	STRING_PARAM(dropItem, 1);
+	INT_PARAM(prb, 2);
+	INT_PARAM(amount, 3);
 
 	if(cls->Meta.GetMetaInt(AMETA_InterrogateItems, -1) == -1 || cls->Meta.IsInherited(AMETA_InterrogateItems))
 		cls->Meta.SetMetaInt(AMETA_InterrogateItems, AActor::interrogateItems.Push(new AActor::InterrogateItemList()));
@@ -418,6 +420,13 @@ HANDLE_PROPERTY(interrogate)
 	AActor::InterrogateItem interrogateItem;
 	interrogateItem.infoMessage = infoMessage;
 	interrogateItem.dropItem = dropItem;
+
+	if(prb > 255)
+		prb = 255;
+	else if(prb < 0)
+		prb = 0;
+	interrogateItem.probability = prb;
+	interrogateItem.amount = amount;
 
 	AActor::interrogateItems[cls->Meta.GetMetaInt(AMETA_InterrogateItems)]->Push(interrogateItem);
 }
@@ -877,7 +886,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(infomessage, Actor, T),
 	DEFINE_PROP(interhubamount, Inventory, I),
-	DEFINE_PROP(interrogate, Actor, TS),
+	DEFINE_PROP(interrogate, Actor, TSII),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),

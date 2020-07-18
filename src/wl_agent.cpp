@@ -715,6 +715,7 @@ void APlayerPawn::Cmd_Use()
 ===============
 */
 
+static FRandom pr_interrogateitem("InterrogateItem");
 bool APlayerPawn::Interrogate()
 {
 	const double range = 64;
@@ -745,6 +746,11 @@ bool APlayerPawn::Interrogate()
 	}
 
 	// hit something
+
+	std::vector<InterrogateItem> prbItems;
+	bool chosenRandom = false;
+	auto rndval = pr_interrogateitem();
+
 	typedef AActor::InterrogateItemList Li;
 	Li *li = closest->GetInterrogateItemList();
 	if (li)
@@ -754,14 +760,28 @@ bool APlayerPawn::Interrogate()
 		{
 			Li::Iterator interrogateItem = item;
 
-			const ClassDef *cls = ClassDef::FindClass(interrogateItem->dropItem);
-			if(cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)) && GiveInventory(cls, 1))
+			if(rndval >= 0 && rndval <= interrogateItem->probability)
 			{
-				StatusBar->InfoMessage(interrogateItem->infoMessage, {});
-				return true;
+				rndval = -1;
+				prbItems.insert(std::begin(prbItems), interrogateItem);
+			}
+			else
+			{
+				prbItems.push_back(interrogateItem);
 			}
 		}
 		while(item.Next());
+	}
+
+	for(auto interrogateItem: prbItems)
+	{
+		const ClassDef *cls = ClassDef::FindClass(interrogateItem.dropItem);
+		if(cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)) &&
+				GiveInventory(cls, interrogateItem.amount))
+		{
+			StatusBar->InfoMessage(interrogateItem.infoMessage, {});
+			return true;
+		}
 	}
 
 	return false;
