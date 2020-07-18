@@ -59,19 +59,34 @@ FFont *MenuFontFactory()
 	return BigFont;
 }
 
-Menu mainMenu(MENU_X, MENU_Y, MENU_W, 24, MenuFontFactory);
-Menu optionsMenu(80, 80, 190, 28, MenuFontFactory);
-Menu soundBase(24, 45, 284, 24, MenuFontFactory);
-Menu controlBase(CTL_X, CTL_Y, CTL_W, 56, MenuFontFactory, EnterControlBase);
-Menu displayMenu(20, 75, 285, 56, MenuFontFactory);
-Menu automapMenu(40, 55, 260, 56, MenuFontFactory);
-Menu mouseSensitivity(20, 50, 300, 24, MenuFontFactory);
-Menu joySensitivity(20, 30, 300, 24, MenuFontFactory);
-Menu playerClasses(NM_X, NM_Y, NM_W, 24, MenuFontFactory);
-Menu episodes(NE_X+4, NE_Y-1, NE_W+7, 83, MenuFontFactory);
-Menu skills(NM_X, NM_Y, NM_W, 24, MenuFontFactory);
-Menu controls(15, 70, 310, 24, MenuFontFactory);
-Menu resolutionMenu(90, 25, 150, 24, MenuFontFactory);
+Menu::TPropertyProvider MenuPropertyProvider(MenuFontFactory, nullptr, nullptr);
+
+static Menu MakeSkillsMenu()
+{
+	auto posx = [] {
+		return (MenuStyle == MENUSTYLE_Blake ? 30 : NM_X);
+	};
+	auto posy = [] {
+		return (MenuStyle == MENUSTYLE_Blake ? 56 : NM_Y);
+	};
+	auto propProvider = Menu::TPropertyProvider(MenuFontFactory, posx, posy);
+	Menu skills(NM_X, NM_Y, NM_W, 24, propProvider);
+	return skills;
+}
+
+Menu mainMenu(MENU_X, MENU_Y, MENU_W, 24, MenuPropertyProvider);
+Menu optionsMenu(80, 80, 190, 28, MenuPropertyProvider);
+Menu soundBase(24, 45, 284, 24, MenuPropertyProvider);
+Menu controlBase(CTL_X, CTL_Y, CTL_W, 56, MenuPropertyProvider, EnterControlBase);
+Menu displayMenu(20, 75, 285, 56, MenuPropertyProvider);
+Menu automapMenu(40, 55, 260, 56, MenuPropertyProvider);
+Menu mouseSensitivity(20, 50, 300, 24, MenuPropertyProvider);
+Menu joySensitivity(20, 30, 300, 24, MenuPropertyProvider);
+Menu playerClasses(NM_X, NM_Y, NM_W, 24, MenuPropertyProvider);
+Menu episodes(NE_X+4, NE_Y-1, NE_W+7, 83, MenuPropertyProvider);
+Menu skills = MakeSkillsMenu();
+Menu controls(15, 70, 310, 24, MenuPropertyProvider);
+Menu resolutionMenu(90, 25, 150, 24, MenuPropertyProvider);
 
 MENU_LISTENER(PlayDemosOrReturnToGame)
 {
@@ -426,7 +441,7 @@ void CreateMenus()
 		SkillInfo &skill = SkillInfo::GetSkill(i);
 		MenuItem *tmp = new MenuItem(skill.Name, StartNewGame);
 		if(!skill.SkillPicture.IsEmpty())
-			tmp->setPicture(skill.SkillPicture, NM_X + 185, NM_Y + 7);
+			tmp->setPicture(skill.SkillPicture, skills.getX() + 185, skills.getY() + 7);
 		skills.addItem(tmp);
 	}
 	skills.setCurrentPosition(2);

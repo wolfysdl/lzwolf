@@ -1144,8 +1144,6 @@ void PlayLoop (void)
 		if(automap && !gamestate.victoryflag)
 			BasicOverhead();
 
-		C_DrawConsole(false);
-
 		//
 		// MAKE FUNNY FACE IF BJ DOESN'T MOVE FOR AWHILE
 		//
@@ -1169,6 +1167,8 @@ void PlayLoop (void)
 			if ((gamestate.TimeCount & 1) || !(tics & 1))
 				StatusBar->DrawStatusBar();
 		}
+
+		C_DrawConsole(false);
 
 		VH_UpdateScreen();
 //

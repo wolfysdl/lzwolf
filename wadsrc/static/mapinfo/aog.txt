@@ -4,7 +4,7 @@ gameinfo
 	gamepalette = "BLAKEPAL"
 	translator = "xlat/aog.txt"
 	playerclasses = "BlakePlayer"
-	titlepage = "TITLE1"
+	titlepage = "TITLE"
 	titlepalette = "TITLEPAL"
 	menumusic = "LASTLAFF"
 	scoresmusic = "HISCORE"

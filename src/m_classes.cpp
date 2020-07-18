@@ -554,11 +554,11 @@ void Menu::eraseGun(int x, int y)
 	}
 }
 
-Menu::Menu(int x, int y, int w, int indent, TFontFactory fontFactory, MENU_LISTENER_PROTOTYPE(entryListener)) :
+Menu::Menu(int x, int y, int w, int indent, CMenuPropertyProvider propProvider, MENU_LISTENER_PROTOTYPE(entryListener)) :
 	entryListener(entryListener), animating(false), controlHeaders(false),
 	curPos(0), headPicture(NULL), headTextInStripes(false),
-	headPictureIsAlternate(false), height(0), indent(indent), x(x), y(y), w(w),
-	itemOffset(0), fontFactory(fontFactory)
+	headPictureIsAlternate(false), height(0), indent(indent), x0(x), y0(y), w(w),
+	itemOffset(0), propProvider(propProvider)
 {
 	for(unsigned int i = 0;i < 36;i++)
 		headText[i] = '\0';
@@ -750,7 +750,7 @@ void Menu::draw() const
 	drawMenu();
 
 	if(cursor && !isAnimating() && countItems() > 0)
-		VWB_DrawGraphic (cursor, x - 4, y + getHeight(curPos) - 2, MENU_CENTER);
+		VWB_DrawGraphic (cursor, getX() - 4, getY() + getHeight(curPos) - 2, MENU_CENTER);
 	VW_UpdateScreen ();
 }
 
@@ -1115,9 +1115,9 @@ void Menu::show()
 
 FFont *Menu::makeFont() const
 {
-	if( fontFactory )
+	if( propProvider.fontFactory )
 	{
-		return fontFactory();
+		return propProvider.fontFactory();
 	}
 	return BigFont;
 }

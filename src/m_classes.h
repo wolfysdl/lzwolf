@@ -181,8 +181,30 @@ class ControlMenuItem : public MenuItem
 		void	right();
 };
 
+struct CMenuPropertyProvider
+{
+	using TFontFactory = std::function<FFont *()>;
+	using TPosFactory = std::function<int ()>;
+
+	CMenuPropertyProvider() = default;
+
+	CMenuPropertyProvider(TFontFactory fontFactory, TPosFactory xPosFactory, TPosFactory yPosFactory) :
+		fontFactory(fontFactory),
+		xPosFactory(xPosFactory),
+		yPosFactory(yPosFactory)
+	{
+	}
+
+	TFontFactory fontFactory = nullptr;
+	TPosFactory xPosFactory = nullptr;
+	TPosFactory yPosFactory = nullptr;
+};
+
 class Menu
 {
+	public:
+		using TPropertyProvider = CMenuPropertyProvider;
+
 	protected:
 		MENU_LISTENER_PROTOTYPE(entryListener);
 		bool				animating;
@@ -196,12 +218,12 @@ class Menu
 		int					height;
 		const int			indent;
 		TArray<MenuItem *>	items;
-		const int			x;
-		const int			y;
+		const int			x0;
+		const int			y0;
 		const int			w;
 
 		unsigned int			itemOffset; // scrolling menus
-		std::function<FFont *()> fontFactory;
+		TPropertyProvider       propProvider;
 
 		static unsigned int		lastIndexDrawn;
 
@@ -212,8 +234,7 @@ class Menu
 		virtual void handleDelete() {}
 
 	public:
-		using TFontFactory = std::function<FFont *()>;
-		Menu(int x, int y, int w, int indent, TFontFactory fontFactory=nullptr, MENU_LISTENER_PROTOTYPE(entryListener)=NULL);
+		Menu(int x, int y, int w, int indent, TPropertyProvider propProvider=TPropertyProvider{}, MENU_LISTENER_PROTOTYPE(entryListener)=NULL);
 		virtual ~Menu();
 
 		void			addItem(MenuItem *item);
@@ -233,8 +254,16 @@ class Menu
 		MenuItem		*getIndex(int index) const;
 		int				getNumItems() const { return items.Size(); }
 		int				getWidth() const { return w; }
-		int				getX() const { return x; }
-		int				getY() const { return y; }
+		int				getX() const {
+			if( propProvider.xPosFactory )
+				return propProvider.xPosFactory();
+			return x0;
+		}
+		int				getY() const {
+			if( propProvider.yPosFactory )
+				return propProvider.yPosFactory();
+			return y0;
+		}
 		bool			isAnimating() const { return animating; }
 		void			setCurrentPosition(int position);
 		void			setHeadPicture(const char* picture, bool isAlt=false);
