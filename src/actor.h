@@ -66,6 +66,7 @@ enum
 	AMETA_HaloLights,
 	AMETA_ZoneLights,
 	AMETA_EnemyFactions,
+	AMETA_InterrogateItems,
 	AMETA_PickupMessage,
 	AMETA_InfoMessage,
 	AMETA_Obituary,			// string (player was killed by this actor)
@@ -157,6 +158,14 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<EnemyFaction> EnemyFactionList;
 
+		struct InterrogateItem
+		{
+			public:
+				FString			infoMessage;
+				FName           dropItem;
+		};
+		typedef LinkedList<InterrogateItem> InterrogateItemList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -179,6 +188,7 @@ class AActor : public Thinker,
 		HaloLightList		*GetHaloLightList() const;
 		ZoneLightList		*GetZoneLightList() const;
 		EnemyFactionList		*GetEnemyFactionList() const;
+		InterrogateItemList		*GetInterrogateItemList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -210,6 +220,7 @@ class AActor : public Thinker,
 		static PointerIndexTable<HaloLightList> haloLights;
 		static PointerIndexTable<ZoneLightList> zoneLights;
 		static PointerIndexTable<EnemyFactionList> enemyFactions;
+		static PointerIndexTable<InterrogateItemList> interrogateItems;
 
 		// Spawned actor ID
 		unsigned int spawnid;

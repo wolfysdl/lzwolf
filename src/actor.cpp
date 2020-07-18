@@ -154,6 +154,7 @@ PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
 PointerIndexTable<AActor::HaloLightList> AActor::haloLights;
 PointerIndexTable<AActor::ZoneLightList> AActor::zoneLights;
 PointerIndexTable<AActor::EnemyFactionList> AActor::enemyFactions;
+PointerIndexTable<AActor::InterrogateItemList> AActor::interrogateItems;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -467,6 +468,14 @@ AActor::EnemyFactionList *AActor::GetEnemyFactionList() const
 	return enemyFactions[enemyfactionsIndex];
 }
 
+AActor::InterrogateItemList *AActor::GetInterrogateItemList() const
+{
+	int interrogateitemsIndex = GetClass()->Meta.GetMetaInt(AMETA_InterrogateItems, -1);
+	if(interrogateitemsIndex == -1)
+		return NULL;
+	return interrogateItems[interrogateitemsIndex];
+}
+
 const AActor *AActor::GetDefault() const
 {
 	return GetClass()->GetDefault();
@@ -483,6 +492,8 @@ bool AActor::GiveInventory(const ClassDef *cls, int amount, bool allowreplacemen
 		else
 			inv->amount = amount;
 	}
+
+	PlaySoundLocActor(inv->pickupsound, this);
 
 	inv->ClearCounters();
 	inv->RemoveFromWorld();

@@ -727,7 +727,8 @@ bool APlayerPawn::Interrogate()
 			continue;
 
 		if ( (check->flags & FL_SHOOTABLE) && (check->flags & FL_VISABLE)
-			&& abs(check->viewx-centerx) < shootdelta)
+			&& abs(check->viewx-centerx) < shootdelta &&
+			(check->flags & FL_ATTACKMODE) == 0)
 		{
 			if (check->transx < dist)
 			{
@@ -744,11 +745,23 @@ bool APlayerPawn::Interrogate()
 	}
 
 	// hit something
-	auto intgState = closest->FindState("Interrogate");
-	if(intgState)
+	typedef AActor::InterrogateItemList Li;
+	Li *li = closest->GetInterrogateItemList();
+	if (li)
 	{
-		closest->SetState(intgState);
-		return true;
+		Li::Iterator item = li->Head();
+		do
+		{
+			Li::Iterator interrogateItem = item;
+
+			const ClassDef *cls = ClassDef::FindClass(interrogateItem->dropItem);
+			if(cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)) && GiveInventory(cls, 1))
+			{
+				StatusBar->InfoMessage(interrogateItem->infoMessage, {});
+				return true;
+			}
+		}
+		while(item.Next());
 	}
 
 	return false;

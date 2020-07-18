@@ -345,6 +345,8 @@ actor GeneralScientist : WolfensteinMonster
 	dropitem "ConcessionCoin", 64
 	dropitem "ChargePack"
 	infomessage "$BLAKE_GENERALSCIENTIST"
+	interrogate "$BLAKE_INTG_AMMO", "ChargeUnit"
+	interrogate "$BLAKE_INTG_FOOD", "ConcessionCoin"
 	+DROPBASEDONTARGET
 	states
 	{
@@ -383,9 +385,6 @@ actor GeneralScientist : WolfensteinMonster
 			GSCI LMN 7.5 // T_BlowBack
 			GSCI O -1
 			stop
-		//Interrogate:
-		//	GSCI K -1 NOP
-		//	stop
 	}
 }
 
