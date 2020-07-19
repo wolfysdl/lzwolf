@@ -1104,6 +1104,8 @@ static bool CheckSightTo (AActor *ob, AActor *target, double minseedist, double 
 		distance < maxheardist))
 		return true;
 
+	if((ob->extraflags & FL_FRIENDLY) != 0)
+		return false;
 	if (minseedist > 0.00001 &&
 		distance < minseedist)
 		return false;
@@ -1164,7 +1166,9 @@ static AActor *CheckSight (AActor *ob, double minseedist, double maxseedist, dou
 		for(unsigned int i = 0;i < Net::InitVars.numPlayers;++i)
 		{
 			if(CheckSightTo(ob, players[i].mo, minseedist, maxseedist, maxheardist, fov))
+            {
 				return players[i].mo;
+            }
 		}
 	}
 	else
@@ -1274,6 +1278,7 @@ bool SightPlayer (AActor *ob, double minseedist, double maxseedist, double maxhe
 		{
 			ob->target = target;
 			ob->flags &= ~FL_AMBUSH;
+			ob->extraflags &= ~FL_FRIENDLY;
 
 			--ob->sighttime; // We need to somehow mark we started.
 			ob->sightrandom = 1; // Account for tic.

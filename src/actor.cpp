@@ -821,7 +821,12 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	}
 
 	if(flags & SPAWN_AllowReplacement)
-		type = type->GetReplacement();
+	{
+		if(type->GetReplacementPrb() == 0 || pr_spawnmobj() < type->GetReplacementPrb())
+		{
+			type = type->GetReplacement();
+		}
+	}
 
 	if (type->GetDefault()->singlespawn)
 	{

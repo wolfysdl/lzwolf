@@ -211,6 +211,7 @@ enum ActorFlag
 enum ExtraActorFlag
 {
 	FL_ENEMYSOLID       = 0x00000001,
+	FL_FRIENDLY         = 0x00000002,
 };
 
 enum ItemFlag

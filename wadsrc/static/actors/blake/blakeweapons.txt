@@ -23,7 +23,9 @@ actor AutoChargePistol : BlakeWeapon
 	attacksound "weapon/autochargepistol/attack"
 	inventory.icon "STWEAP1"
 	weapon.ammouse1 0
+	weapon.damagetype "SilentDamage"
 	+WEAPON.NOAUTOFIRE
+	+WEAPON.NOALERT
 	states
 	{
 		Ready:

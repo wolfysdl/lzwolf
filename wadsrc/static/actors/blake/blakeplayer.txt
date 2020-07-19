@@ -8,6 +8,7 @@ actor BlakePlayer : PlayerPawn
 	player.startitem "CoinItem", 0
 	player.startitem "AutoChargePistol"
 	player.startitem "ChargeUnit", 8
+	player.startitem "SilentDamage"
 	player.weaponslot 1, "AutoChargePistol"
 	player.weaponslot 2, "SlowFireProtector"
 	player.weaponslot 3, "RapidAssaultWeapon"

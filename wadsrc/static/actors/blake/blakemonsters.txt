@@ -345,9 +345,8 @@ actor GeneralScientist : WolfensteinMonster
 	dropitem "ConcessionCoin", 64
 	dropitem "ChargePack"
 	infomessage "$BLAKE_GENERALSCIENTIST"
-	interrogate "$BLAKE_INTG_AMMO", "ChargeUnit", (PRB_100), 1, 8
-	interrogate "$BLAKE_INTG_FOOD", "ConcessionCoin", (PRB_50), 5
 	+DROPBASEDONTARGET
+	+FRIENDLY
 	states
 	{
 		Spawn:
@@ -388,18 +387,13 @@ actor GeneralScientist : WolfensteinMonster
 	}
 }
 
-actor InformantScientist : GeneralScientist
+actor InformantScientist : GeneralScientist replaces GeneralScientist-128
 {
 	points 0
+	health 1, 1, 1, 1
 	deathsound "scientist/inform_death"
-	states
-	{
-		Spawn:
-			GSCI A -1
-			stop
-		Missile:
-			stop
-	}
+	interrogate "$BLAKE_INTG_AMMO", "ChargeUnit", (PRB_100), 1, 8
+	interrogate "$BLAKE_INTG_FOOD", "ConcessionCoin", (PRB_50), 5
 }
 
 // Floating Bomb & VolatileTransport
