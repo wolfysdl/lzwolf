@@ -959,6 +959,8 @@ void GameMap::ReadPlanesData()
 	static const unsigned short UNIT = 64;
 	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
 
+	ResetHintLists();
+
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
 	else
@@ -1232,7 +1234,14 @@ void GameMap::ReadPlanesData()
 							default: break;
 							case 0xF1: // Informant messages
 							case 0xF2: // Scientist messages
-							case 0xF3: // Men scientist messages
+							case 0xF3: // Mean scientist messages
+								{
+									auto zone = mapPlane.map[i].zone;
+									auto areanumber = (zone != NULL ? zone->index : 0xff);
+									ProcessHintTile(oldplane[i]>>8, oldplane[i]&0xff,
+											areanumber);
+								}
+								continue;
 							case 0xF5: // Intralevel warp coordinate
 								continue;
 							case 0xFB:
@@ -1520,6 +1529,8 @@ void GameMap::ReadPlanesData()
 			}
 		}
 	}
+
+	printf("done\n");
 }
 
 void GameMap::ChangeMusic(int selection)
@@ -1552,4 +1563,296 @@ static int FindAdjacentDoor(MapSpot spot, MapTrigger *&trigger)
 		}
 	}
 	return -1;
+}
+
+#define MAX_CACHE_MSGS (30)
+#define MAX_CACHE_MSG_LEN (190)
+
+// ------------------------- BASIC STRUCTURES -----------------------------
+
+// Basic 'message info' structure
+//
+struct mCacheInfo
+{
+	// where msg is in 'local' list
+	// !!! Used in saved game.
+	std::uint8_t local_val;
+
+	// where msg was in 'global' list
+	// !!! Used in saved game.
+	std::uint8_t global_val;
+
+	// pointer to message
+	char* mSeg;
+}; // mCacheInfo
+
+// Basic 'message list' structure
+//
+struct mCacheList
+{
+	std::int16_t NumMsgs; // number of messages
+	mCacheInfo mInfo[MAX_CACHE_MSGS]; // table of message 'info'
+}; // mCacheList
+
+// ------------------------ INFORMANT STRUCTURES --------------------------
+//
+// Informant 'message info' structure
+//
+struct sci_mCacheInfo
+{
+	mCacheInfo mInfo;
+	std::uint8_t areanumber; // 'where' msg can be used
+}; // sci_mCacheInfo
+
+// Informant 'message list' structure
+//
+struct scientist_t
+{
+	std::int16_t NumMsgs;
+	sci_mCacheInfo smInfo[MAX_CACHE_MSGS];
+}; // scientist_t
+
+scientist_t InfHintList; // Informant messages
+scientist_t NiceSciList; // Non-informant, non-pissed messages
+scientist_t MeanSciList; // Non-informant, pissed messages
+
+// ==========================================================================
+//
+//                    'SPECIAL MESSAGE' CACHING SYSTEM
+//
+// When creating special 'types' of message caching structures, make sure
+// all 'special data' is placed at the end of the BASIC message structures.
+// In memory, BASIC INFO should appear first. ex:
+//
+// mCacheList
+// ---> NumMsgs
+// ---> mCacheInfo
+//      ---> local_val
+//      ---> global_val
+//      ---> mSeg
+//
+// ... all special data follows ...
+//
+// ==========================================================================
+//
+void FreeMsgCache(
+	mCacheList* mList,
+	std::uint16_t infoSize);
+
+void InitMsgCache(
+	mCacheList* mList,
+	std::uint16_t listSize,
+	std::uint16_t infoSize)
+{
+	FreeMsgCache(mList, infoSize);
+
+	std::uninitialized_fill_n(
+		reinterpret_cast<std::uint8_t*>(mList),
+		listSize,
+		0
+	);
+}
+
+void FreeMsgCache(
+	mCacheList* mList,
+	std::uint16_t infoSize)
+{
+	mCacheInfo* ci = mList->mInfo;
+	char* ch_ptr;
+
+	while (mList->NumMsgs--)
+	{
+		delete[] ci->mSeg;
+		ci->mSeg = nullptr;
+
+		ch_ptr = (char*)ci;
+		ch_ptr += infoSize;
+		ci = (mCacheInfo*)ch_ptr;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// LoadMsg()
+//
+// Loads the specific message in FROM a given 'grsegs' block TO the
+// the memory address provided.  Memory allocation and handleing prior and
+// after this function usage is responsibility of the calling function(s).
+//
+// PARAMS:  hint_buffer - Destination address to store message
+//          block  - GrSeg for messages in VGAGRAPH.BS?
+//          MsgNum - Message number to load
+//          MaxMsgLen - Max len of cache msg (Len of hint_buffer)
+//
+// RETURNS : Returns the length of the loaded message
+// ---------------------------------------------------------------------------
+std::int16_t LoadMsg(
+	char* hint_buffer,
+	const char *block,
+	std::uint16_t MsgNum,
+	std::uint16_t MaxMsgLen)
+{
+	const auto msg_xx = "^XX";
+
+	char* Message, *EndOfMsg;
+	std::int16_t pos = 0;
+
+	FWadLump msglump = Wads.OpenLumpName (block);
+
+	auto lumplen = msglump.GetLength();
+	char msgdata[lumplen];
+	if(msglump.Read(msgdata, lumplen) != lumplen)
+	{
+		Quit("Failed to read message lump!");
+	}
+
+	Message = static_cast<char*>(msgdata);
+
+	// Search for end of MsgNum-1 (Start of our message)
+	//
+	while (--MsgNum)
+	{
+		Message = strstr(Message, msg_xx);
+
+		if (!Message)
+		{
+			Quit("Invalid 'Cached Message' number");
+		}
+
+		Message += 3;           // Bump to start of next Message
+	}
+
+	// Move past LFs and CRs that follow "^XX"
+	//
+	while ((*Message == '\n') || (*Message == '\r'))
+	{
+		Message++;
+	}
+
+	// Find the end of the message
+	//
+	if ((EndOfMsg = strstr(Message, msg_xx)) == nullptr)
+	{
+		Quit("Invalid 'Cached Message' number");
+	}
+	EndOfMsg += 3;
+
+	// Copy to a temp buffer
+	//
+	while (Message != EndOfMsg)
+	{
+		if (*Message != '\n')
+		{
+			hint_buffer[pos++] = *Message;
+		}
+
+		if (pos >= MaxMsgLen)
+		{
+			Quit("Cached Hint Message is to Long for allocated space.");
+		}
+
+		Message++;
+	}
+
+	hint_buffer[pos] = 0; // Null Terminate
+	return pos;
+}
+
+// ---------------------------------------------------------------------------
+// CacheMsg()
+//
+// Caches the specific message in FROM a given 'grsegs' block TO the
+// next available message segment pointer.
+// ---------------------------------------------------------------------------
+void CacheMsg(
+	mCacheInfo* ci,
+	const char *block,
+	std::uint16_t MsgNum)
+{
+	ci->mSeg = new char[MAX_CACHE_MSG_LEN];
+	LoadMsg(ci->mSeg, block, MsgNum, MAX_CACHE_MSG_LEN);
+}
+
+bool ReuseMsg(
+	mCacheInfo* ci,
+	std::int16_t count,
+	std::int16_t struct_size)
+{
+	char* scan_ch = (char*)ci;
+	mCacheInfo* scan = (mCacheInfo*)(scan_ch - struct_size);
+
+	// Scan through all loaded messages -- see if we're loading one already
+	// cached-in.
+	//
+	while (count--)
+	{
+		// Is this message already cached in?
+		//
+		if (scan->global_val == ci->global_val)
+		{
+			ci->local_val = scan->local_val;
+			return true;
+		}
+
+		// Funky structure decrement... (structures can be any size...)
+		//
+		scan_ch = (char*)scan;
+		scan_ch -= struct_size;
+		scan = (mCacheInfo*)scan_ch;
+	}
+
+	return false;
+}
+
+void GameMap::ResetHintLists()
+{
+	InitMsgCache((mCacheList*)&InfHintList, sizeof(InfHintList),
+			sizeof(InfHintList.smInfo[0]));
+	InitMsgCache((mCacheList*)&NiceSciList, sizeof(NiceSciList),
+			sizeof(InfHintList.smInfo[0]));
+	InitMsgCache((mCacheList*)&MeanSciList, sizeof(MeanSciList),
+			sizeof(InfHintList.smInfo[0]));
+}
+
+void GameMap::ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber)
+{
+	std::int16_t tile;
+	std::uint16_t* start;
+
+	sci_mCacheInfo* ci;
+	scientist_t* st = nullptr;
+	const char *block;
+
+	switch (tilehi)
+	{
+	case 0xf1:
+		block = "INFOHINT";
+		st = &InfHintList;
+		break;
+
+	case 0xf2:
+		block = "NISCHINT";
+		st = &NiceSciList;
+		break;
+
+	case 0xf3:
+		block = "MESCHINT";
+		st = &MeanSciList;
+		break;
+	}
+
+	ci = &st->smInfo[st->NumMsgs];
+	ci->mInfo.local_val = 0xff;
+	ci->mInfo.global_val = tilelo;
+	if (!ReuseMsg((mCacheInfo*)ci, st->NumMsgs, sizeof(sci_mCacheInfo)))
+	{
+		CacheMsg((mCacheInfo*)ci, block, ci->mInfo.global_val);
+		ci->mInfo.local_val = static_cast<std::uint8_t>(InfHintList.NumMsgs);
+	}
+
+	if (++st->NumMsgs > MAX_CACHE_MSGS)
+	{
+		Quit("(INFORMANTS) Too many \"cached msgs\" loaded.");
+	}
+
+	ci->areanumber = areanumber;
 }

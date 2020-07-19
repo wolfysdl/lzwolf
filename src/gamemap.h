@@ -261,6 +261,8 @@ class GameMap
 		void	ScanTiles();
 		bool	TraverseLink(const Zone *src, const Zone *dest);
 		void	UnloadLinks();
+		void	ResetHintLists();
+		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
 
 		FString	map;
 

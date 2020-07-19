@@ -729,7 +729,7 @@ bool APlayerPawn::Interrogate()
 
 		if ( (check->flags & FL_SHOOTABLE) && (check->flags & FL_VISABLE)
 			&& abs(check->viewx-centerx) < shootdelta &&
-			(check->flags & FL_ATTACKMODE) == 0)
+			(check->extraflags & FL_FRIENDLY) != 0)
 		{
 			if (check->transx < dist)
 			{
