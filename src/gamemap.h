@@ -42,6 +42,7 @@
 
 class Thinker;
 class UWMFParser;
+class FRandom;
 
 namespace MapEdit
 {
@@ -164,6 +165,7 @@ class GameMap
 		struct Zone
 		{
 			unsigned short	index;
+			int				hintareanum = -1;
 		};
 		struct Plane
 		{
@@ -228,6 +230,7 @@ class GameMap
 		unsigned int	NumPlanes() const { return planes.Size(); }
 		const Plane		&GetPlane(unsigned int index) const { return planes[index]; }
 		void			SpawnThings() const;
+		const char		*GetInformantMessage(AActor *ob, FRandom &rng);
 
 		// Sound functions
 		bool			CheckLink(const Zone *zone1, const Zone *zone2, bool recurse);
@@ -261,7 +264,7 @@ class GameMap
 		void	ScanTiles();
 		bool	TraverseLink(const Zone *src, const Zone *dest);
 		void	UnloadLinks();
-		void	ResetHintLists();
+		void	ResetHints();
 		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
 
 		FString	map;

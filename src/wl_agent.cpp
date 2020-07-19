@@ -793,6 +793,13 @@ bool APlayerPawn::Interrogate()
 		}
 	}
 
+	auto msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
+	if(msgptr != nullptr)
+	{
+		StatusBar->InfoMessage(msgptr, {});
+		return true;
+	}
+
 	return false;
 }
 

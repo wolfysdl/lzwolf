@@ -630,6 +630,9 @@ void AActor::Serialize(FArchive &arc)
 	arc << zoneLightMask;
 	arc << singlespawn;
 	arc << interrogateItemsUsed;
+	arc << informant.ammo;
+	arc << informant.s_tilex;
+	arc << informant.s_tiley;
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;

@@ -46,6 +46,7 @@
 #include "w_wad.h"
 #include "wl_game.h"
 #include "wl_shade.h"
+#include "m_random.h"
 
 static const char* const FeatureFlagNames[] = {
 	"globalmeta",
@@ -959,7 +960,7 @@ void GameMap::ReadPlanesData()
 	static const unsigned short UNIT = 64;
 	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
 
-	ResetHintLists();
+	ResetHints();
 
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
@@ -1237,9 +1238,14 @@ void GameMap::ReadPlanesData()
 							case 0xF3: // Mean scientist messages
 								{
 									auto zone = mapPlane.map[i].zone;
-									auto areanumber = (zone != NULL ? zone->index : 0xff);
+									auto areanumber = 0xff;
+									if(zone != NULL)
+									{
+										areanumber = (zone->hintareanum != -1 ?
+												zone->hintareanum : zone->index);
+									}
 									ProcessHintTile(oldplane[i]>>8, oldplane[i]&0xff,
-											areanumber);
+											static_cast<uint8_t>(areanumber));
 								}
 								continue;
 							case 0xF5: // Intralevel warp coordinate
@@ -1529,8 +1535,6 @@ void GameMap::ReadPlanesData()
 			}
 		}
 	}
-
-	printf("done\n");
 }
 
 void GameMap::ChangeMusic(int selection)
@@ -1611,6 +1615,12 @@ struct scientist_t
 	std::int16_t NumMsgs;
 	sci_mCacheInfo smInfo[MAX_CACHE_MSGS];
 }; // scientist_t
+
+#define MAX_INF_AREA_MSGS (6)
+
+char* InfAreaMsgs[MAX_INF_AREA_MSGS];
+std::uint8_t NumAreaMsgs, LastInfArea;
+std::int16_t FirstGenInfMsg, TotalGenInfMsgs;
 
 scientist_t InfHintList; // Informant messages
 scientist_t NiceSciList; // Non-informant, non-pissed messages
@@ -1803,8 +1813,20 @@ bool ReuseMsg(
 	return false;
 }
 
-void GameMap::ResetHintLists()
+void GameMap::ResetHints()
 {
+	// Init informant stuff
+	//
+	auto count = InfHintList.NumMsgs;
+	LastInfArea = 0xff;
+	FirstGenInfMsg = 0;
+	sci_mCacheInfo* ci = InfHintList.smInfo;
+	for (; (ci->areanumber != 0xff) && (count--); ci++)
+	{
+		FirstGenInfMsg++;
+	}
+
+	TotalGenInfMsgs = InfHintList.NumMsgs - FirstGenInfMsg;
 	InitMsgCache((mCacheList*)&InfHintList, sizeof(InfHintList),
 			sizeof(InfHintList.smInfo[0]));
 	InitMsgCache((mCacheList*)&NiceSciList, sizeof(NiceSciList),
@@ -1855,4 +1877,92 @@ void GameMap::ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber
 	}
 
 	ci->areanumber = areanumber;
+}
+
+const char *GameMap::GetInformantMessage(AActor *ob, FRandom &rng)
+{
+	const char* msgptr = nullptr;
+
+	auto areanumber = [](AActor *ob) {
+		auto zone = ob->GetZone();
+
+		int num = 0xff;
+		if(zone != nullptr)
+		{
+			if(zone->hintareanum != -1)
+				num = zone->hintareanum;
+			else
+				num = zone->index;
+		}
+
+		return static_cast<uint8_t>(num);
+	};
+
+	auto Random = [&rng](auto mod) {
+		return rng(static_cast<int>(mod));
+	};
+
+	// If new areanumber OR no 'area msgs' have been compiled, compile
+	// a list of all special messages for this areanumber.
+	//
+	if ((LastInfArea == 0xFF) || (LastInfArea != areanumber(ob)))
+	{
+		NumAreaMsgs = 0;
+
+		for (auto i = 0; i < InfHintList.NumMsgs; ++i)
+		{
+			const auto& ci = InfHintList.smInfo[i];
+
+			if (ci.areanumber == 0xFF)
+			{
+				break;
+			}
+
+			if (ci.areanumber == areanumber(ob))
+			{
+				InfAreaMsgs[NumAreaMsgs++] = InfHintList.smInfo[ci.mInfo.local_val].mInfo.mSeg;
+			}
+		}
+
+		LastInfArea = areanumber(ob);
+	}
+
+	// Randomly select an informant hint, either: specific to areanumber
+	// or general hint...
+	//
+	if (NumAreaMsgs)
+	{
+		if (ob->informant.ammo != areanumber(ob))
+		{
+			ob->informant.s_tilex = 0xFF;
+		}
+
+		ob->informant.ammo = areanumber(ob);
+
+		if (ob->informant.s_tilex == 0xFF)
+		{
+			ob->informant.s_tilex = static_cast<std::uint8_t>(Random(NumAreaMsgs));
+		}
+
+		msgptr = InfAreaMsgs[ob->informant.s_tilex];
+	}
+	else
+	{
+		if (ob->informant.s_tiley == 0xff)
+		{
+			ob->informant.s_tiley = static_cast<std::uint8_t>(FirstGenInfMsg + Random(TotalGenInfMsgs));
+		}
+
+		msgptr = InfHintList.smInfo[ob->informant.s_tiley].mInfo.mSeg;
+	}
+
+	// Still no msgptr? This is a shared message! Use smInfo[local_val]
+	// for this message.
+	//
+	if (!msgptr)
+	{
+		msgptr = InfHintList.smInfo[InfHintList.smInfo[ob->informant.s_tiley].mInfo.local_val].mInfo.mSeg;
+	}
+
+	return msgptr;
 }

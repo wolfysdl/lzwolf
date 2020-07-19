@@ -309,6 +309,12 @@ class AActor : public Thinker,
 		int         zoneLightMask;
 		int         singlespawn;
 		int         interrogateItemsUsed;
+		struct
+		{
+			uint8_t ammo;
+			uint8_t s_tilex;
+			uint8_t s_tiley;
+		} informant;
 
 		const ClassDef  *faction;
 		std::pair<bool,unsigned int> spawnThingNum;

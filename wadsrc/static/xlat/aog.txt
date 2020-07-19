@@ -839,6 +839,7 @@ tiles
 
 	modzone 106 fillzone ambush;
 
+	// area codes
 	zone 108 {}
 	zone 109 {}
 	zone 110 {}
@@ -884,6 +885,53 @@ tiles
 	zone 150 {}
 	zone 151 {}
 	zone 152 {}
+
+	// hidden area codes
+	zone 162 { hintareanum = 0; }
+	zone 163 { hintareanum = 1; }
+	zone 164 { hintareanum = 2; }
+	zone 165 { hintareanum = 3; }
+	zone 166 { hintareanum = 4; }
+	zone 167 { hintareanum = 5; }
+	zone 168 { hintareanum = 6; }
+	zone 169 { hintareanum = 7; }
+	zone 170 { hintareanum = 8; }
+	zone 171 { hintareanum = 9; }
+	zone 172 { hintareanum = 10; }
+	zone 173 { hintareanum = 11; }
+	zone 174 { hintareanum = 12; }
+	zone 175 { hintareanum = 13; }
+	zone 176 { hintareanum = 14; }
+	zone 177 { hintareanum = 15; }
+	zone 178 { hintareanum = 16; }
+	zone 179 { hintareanum = 17; }
+	zone 180 { hintareanum = 18; }
+	zone 181 { hintareanum = 19; }
+	zone 182 { hintareanum = 20; }
+	zone 183 { hintareanum = 21; }
+	zone 184 { hintareanum = 22; }
+	zone 185 { hintareanum = 23; }
+	zone 186 { hintareanum = 24; }
+	zone 187 { hintareanum = 25; }
+	zone 188 { hintareanum = 26; }
+	zone 189 { hintareanum = 27; }
+	zone 190 { hintareanum = 28; }
+	zone 191 { hintareanum = 29; }
+	zone 192 { hintareanum = 30; }
+	zone 193 { hintareanum = 31; }
+	zone 194 { hintareanum = 32; }
+	zone 195 { hintareanum = 33; }
+	zone 196 { hintareanum = 34; }
+	zone 197 { hintareanum = 35; }
+	zone 198 { hintareanum = 36; }
+	zone 199 { hintareanum = 37; }
+	zone 200 { hintareanum = 38; }
+	zone 201 { hintareanum = 39; }
+	zone 202 { hintareanum = 40; }
+	zone 203 { hintareanum = 41; }
+	zone 204 { hintareanum = 42; }
+	zone 205 { hintareanum = 43; }
+	zone 206 { hintareanum = 44; }
 }
 
 things

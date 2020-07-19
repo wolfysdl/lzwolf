@@ -272,7 +272,11 @@ void TextMapParser::ParseTrigger(Scanner &sc, MapTrigger &trigger)
 void TextMapParser::ParseZone(Scanner &sc, MapZone &zone)
 {
 	StartParseBlock
-	if(false);
+	CheckKey("hintareanum")
+	{
+		sc.MustGetToken(TK_IntConst);
+		zone.hintareanum = sc->number;
+	}
 	EndParseBlock
 }
 
