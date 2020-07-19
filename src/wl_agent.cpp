@@ -775,10 +775,19 @@ bool APlayerPawn::Interrogate()
 
 	for(auto interrogateItem: prbItems)
 	{
+		const auto usedMask = (1 << interrogateItem.id);
+
+		const auto amtmin = interrogateItem.minAmount;
+		const auto amtmax = interrogateItem.maxAmount;
+		const auto amount = amtmin + (amtmax > amtmin ?
+				pr_interrogateitem(amtmax - amtmin) : 0);
+
 		const ClassDef *cls = ClassDef::FindClass(interrogateItem.dropItem);
-		if(cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)) &&
-				GiveInventory(cls, interrogateItem.amount))
+		if((closest->interrogateItemsUsed & usedMask) == 0 &&
+				cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)) &&
+				GiveInventory(cls, amount))
 		{
+			closest->interrogateItemsUsed |= usedMask;
 			StatusBar->InfoMessage(interrogateItem.infoMessage, {});
 			return true;
 		}

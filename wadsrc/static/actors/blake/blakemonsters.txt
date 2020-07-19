@@ -345,8 +345,8 @@ actor GeneralScientist : WolfensteinMonster
 	dropitem "ConcessionCoin", 64
 	dropitem "ChargePack"
 	infomessage "$BLAKE_GENERALSCIENTIST"
-	interrogate "$BLAKE_INTG_AMMO", "ChargeUnit", 256, 8
-	interrogate "$BLAKE_INTG_FOOD", "ConcessionCoin", 128, 5
+	interrogate "$BLAKE_INTG_AMMO", "ChargeUnit", (PRB_100), 1, 8
+	interrogate "$BLAKE_INTG_FOOD", "ConcessionCoin", (PRB_50), 5
 	+DROPBASEDONTARGET
 	states
 	{

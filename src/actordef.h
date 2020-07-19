@@ -149,6 +149,11 @@ public:
 	{
 		return objects[index];
 	}
+
+	unsigned int Size() const
+	{
+		return objects.Size();
+	}
 private:
 	TArray<T*>	objects;
 };

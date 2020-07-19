@@ -161,10 +161,12 @@ class AActor : public Thinker,
 		struct InterrogateItem
 		{
 			public:
+				unsigned int    id;
 				FString			infoMessage;
 				FName           dropItem;
 				int             probability;
-				int             amount;
+				int             minAmount;
+				int             maxAmount;
 		};
 		typedef LinkedList<InterrogateItem> InterrogateItemList;
 
@@ -306,6 +308,7 @@ class AActor : public Thinker,
 		int         haloLightMask;
 		int         zoneLightMask;
 		int         singlespawn;
+		int         interrogateItemsUsed;
 
 		const ClassDef  *faction;
 		std::pair<bool,unsigned int> spawnThingNum;

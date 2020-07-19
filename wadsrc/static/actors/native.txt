@@ -59,6 +59,9 @@ const float ATTN_NORM = 1.0; // vanilla
 const float ATTN_IDLE = 1.001; // vanilla with added distance attenuation
 const float ATTN_STATIC = 3.0; // diminish very rapidly with distance
 
+const int PRB_100 = 256;
+const int PRB_50 = 128;
+
 actor Actor native
 {
 	actionns "lz"

@@ -412,7 +412,20 @@ HANDLE_PROPERTY(interrogate)
 	STRING_PARAM(infoMessage, 0);
 	STRING_PARAM(dropItem, 1);
 	INT_PARAM(prb, 2);
-	INT_PARAM(amount, 3);
+
+	int amtmin, amtmax;
+	INT_PARAM(minAmount, 3);
+	amtmin = minAmount;
+
+	if(PARAM_COUNT == 5)
+	{
+		INT_PARAM(maxAmount, 4);
+		amtmax = maxAmount;
+	}
+	else
+	{
+		amtmax = amtmin;
+	}
 
 	if(cls->Meta.GetMetaInt(AMETA_InterrogateItems, -1) == -1 || cls->Meta.IsInherited(AMETA_InterrogateItems))
 		cls->Meta.SetMetaInt(AMETA_InterrogateItems, AActor::interrogateItems.Push(new AActor::InterrogateItemList()));
@@ -426,9 +439,12 @@ HANDLE_PROPERTY(interrogate)
 	else if(prb < 0)
 		prb = 0;
 	interrogateItem.probability = prb;
-	interrogateItem.amount = amount;
+	interrogateItem.minAmount = amtmin;
+	interrogateItem.maxAmount = amtmax;
 
-	AActor::interrogateItems[cls->Meta.GetMetaInt(AMETA_InterrogateItems)]->Push(interrogateItem);
+	auto pit = AActor::interrogateItems[cls->Meta.GetMetaInt(AMETA_InterrogateItems)];
+	interrogateItem.id = pit->Size();
+	pit->Push(interrogateItem);
 }
 
 HANDLE_PROPERTY(loaded)
@@ -886,7 +902,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(infomessage, Actor, T),
 	DEFINE_PROP(interhubamount, Inventory, I),
-	DEFINE_PROP(interrogate, Actor, TSII),
+	DEFINE_PROP(interrogate, Actor, TSII_I),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),
