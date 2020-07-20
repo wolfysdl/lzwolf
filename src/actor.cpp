@@ -337,6 +337,7 @@ void AActor::Die()
 					AActor * const actor = AActor::Spawn(cls, (x&TILEMASK)+TILEGLOBAL/2, (y&TILEMASK)+TILEGLOBAL/2, 0, SPAWN_AllowReplacement);
 					actor->angle = angle;
 					actor->dir = dir;
+					actor->trydir = nodir;
 
 					if(cls->IsDescendantOf(NATIVE_CLASS(Inventory)))
 					{
@@ -513,6 +514,7 @@ void AActor::Init()
 
 	distance = 0;
 	dir = nodir;
+	trydir = nodir;
 	soundZone = NULL;
 	inventory = NULL;
 
@@ -573,6 +575,10 @@ void AActor::Serialize(FArchive &arc)
 	BYTE dir = this->dir;
 	arc << dir;
 	this->dir = static_cast<dirtype>(dir);
+
+	BYTE trydir = this->trydir;
+	arc << trydir;
+	this->trydir = static_cast<dirtype>(trydir);
 
 	arc << spawnid
 		<< flags

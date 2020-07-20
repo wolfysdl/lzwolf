@@ -1,6 +1,11 @@
 // Sector Patrol / Sector Guard
 
-actor RentACop : WolfensteinMonster
+actor BlakeMonster : WolfensteinMonster
+{
+	+BLAKEPATROL
+}
+
+actor RentACop : BlakeMonster
 {
 	points 1025
 	health 4, 9, 25, 38
@@ -99,7 +104,7 @@ actor SectorGuard : RentACop
 
 // STAR Sentinel / Tech Warrior
 
-actor ProGuard : WolfensteinMonster
+actor ProGuard : BlakeMonster
 {
 	points 5000
 	health 33, 63, 150, 175
@@ -207,7 +212,7 @@ actor TechWarrior : ProGuard
 
 // STAR Trooper / Alien Protector
 
-actor STARTrooper : WolfensteinMonster
+actor STARTrooper : BlakeMonster
 {
 	points 7025
 	health 78, 112, 325, 425
@@ -333,7 +338,7 @@ actor AlienProtector : STARTrooper
 
 // General Scientist/Informant
 
-actor GeneralScientist : WolfensteinMonster
+actor GeneralScientist : BlakeMonster
 {
 	points 500
 	health 4, 9, 23, 28
@@ -347,6 +352,7 @@ actor GeneralScientist : WolfensteinMonster
 	infomessage "$BLAKE_GENERALSCIENTIST"
 	+DROPBASEDONTARGET
 	+FRIENDLY
+	+RANDOMTURN
 	states
 	{
 		Spawn:
@@ -398,7 +404,7 @@ actor InformantScientist : GeneralScientist replaces GeneralScientist-128
 
 // Floating Bomb & VolatileTransport
 
-actor FloatingBomb : WolfensteinMonster
+actor FloatingBomb : BlakeMonster
 {
 	points 2025
 	health 15, 40, 60, 85
@@ -439,7 +445,7 @@ actor FloatingBomb : WolfensteinMonster
 	}
 }
 
-actor VolatileTransport : WolfensteinMonster
+actor VolatileTransport : BlakeMonster
 {
 	points 2025
 	health 17, 25, 63, 75
@@ -474,7 +480,7 @@ actor VolatileTransport : WolfensteinMonster
 
 // Genetic Guard
 
-actor GeneticGuard : WolfensteinMonster
+actor GeneticGuard : BlakeMonster
 {
 	points 10000
 	health 20, 60, 180, 240
@@ -524,7 +530,7 @@ actor GeneticGuard : WolfensteinMonster
 
 // Cyborg Warrior
 
-actor CyborgWarrior : WolfensteinMonster
+actor CyborgWarrior : BlakeMonster
 {
 	points 7000
 	health 70, 100, 150, 200
@@ -596,7 +602,7 @@ actor SpiderMutantShot : SmartAnimation
 	}
 }
 
-actor SpiderMutant : WolfensteinMonster
+actor SpiderMutant : BlakeMonster
 {
 	points 5000
 	health 60, 100, 150, 200
@@ -686,7 +692,7 @@ actor AcidDragonShot : SmartAnimation
 	}
 }
 
-actor AcidDragon : WolfensteinMonster
+actor AcidDragon : BlakeMonster
 {
 	points 9000
 	health 60, 100, 150, 200
@@ -729,7 +735,7 @@ actor AcidDragon : WolfensteinMonster
 
 // Breather Beast
 
-actor BreatherBeast : WolfensteinMonster
+actor BreatherBeast : BlakeMonster
 {
 	points 6000
 	health 65, 115, 165, 225
@@ -773,7 +779,7 @@ actor BreatherBeast : WolfensteinMonster
 
 // Bio-Mech Guardian
 
-actor BioMechGuardian : WolfensteinMonster
+actor BioMechGuardian : BlakeMonster
 {
 	points 9000
 	health 65, 115, 165, 225
@@ -818,7 +824,7 @@ actor BioMechGuardian : WolfensteinMonster
 
 // Reptilian Warrior
 
-actor ReptilianWarrior : WolfensteinMonster
+actor ReptilianWarrior : BlakeMonster
 {
 	points 8000
 	health 65, 115, 165, 225
@@ -883,7 +889,7 @@ actor ReptilianWarriorMorphed
 
 // Mech Sentinel
 
-actor MechSentinel : WolfensteinMonster
+actor MechSentinel : BlakeMonster
 {
 	points 5055
 	health 24, 50, 155, 210
@@ -928,7 +934,7 @@ actor MechSentinel : WolfensteinMonster
 
 // Mutant Human
 
-actor MutantHuman : WolfensteinMonster
+actor MutantHuman : BlakeMonster
 {
 	points 6055
 	health 24, 50, 155, 210
@@ -1020,7 +1026,7 @@ actor SmallCanisterShot : SmartAnimation
 	}
 }
 
-actor SmallCanisterAlien : WolfensteinMonster
+actor SmallCanisterAlien : BlakeMonster
 {
 	points 3750
 	health 25, 60, 100, 240
@@ -1117,7 +1123,7 @@ actor LargeCanisterShot : SmartAnimation
 	}
 }
 
-actor LargeCanisterAlien : WolfensteinMonster
+actor LargeCanisterAlien : BlakeMonster
 {
 	points 6050
 	health 34, 75, 225, 300
@@ -1185,7 +1191,7 @@ actor LargeAlienCanister
 
 // Gurney Mutant
 
-actor GurneyMutant : WolfensteinMonster
+actor GurneyMutant : BlakeMonster
 {
 	points 3750
 	health 27, 37, 150, 200
@@ -1252,7 +1258,7 @@ actor GurneyMutantSleep
 
 // P.O.D. Alien
 
-actor PODAlien : WolfensteinMonster
+actor PODAlien : BlakeMonster
 {
 	points 5075
 	health 22, 60, 160, 210
@@ -1371,7 +1377,7 @@ actor CeilingTurretStatic : CeilingTurretRotate
 
 // Giant Stalker
 
-actor GiantStalker : WolfensteinMonster
+actor GiantStalker : BlakeMonster
 {
 	points 30000
 	health 1600, 1700, 1800, 1900
@@ -1441,7 +1447,7 @@ actor GoldfireMonsterShot : SmartAnimation
 	}
 }
 
-actor SpectorDemon : WolfensteinMonster
+actor SpectorDemon : BlakeMonster
 {
 	points 40000
 	health 1700, 1800, 1900, 2000
@@ -1483,7 +1489,7 @@ actor SpectorDemon : WolfensteinMonster
 
 // Armored Stalker
 
-actor ArmoredStalker : WolfensteinMonster
+actor ArmoredStalker : BlakeMonster
 {
 	points 50000
 	health 1800, 1900, 2000, 2100
@@ -1550,7 +1556,7 @@ actor CrawlerBeastShot : SmartAnimation
 	}
 }
 
-actor CrawlerBeast : WolfensteinMonster
+actor CrawlerBeast : BlakeMonster
 {
 	points 60000
 	health 1900, 2000, 2100, 2200
@@ -1617,7 +1623,7 @@ actor LiquidAlienShot : SmartAnimation
 	}
 }
 
-actor LiquidAlien : WolfensteinMonster
+actor LiquidAlien : BlakeMonster
 {
 	speed 3
 	sighttime 1, 6
@@ -1697,7 +1703,7 @@ actor ElectroShot : SmartAnimation
 	}
 }
 
-actor ElectroAlien : WolfensteinMonster
+actor ElectroAlien : BlakeMonster
 {
 	points 5150
 	health 13, 37, 112, 150

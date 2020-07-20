@@ -237,6 +237,7 @@ class AActor : public Thinker,
 
 		int32_t	distance; // if negative, wait for that door to open
 		dirtype	dir;
+		uint8_t	trydir;
 
 #pragma pack(push, 1)
 // MSVC and older versions of GCC don't support constant union parts

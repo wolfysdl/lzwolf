@@ -694,8 +694,8 @@ void APlayerPawn::Cmd_Use()
 	TicCmd_t &cmd = control[player - players];
 	if(doNothing && (!cmd.buttonheld[bt_use] && Interrogate()))
 	{
+		PlaySoundLocActor("scientist/interrogate", this);
 		cmd.buttonheld[bt_use] = true;
-		// nothing yet
 	}
 	else if(doNothing)
 		SD_PlaySound ("misc/do_nothing");

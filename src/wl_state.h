@@ -12,7 +12,7 @@
 void    InitHitRect (AActor *ob, unsigned radius);
 
 bool TrySpot (AActor *ob, MapSpot spot);
-bool TryWalk (AActor *ob);
+bool TryWalk (AActor *ob, bool canuse = true);
 void SelectChaseDir (AActor *ob);
 void SelectDodgeDir (AActor *ob);
 void SelectRunDir (AActor *ob);

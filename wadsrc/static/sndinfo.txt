@@ -472,6 +472,7 @@ scientist/inform_death2 { DSINFDT2 ALINFDT2 PCINFDT2 }
 scientist/inform_death3 { DSINFDT3 ALINFDT3 PCINFDT3 }
 $random scientist/death { scientist/death1 scientist/death2 scientist/death3 }
 $random scientist/inform_death { scientist/inform_death1 scientist/inform_death2 scientist/inform_death3 }
+scientist/interrogate	{ DSINTERR ALINTERR PCINTERR }
 
 floatingbomb/sight		{ DSSCTSIT ALSCTSIT PCSCTSIT }
 $random floatingbomb/death { misc/blake/explosion1 misc/blake/explosion2 }
