@@ -398,6 +398,7 @@ actor InformantScientist : GeneralScientist replaces GeneralScientist-128
 	points 0
 	health 1, 1, 1, 1
 	deathsound "scientist/inform_death"
+	interrogate "$BLAKE_INTG_INFORMANT", "", (PRB_100), 0
 	interrogate "$BLAKE_INTG_AMMO", "ChargeUnit", (PRB_100), 1, 8
 	interrogate "$BLAKE_INTG_FOOD", "ConcessionCoin", (PRB_50), 5
 }

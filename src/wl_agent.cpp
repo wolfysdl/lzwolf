@@ -773,6 +773,7 @@ bool APlayerPawn::Interrogate()
 		while(item.Next());
 	}
 
+	// first try to get an item which gives inventory
 	for(auto interrogateItem: prbItems)
 	{
 		const auto usedMask = (1 << interrogateItem.id);
@@ -793,11 +794,33 @@ bool APlayerPawn::Interrogate()
 		}
 	}
 
-	auto msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
-	if(msgptr != nullptr)
+	// now try to get an item which does not give inventory
+	for(auto interrogateItem: prbItems)
 	{
-		StatusBar->InfoMessage(msgptr, {});
-		return true;
+		const auto usedMask = (1 << interrogateItem.id);
+		const auto amount = interrogateItem.minAmount;
+
+		const ClassDef *cls = ClassDef::FindClass(interrogateItem.dropItem);
+		if((closest->interrogateItemsUsed & usedMask) == 0 && !cls &&
+				interrogateItem.minAmount == 0 && interrogateItem.maxAmount == 0)
+		{
+			auto msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
+			if(msgptr != nullptr)
+			{
+				closest->interrogateItemsUsed |= usedMask;
+
+				std::string msg = interrogateItem.infoMessage.GetChars();
+				const auto key = "${INFMSG}";
+				auto n = msg.find(key);
+				if(n == std::string::npos)
+					Quit("Cannot find %s in interrogate!\n", key);
+				msg.erase(n, strlen(key));
+				msg.insert(n, msgptr);
+
+				StatusBar->InfoMessage(msg.c_str(), {});
+				return true;
+			}
+		}
 	}
 
 	return false;
