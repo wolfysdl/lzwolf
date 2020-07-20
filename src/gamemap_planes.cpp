@@ -960,8 +960,6 @@ void GameMap::ReadPlanesData()
 	static const unsigned short UNIT = 64;
 	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
 
-	ResetHints();
-
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
 	else
@@ -969,6 +967,11 @@ void GameMap::ReadPlanesData()
 
 	Xlat::EFeatureFlags FeatureFlags = xlat.GetFeatureFlags();
 	sectorPalette.Clear();
+
+	if(FeatureFlags & Xlat::FF_GLOBALMETA)
+	{
+		ResetHints();
+	}
 
 	// Old format maps always have a tile size of 64
 	header.tileSize = UNIT;
@@ -1535,6 +1538,11 @@ void GameMap::ReadPlanesData()
 			}
 		}
 	}
+
+	if(FeatureFlags & Xlat::FF_GLOBALMETA)
+	{
+		InitInformantMessageState();
+	}
 }
 
 void GameMap::ChangeMusic(int selection)
@@ -1815,6 +1823,16 @@ bool ReuseMsg(
 
 void GameMap::ResetHints()
 {
+	InitMsgCache((mCacheList*)&InfHintList, sizeof(InfHintList),
+			sizeof(InfHintList.smInfo[0]));
+	InitMsgCache((mCacheList*)&NiceSciList, sizeof(NiceSciList),
+			sizeof(InfHintList.smInfo[0]));
+	InitMsgCache((mCacheList*)&MeanSciList, sizeof(MeanSciList),
+			sizeof(InfHintList.smInfo[0]));
+}
+
+void GameMap::InitInformantMessageState()
+{
 	// Init informant stuff
 	//
 	auto count = InfHintList.NumMsgs;
@@ -1827,12 +1845,6 @@ void GameMap::ResetHints()
 	}
 
 	TotalGenInfMsgs = InfHintList.NumMsgs - FirstGenInfMsg;
-	InitMsgCache((mCacheList*)&InfHintList, sizeof(InfHintList),
-			sizeof(InfHintList.smInfo[0]));
-	InitMsgCache((mCacheList*)&NiceSciList, sizeof(NiceSciList),
-			sizeof(InfHintList.smInfo[0]));
-	InitMsgCache((mCacheList*)&MeanSciList, sizeof(MeanSciList),
-			sizeof(InfHintList.smInfo[0]));
 }
 
 void GameMap::ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber)
@@ -1899,6 +1911,10 @@ const char *GameMap::GetInformantMessage(AActor *ob, FRandom &rng)
 	};
 
 	auto Random = [&rng](auto mod) {
+		if(mod == 0)
+		{
+			Quit("Invalid zero operand to Random!");
+		}
 		return rng(static_cast<int>(mod));
 	};
 

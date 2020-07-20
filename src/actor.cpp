@@ -848,6 +848,9 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	actor->velx = 0;
 	actor->vely = 0;
 	actor->health = actor->SpawnHealth();
+	actor->informant.ammo = 0;
+	actor->informant.s_tilex = 0xff;
+	actor->informant.s_tiley = 0xff;
 
 	MapSpot spot = map->GetSpot(actor->tilex, actor->tiley, 0);
 	actor->EnterZone(spot->zone);

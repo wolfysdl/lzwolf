@@ -266,6 +266,7 @@ class GameMap
 		void	UnloadLinks();
 		void	ResetHints();
 		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
+		void	InitInformantMessageState();
 
 		FString	map;
 
