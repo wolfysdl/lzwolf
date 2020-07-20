@@ -744,9 +744,9 @@ bool APlayerPawn::Interrogate()
 		// missed
 		return false;
 	}
-
 	// hit something
 
+	// prioritise one of the interrogation items above the others at random
 	std::vector<InterrogateItem> prbItems;
 	bool chosenRandom = false;
 	auto rndval = pr_interrogateitem();
@@ -804,17 +804,31 @@ bool APlayerPawn::Interrogate()
 		if((closest->interrogateItemsUsed & usedMask) == 0 && !cls &&
 				interrogateItem.minAmount == 0 && interrogateItem.maxAmount == 0)
 		{
-			auto msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
+			const char *msgptr = nullptr;
+
+			std::string msg = interrogateItem.infoMessage.GetChars();
+			auto informantKey = "${INFMSG}";
+			auto scientistKey = "${SCIMSG}";
+			auto key = std::string{};
+
+			if(msg.find(informantKey) != std::string::npos)
+			{
+				key = informantKey;
+				msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
+			}
+			else if(msg.find(scientistKey) != std::string::npos)
+			{
+				key = scientistKey;
+				msgptr = map->GetScientistMessage(closest, pr_interrogateitem);
+			}
+
 			if(msgptr != nullptr)
 			{
 				closest->interrogateItemsUsed |= usedMask;
 
-				std::string msg = interrogateItem.infoMessage.GetChars();
-				const auto key = "${INFMSG}";
 				auto n = msg.find(key);
-				if(n == std::string::npos)
-					Quit("Cannot find %s in interrogate!\n", key);
-				msg.erase(n, strlen(key));
+				assert(n != std::string::npos);
+				msg.erase(n, key.length());
 				msg.insert(n, msgptr);
 
 				StatusBar->InfoMessage(msg.c_str(), {});

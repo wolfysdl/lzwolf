@@ -231,6 +231,7 @@ class GameMap
 		const Plane		&GetPlane(unsigned int index) const { return planes[index]; }
 		void			SpawnThings() const;
 		const char		*GetInformantMessage(AActor *ob, FRandom &rng);
+		const char		*GetScientistMessage(AActor *ob, FRandom &rng);
 
 		// Sound functions
 		bool			CheckLink(const Zone *zone1, const Zone *zone2, bool recurse);

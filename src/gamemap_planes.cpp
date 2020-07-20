@@ -1982,3 +1982,39 @@ const char *GameMap::GetInformantMessage(AActor *ob, FRandom &rng)
 
 	return msgptr;
 }
+
+const char *GameMap::GetScientistMessage(AActor *ob, FRandom &rng)
+{
+	const char* msgptr = nullptr;
+
+	auto Random = [&rng](auto mod) {
+		if(mod == 0)
+		{
+			Quit("Invalid zero operand to Random!");
+		}
+		return rng(static_cast<int>(mod));
+	};
+
+	// Non-Informant
+	//
+	scientist_t* st;
+
+	if ((ob->extraflags & FL_MUSTATTACK) != 0 || (rng() < 128))
+	{
+		// Mean
+		//
+		ob->extraflags &= ~FL_FRIENDLY; // Make him attack!
+		//ob->extraflags |= FL_INTERROGATED; //  "    "     "
+		st = &MeanSciList;
+	}
+	else
+	{
+		// Nice
+		//
+		ob->extraflags |= FL_MUSTATTACK; // Make him mean!
+		st = &NiceSciList;
+	}
+
+	msgptr = st->smInfo[Random(st->NumMsgs)].mInfo.mSeg;
+	return msgptr;
+}
