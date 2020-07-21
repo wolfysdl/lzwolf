@@ -64,7 +64,7 @@ enum ESSType
 	SS_BGRA
 };
 
-void Quit(const char *errorStr, ...);
+[[noreturn]] void Quit(const char *errorStr, ...);
 void NetDPrintf(const char *format, ...);
 
 #define FIXED2FLOAT(fixed) ((double)(fixed)/65536.0)

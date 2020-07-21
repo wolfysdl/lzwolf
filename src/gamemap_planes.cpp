@@ -1037,16 +1037,28 @@ void GameMap::ReadPlanesData()
 	FTextureID defaultCeiling = levelInfo->DefaultTexture[Sector::Ceiling];
 	FTextureID defaultFloor = levelInfo->DefaultTexture[Sector::Floor];
 
-	auto onspawn_concession = [this](MapTrigger &trigger, WORD credits)
+	auto onspawn_concession = [this](MapTrigger &trigger, WORD &oldnum, WORD &oldnum2)
 	{
 		const auto machinetype = trigger.arg[1];
-		trigger.arg[1] = this->SpawnConcession(credits, machinetype);
+		trigger.arg[1] = this->SpawnConcession(oldnum, machinetype);
+		oldnum = 0;
+	};
+	auto onspawn_wallswitch = [this](MapTrigger &trigger, WORD &oldnum, WORD &oldnum2)
+	{
+		//const auto onOff = trigger.arg[1];
+		if ((oldnum & 0xFF00) == 0xF800)
+		{
+			const auto barrier_code = this->SpawnWallSwitch(oldnum, oldnum2);
+			trigger.arg[1] = barrier_code;
+			oldnum = oldnum2 = 0;
+		}
 	};
 
-	using TOnSpawnAction = std::function<void(MapTrigger &trigger, WORD)>;
+	using TOnSpawnAction = std::function<void(MapTrigger &, WORD &, WORD &)>;
 	const std::map<std::string, TOnSpawnAction> onSpawnActions =
 	{
 		{ "OnSpawn_Concession", onspawn_concession },
+		//{ "OnSpawn_WallSwitch", onspawn_wallswitch },
 	};
 
 	std::vector<WORD> oldnums(size);
@@ -1119,7 +1131,7 @@ void GameMap::ReadPlanesData()
 						if(it != std::end(onSpawnActions))
 						{
 							auto cb = it->second;
-							cb(templateTrigger, oldnums[i]);
+							cb(templateTrigger, oldnums[i], oldnums[i+1]);
 						}
 
 						triggers.Push(templateTrigger);
@@ -2237,4 +2249,276 @@ const char *GameMap::GetScientistMessage(AActor *ob, FRandom &rng)
 
 	msgptr = st->smInfo[Random(st->NumMsgs)].mInfo.mSeg;
 	return msgptr;
+}
+
+namespace bibendovsky
+{
+
+class AssetsInfo
+{
+public:
+	int get_levels_per_episode() const
+	{
+		return 15;
+	}
+
+	int get_barrier_switches_per_level() const noexcept
+	{
+		return 5;
+	}
+
+	int get_max_barrier_switches_per_level_bits() const noexcept
+	{
+		return 3;
+	}
+}; // AssetsInfo
+
+//
+// General Coord (tile) structure
+//
+struct tilecoord_t
+{
+	// !!! Used in saved game.
+	std::uint8_t tilex;
+
+	// !!! Used in saved game.
+	std::uint8_t tiley;
+}; // tilecoord_t
+
+// -----------------------------------
+//
+// barrier coord/table structure
+//
+// -----------------------------------
+struct barrier_type
+{
+	// !!! Used in saved game.
+	tilecoord_t coord;
+
+	// !!! Used in saved game.
+	std::uint8_t on;
+}; // barrier_type;
+
+using Barriers = std::vector<barrier_type>;
+
+struct gametype
+{
+	// !!! Used in saved game.
+	std::int16_t mapon;
+
+	// !!! Used in saved game.
+	Barriers barrier_table;
+
+	void initialize();
+
+	void initialize_barriers();
+
+	int get_barrier_group_offset(
+		const int level) const;
+
+	int get_barrier_index(
+		const int code) const;
+
+	int encode_barrier_index(
+		const int level,
+		const int index) const;
+
+	void decode_barrier_index(
+		const int code,
+		int& level,
+		int& index) const;
+}; // gametype
+
+gametype gamestate;
+
+void gametype::initialize()
+{
+	const auto& assets_info = AssetsInfo{};
+
+	mapon = {};
+	barrier_table = {};
+
+	const auto switches_per_level = assets_info.get_barrier_switches_per_level();
+	const auto levels_per_episode = assets_info.get_levels_per_episode();
+	const auto switches_per_episode = switches_per_level * levels_per_episode;
+
+	barrier_table.resize(switches_per_episode);
+}
+
+void gametype::initialize_barriers()
+{
+	for (auto& barrier : barrier_table)
+	{
+		barrier.coord.tilex = 0xFF;
+		barrier.coord.tiley = 0xFF;
+		barrier.on = 0xFF;
+	}
+}
+
+int gametype::get_barrier_group_offset(
+	const int level) const
+{
+	const auto& assets_info = AssetsInfo{};
+
+	if (level < 0 || level >= assets_info.get_levels_per_episode())
+	{
+		Quit("[BRR_GRP_IDX] Level index out of range.");
+	}
+
+	const auto switches_per_level = assets_info.get_barrier_switches_per_level();
+
+	return level * switches_per_level;
+}
+
+int gametype::get_barrier_index(
+	const int code) const
+{
+	auto level = 0;
+	auto index = 0;
+	decode_barrier_index(code, level, index);
+
+	const auto& assets_info = AssetsInfo{};
+	const auto max_switches = assets_info.get_barrier_switches_per_level();
+
+	return (level * max_switches) + index;
+}
+
+int gametype::encode_barrier_index(
+	const int level,
+	const int index) const
+{
+	const auto& assets_info = AssetsInfo{};
+
+	if (index < 0 || index >= assets_info.get_barrier_switches_per_level())
+	{
+		Quit("[BARR_ENC_IDX] Barrier index out of range.");
+	}
+
+	if (level < 0 || level >= assets_info.get_levels_per_episode())
+	{
+		Quit("[BARR_ENC_IDX] Level index out of range.");
+	}
+
+	const auto switch_index_bits = assets_info.get_max_barrier_switches_per_level_bits();
+	const auto switch_index_shift = 1 << switch_index_bits;
+	const auto switch_index_mask = switch_index_shift - 1;
+
+	return (level * switch_index_shift) | (index & switch_index_mask);
+}
+
+void gametype::decode_barrier_index(
+	const int code,
+	int& level,
+	int& index) const
+{
+	if (code < 0)
+	{
+		Quit("[BARR_DEC_IDX] Invalid code.");
+	}
+
+	const auto& assets_info = AssetsInfo{};
+
+	const auto switch_index_bits = assets_info.get_max_barrier_switches_per_level_bits();
+	const auto switch_index_shift = 1 << switch_index_bits;
+	const auto switch_index_mask = switch_index_shift - 1;
+
+	level = code / switch_index_shift;
+	index = code & switch_index_mask;
+
+	if (level < 0 || level >= assets_info.get_levels_per_episode())
+	{
+		Quit("[BARR_DEC_IDX] Level index out of range.");
+	}
+
+	if (index < 0 || index >= assets_info.get_barrier_switches_per_level())
+	{
+		Quit("[BARR_DEC_IDX] Barrier index out of range.");
+	}
+}
+
+
+// --------------------------------------------------------------------------
+// UpdateBarrierTable(x,y,level) - Finds/Inserts arc entry in arc list
+//
+// RETURNS: Offset into barrier_table[] for a particular arc
+//
+// --------------------------------------------------------------------------
+
+std::uint16_t UpdateBarrierTable(
+	const int level,
+	const int x,
+	const int y,
+	const bool on_off)
+{
+	const auto& assets_info = AssetsInfo{};
+
+	if (level >= assets_info.get_levels_per_episode())
+	{
+		Quit("[BARR_UPD_TBL] Level index out of range.");
+	}
+
+	if (x <= 0 || static_cast<unsigned int>(x) >= (map->GetHeader().width - 1) ||
+		y <= 0 || static_cast<unsigned int>(y) >= (map->GetHeader().height - 1))
+	{
+		Quit("[BARR_UPD_TBL] Coordinates out of range.");
+	}
+
+
+	//
+	// Scan Table...
+	//
+	const auto group_offset = gamestate.get_barrier_group_offset(level);
+	const auto max_switches = assets_info.get_barrier_switches_per_level();
+
+	for (int i = 0; i < max_switches; ++i)
+	{
+		auto& barrier = gamestate.barrier_table[group_offset + i];
+
+		if (barrier.coord.tilex == x && barrier.coord.tiley == y)
+		{
+			return static_cast<std::uint16_t>(gamestate.encode_barrier_index(level, i));
+		}
+		else
+		{
+			if (barrier.on == 0xFF)
+			{
+				// Empty?
+				// We have hit end of list - Add
+
+				barrier.coord.tilex = static_cast<std::uint8_t>(x);
+				barrier.coord.tiley = static_cast<std::uint8_t>(y);
+				barrier.on = static_cast<std::uint8_t>(on_off);
+
+				return static_cast<std::uint16_t>(gamestate.encode_barrier_index(level, i));
+			}
+		}
+	}
+
+	Quit("[BARR_UPD_TBL] Too many barrier switches.");
+}
+
+std::uint16_t UpdateBarrierTable(
+	const int level,
+	const int x,
+	const int y)
+{
+	const auto new_level = (level == 0xFF ? gamestate.mapon : level);
+
+	return UpdateBarrierTable(new_level, x, y, true);
+}
+
+} // namespace bibendovsky
+
+// --------------------------------------------------------------------------
+// SpawnWallSwitch()
+// --------------------------------------------------------------------------
+int GameMap::SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2)
+{
+	const auto level = oldnum & 0xFF;
+
+	const auto switch_x = (oldnum2 >> 8) & 0xFF;
+	const auto switch_y = oldnum2 & 0xFF;
+
+	const auto barrier_code = bibendovsky::UpdateBarrierTable(level, switch_x, switch_y);
+	return barrier_code;
 }

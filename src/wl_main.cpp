@@ -108,7 +108,7 @@ fixed    yaspect;
 int32_t  heightnumerator;
 
 
-void    Quit (const char *error,...);
+[[noreturn]] void    Quit (const char *error,...);
 
 bool	startgame;
 bool	loadedgame;
@@ -636,7 +636,7 @@ void NewViewSize (int width, unsigned int scrWidth, unsigned int scrHeight)
 ==========================
 */
 
-void Quit (const char *errorStr, ...)
+[[noreturn]] void Quit (const char *errorStr, ...)
 {
 #ifdef NOTYET
 	byte *screen;

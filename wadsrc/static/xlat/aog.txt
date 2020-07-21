@@ -32,6 +32,36 @@ tiles
 		onspawnaction = "OnSpawn_Concession";
 	}
 
+	// offswitch
+	trigger 45
+	{
+		action = "Operate_WallSwitch";
+		arg1 = 0;
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_WallSwitch";
+	}
+
+	// onswitch
+	trigger 57
+	{
+		action = "Operate_WallSwitch";
+		arg1 = 1;
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_WallSwitch";
+	}
+
 	trigger 88
 	{
 		action = "Door_Open";
@@ -1064,8 +1094,8 @@ things
 	{135, SmallAlienCanister,       0, 0, 2} // TODO: Replace with SmallAlienCanisterStatic when below skill
 	{136, SmallAlienCanister,       0, 0, 3} // TODO: Replace with SmallAlienCanisterStatic when below skill
 	{137, SmallAlienCanisterEmpty,  0, 0, 0}
-	{138, ElectricArcBarrierOff,    0, 0, 0}
-	{139, ElectricArcBarrier,       0, 0, 0}
+	//{138, ElectricArcBarrierOff,    0, 0, 0}
+	//{139, ElectricArcBarrier,       0, 0, 0}
 	// No 140
 	// TODO: 141 -> Goldfire Spawn immediately
 	{142, GeneticGuard,             0, 0, 2}
@@ -1082,8 +1112,8 @@ things
 	{171, LargeAlienCanister,       0, 0, 2} // TODO: Replace with LargeAlienCanisterStatic when below skill
 	{172, LargeAlienCanister,       0, 0, 3} // TODO: Replace with LargeAlienCanisterStatic when below skill
 	{173, GurneyMutantSleep,        0, 0, 2} // TODO: Replace with GurneyMutantStatic when below skill
-	{174, ElectricPostBarrierOff,   0, 0, 0}
-	//{175, ElectricPostBarrier,      0, 0, 0}
+	{174, ElectricArcBarrier,   0, 0, 0}
+	{175, ElectricPostBarrier,      0, 0, 0}
 	// No 176
 	{177, SecurityCube,             0, 0, 0}
 	{178, SteamGrate,               0, 0, 0}

@@ -98,9 +98,9 @@ actor ElectricArcBarrier : SmartAnimation
 	{
 		Spawn:
 		Active:
-			ELCK A 0 bright A_InitSmartAnim(random(3, 5))
-			ELCK A 0 bright A_ChangeFlag("SOLID", true)
-			ELCK A 0 bright A_Jump(256, 1, 2, 3)
+			ELCK A 1 bright A_InitSmartAnim(random(3, 5))
+			ELCK A 1 bright A_ChangeFlag("SOLID", true)
+			ELCK A 1 bright A_Jump(256, 1, 2, 3)
 		ActiveLoop:
 			ELCK ABC 1.5 bright A_SmartAnimDelay
 			loop
@@ -128,9 +128,9 @@ actor ElectricPostBarrier : SmartAnimation
 	{
 		Spawn:
 		Active:
-			ELCP A 0 bright A_InitSmartAnim(random(3, 5))
-			ELCP A 0 bright A_ChangeFlag("SOLID", true)
-			ELCP A 0 bright A_Jump(256, 1, 2, 3)
+			ELCP A 1 bright A_InitSmartAnim(random(3, 5))
+			ELCP A 1 bright A_ChangeFlag("SOLID", true)
+			ELCP A 1 bright A_Jump(256, 1, 2, 3)
 		ActiveLoop:
 			ELCP ABC 1.5 bright A_SmartAnimDelay
 			loop

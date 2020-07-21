@@ -271,6 +271,7 @@ class GameMap
 		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
 		void	InitInformantMessageState();
 		int		SpawnConcession(std::uint16_t credits, std::uint16_t machinetype);
+		int		SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2);
 
 		FString	map;
 
