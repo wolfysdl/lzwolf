@@ -35,7 +35,7 @@ public:
 	virtual void UpdateFace (int damage=0) {}
 	virtual void WeaponGrin () {}
 	virtual void InfoMessage(FString key,
-			const std::vector<FTextureID> &texids) {}
+			const std::vector<FTextureID> &texids = std::vector<FTextureID>()) {}
 	virtual void ClearInfoMessages() {}
 };
 extern DBaseStatusBar *StatusBar;

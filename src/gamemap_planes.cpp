@@ -48,6 +48,12 @@
 #include "wl_shade.h"
 #include "m_random.h"
 
+#include <vector>
+#include "wl_agent.h"
+#include "wl_play.h"
+#include "id_sd.h"
+#include "a_inventory.h"
+
 static const char* const FeatureFlagNames[] = {
 	"globalmeta",
 	"lightlevels",
@@ -1031,13 +1037,33 @@ void GameMap::ReadPlanesData()
 	FTextureID defaultCeiling = levelInfo->DefaultTexture[Sector::Ceiling];
 	FTextureID defaultFloor = levelInfo->DefaultTexture[Sector::Floor];
 
+	auto onspawn_concession = [this](MapTrigger &trigger, WORD credits)
+	{
+		const auto machinetype = trigger.arg[1];
+		trigger.arg[1] = this->SpawnConcession(credits, machinetype);
+	};
+
+	using TOnSpawnAction = std::function<void(MapTrigger &trigger, WORD)>;
+	const std::map<std::string, TOnSpawnAction> onSpawnActions =
+	{
+		{ "OnSpawn_Concession", onspawn_concession },
+	};
+
+	std::vector<WORD> oldnums(size);
+
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
 		if(plane == 3) // Info plane is already read
 			continue;
 
 		TUniquePtr<WORD[]> oldplane(new WORD[size]);
-		lump->Read(oldplane.Get(), size*2);
+		if(plane == Plane_Object)
+		{
+			memcpy(oldplane.Get(), &oldnums[0], size*2);
+			oldnums.clear();
+		}
+		else
+			lump->Read(oldplane.Get(), size*2);
 
 		switch(plane)
 		{
@@ -1051,7 +1077,9 @@ void GameMap::ReadPlanesData()
 
 				TArray<WORD> fillSpots;
 				TMap<WORD, Xlat::ModZone> changeTriggerSpots;
-				
+
+				// read out the object plane early
+				lump->Read(&oldnums[0], size*2);
 
 				for(unsigned int i = 0;i < size;++i)
 				{
@@ -1085,6 +1113,14 @@ void GameMap::ReadPlanesData()
 						templateTrigger.x = i%header.width;
 						templateTrigger.y = i/header.width;
 						templateTrigger.z = 0;
+
+						auto spawnActionName = std::string{templateTrigger.onSpawnAction};
+						auto it = onSpawnActions.find(spawnActionName);
+						if(it != std::end(onSpawnActions))
+						{
+							auto cb = it->second;
+							cb(templateTrigger, oldnums[i]);
+						}
 
 						triggers.Push(templateTrigger);
 					}
@@ -1606,6 +1642,35 @@ struct mCacheList
 	mCacheInfo mInfo[MAX_CACHE_MSGS]; // table of message 'info'
 }; // mCacheList
 
+// ----------------------- CONCESSION STRUCTURES --------------------------
+
+// Concession 'message info' structure
+//
+struct con_mCacheInfo
+{
+	mCacheInfo mInfo;
+
+	// type of concession
+	// !!! Used in saved game.
+	std::uint8_t type;
+
+	// # of times req'd to operate
+	// !!! Used in saved game.
+	std::uint8_t operate_cnt;
+}; // con_mCacheInfo
+
+// Concession 'message list' structure
+//
+struct concession_t
+{
+	// also, num concessions
+	// !!! Used in saved game.
+	std::int16_t NumMsgs;
+
+	// !!! Used in saved game.
+	con_mCacheInfo cmInfo[MAX_CACHE_MSGS];
+}; // concession_t
+
 // ------------------------ INFORMANT STRUCTURES --------------------------
 //
 // Informant 'message info' structure
@@ -1625,11 +1690,16 @@ struct scientist_t
 }; // scientist_t
 
 #define MAX_INF_AREA_MSGS (6)
+#define MAXCONCESSIONS (15) // max number of concession machines
+
+#define CT_FOOD 0x1
+#define CT_BEVS 0x2
 
 char* InfAreaMsgs[MAX_INF_AREA_MSGS];
 std::uint8_t NumAreaMsgs, LastInfArea;
 std::int16_t FirstGenInfMsg, TotalGenInfMsgs;
 
+concession_t ConHintList = {};
 scientist_t InfHintList; // Informant messages
 scientist_t NiceSciList; // Non-informant, non-pissed messages
 scientist_t MeanSciList; // Non-informant, pissed messages
@@ -1790,6 +1860,154 @@ void CacheMsg(
 	LoadMsg(ci->mSeg, block, MsgNum, MAX_CACHE_MSG_LEN);
 }
 
+/*
+=============================================================================
+
+ CONCESSION MACHINES
+
+=============================================================================
+*/
+
+// --------------------------------------------------------------------------
+// SpawnConcession()
+// --------------------------------------------------------------------------
+int GameMap::SpawnConcession(std::uint16_t credits, std::uint16_t machinetype)
+{
+	con_mCacheInfo* ci = &ConHintList.cmInfo[ConHintList.NumMsgs];
+
+	if (ConHintList.NumMsgs >= MAXCONCESSIONS)
+	{
+		Quit("Too many concession machines in level.");
+	}
+
+	if (credits != PUSHABLETILE)
+	{
+		switch (credits & 0xff00)
+		{
+		case 0:
+		case 0xFC00: // Food Id
+			ci->mInfo.local_val = credits & 0xff;
+			ci->operate_cnt = 0;
+			ci->type = static_cast<std::uint8_t>(machinetype);
+			break;
+		}
+	}
+
+	// Consider it a solid wall (val != 0)
+	//
+	if (++ConHintList.NumMsgs > MAX_CACHE_MSGS)
+	{
+		Quit("(CONCESSIONS) Too many 'cached msgs' loaded.");
+	}
+
+	printf("spawned %d %d %d\n", (int)ConHintList.NumMsgs, (int)ci->mInfo.local_val, (int)ci->type);
+	return ConHintList.NumMsgs;
+}
+
+void GameMap::OperateConcession(std::uint16_t concession)
+{
+	con_mCacheInfo* ci;
+	bool ok = false;
+
+	auto tokens = []() {
+		if(players[0].mo)
+		{
+			ACoinItem *coins = players[0].mo->FindInventory<ACoinItem>();
+			if(coins)
+			{
+				return coins->amount;
+			}
+		}
+		return (unsigned)0;
+	};
+
+	auto use_token = []() {
+		if(players[0].mo)
+		{
+			ACoinItem *coins = players[0].mo->FindInventory<ACoinItem>();
+			if(coins && coins->Use())
+			{
+				--coins->amount;
+			}
+		}
+	};
+
+	auto HealSelf = [](int amount) {
+		auto &hp = players[0].health;
+		hp = std::min(hp + amount, 100);
+	};
+
+	ci = &ConHintList.cmInfo[concession - 1];
+
+	switch (ci->type)
+	{
+	case CT_FOOD:
+	case CT_BEVS:
+		if (ci->mInfo.local_val)
+		{
+			if (players[ConsolePlayer].health == 100)
+			{
+				StatusBar->InfoMessage("$BLAKE_CANT_EAT");
+				SD_PlaySound ("player/usefail");
+
+				return;
+			}
+			else
+			{
+				ok = true;
+			}
+		}
+		break;
+	}
+
+	if (ok)
+	{
+		// Whada' ya' want?
+
+		switch (ci->type)
+		{
+		case CT_FOOD:
+		case CT_BEVS:
+			// One token please... Thank you.
+
+			if (!tokens())
+			{
+				StatusBar->InfoMessage("$BLAKE_NO_TOKENS");
+				SD_PlaySound ("player/usefail");
+
+				return;
+			}
+			else
+			{
+				use_token();
+			}
+
+			ci->mInfo.local_val--;
+			SD_PlaySound ("misc/coin_pickup");
+
+
+			switch (ci->type)
+			{
+			case CT_FOOD:
+				StatusBar->InfoMessage("$BLAKE_FOOD1");
+				HealSelf(10);
+				break;
+
+			case CT_BEVS:
+				StatusBar->InfoMessage("$BLAKE_BEVS1");
+				HealSelf(7);
+				break;
+			}
+			break;
+		}
+	}
+	else
+	{
+		StatusBar->InfoMessage("$BLAKE_OUTOFORDER");
+		SD_PlaySound ("player/usefail");
+	}
+}
+
 bool ReuseMsg(
 	mCacheInfo* ci,
 	std::int16_t count,
@@ -1823,6 +2041,8 @@ bool ReuseMsg(
 
 void GameMap::ResetHints()
 {
+	InitMsgCache((mCacheList*)&ConHintList, sizeof(ConHintList),
+			sizeof(ConHintList.cmInfo[0]));
 	InitMsgCache((mCacheList*)&InfHintList, sizeof(InfHintList),
 			sizeof(InfHintList.smInfo[0]));
 	InitMsgCache((mCacheList*)&NiceSciList, sizeof(NiceSciList),

@@ -2,6 +2,36 @@ enable globalmeta;
 
 tiles
 {
+	// soda
+	trigger 15
+	{
+		action = "Operate_Concession";
+		arg1 = 0;
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_Concession";
+	}
+
+	// food
+	trigger 18
+	{
+		action = "Operate_Concession";
+		arg1 = 1;
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_Concession";
+	}
+
 	trigger 88
 	{
 		action = "Door_Open";

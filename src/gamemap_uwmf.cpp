@@ -265,6 +265,11 @@ void TextMapParser::ParseTrigger(Scanner &sc, MapTrigger &trigger)
 		sc.MustGetToken(TK_BoolConst);
 		trigger.isSecret = sc->boolean;
 	}
+	else CheckKey("onspawnaction")
+	{
+		sc.MustGetToken(TK_StringConst);
+		trigger.onSpawnAction = sc->str;
+	}
 
 	EndParseBlock
 }

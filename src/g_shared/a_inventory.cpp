@@ -348,6 +348,11 @@ bool ACoinItem::HandlePickup(AInventory *item, bool &good)
 	return Super::HandlePickup(item, good);
 }
 
+bool ACoinItem::Use()
+{
+	return (amount > 0);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_CLASS(Ammo)

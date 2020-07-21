@@ -128,7 +128,8 @@ class GameMap
 			bool			monsterUse;
 			bool			isSecret;
 			bool			repeatable;
-			FString         infoMessage;
+			FString			infoMessage;
+			FString			onSpawnAction;
 		};
 		struct Tile
 		{
@@ -232,6 +233,7 @@ class GameMap
 		void			SpawnThings() const;
 		const char		*GetInformantMessage(AActor *ob, FRandom &rng);
 		const char		*GetScientistMessage(AActor *ob, FRandom &rng);
+		void			OperateConcession(std::uint16_t concession);
 
 		// Sound functions
 		bool			CheckLink(const Zone *zone1, const Zone *zone2, bool recurse);
@@ -268,6 +270,7 @@ class GameMap
 		void	ResetHints();
 		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
 		void	InitInformantMessageState();
+		int		SpawnConcession(std::uint16_t credits, std::uint16_t machinetype);
 
 		FString	map;
 

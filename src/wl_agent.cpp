@@ -694,7 +694,7 @@ void APlayerPawn::Cmd_Use()
 	TicCmd_t &cmd = control[player - players];
 	if(doNothing && (!cmd.buttonheld[bt_use] && Interrogate()))
 	{
-		PlaySoundLocActor("scientist/interrogate", this);
+		SD_PlaySound ("scientist/interrogate");
 		cmd.buttonheld[bt_use] = true;
 	}
 	else if(doNothing)
@@ -702,7 +702,7 @@ void APlayerPawn::Cmd_Use()
 	else
 	{
 		if(!infoMessage.IsEmpty())
-			StatusBar->InfoMessage(infoMessage, {});
+			StatusBar->InfoMessage(infoMessage);
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
 	}
 }
@@ -789,7 +789,7 @@ bool APlayerPawn::Interrogate()
 				GiveInventory(cls, amount))
 		{
 			closest->interrogateItemsUsed |= usedMask;
-			StatusBar->InfoMessage(interrogateItem.infoMessage, {});
+			StatusBar->InfoMessage(interrogateItem.infoMessage);
 			return true;
 		}
 	}
@@ -831,7 +831,7 @@ bool APlayerPawn::Interrogate()
 				msg.erase(n, key.length());
 				msg.insert(n, msgptr);
 
-				StatusBar->InfoMessage(msg.c_str(), {});
+				StatusBar->InfoMessage(msg.c_str());
 				return true;
 			}
 		}

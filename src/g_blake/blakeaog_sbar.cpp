@@ -375,7 +375,7 @@ public:
 
 	void Tick();
 
-	void InfoMessage(FString key, const std::vector<FTextureID> &texids);
+	void InfoMessage(FString key, const std::vector<FTextureID> &texids) override;
 
 	void ClearInfoMessages();
 

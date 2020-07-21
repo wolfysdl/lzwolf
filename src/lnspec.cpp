@@ -1232,3 +1232,14 @@ FUNC(Trigger_ThingSpecial)
 
 	return ret;
 }
+
+FUNC(Operate_Concession)
+{
+	TicCmd_t &cmd = control[ConsolePlayer];
+	if(!cmd.buttonheld[bt_use])
+	{
+		map->OperateConcession(args[1]);
+		return 1;
+	}
+	return 0;
+}
