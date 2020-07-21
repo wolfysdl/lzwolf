@@ -1058,7 +1058,7 @@ void GameMap::ReadPlanesData()
 	const std::map<std::string, TOnSpawnAction> onSpawnActions =
 	{
 		{ "OnSpawn_Concession", onspawn_concession },
-		//{ "OnSpawn_WallSwitch", onspawn_wallswitch },
+		{ "OnSpawn_WallSwitch", onspawn_wallswitch },
 	};
 
 	std::vector<WORD> oldnums(size);
@@ -2304,9 +2304,6 @@ using Barriers = std::vector<barrier_type>;
 struct gametype
 {
 	// !!! Used in saved game.
-	std::int16_t mapon;
-
-	// !!! Used in saved game.
 	Barriers barrier_table;
 
 	void initialize();
@@ -2335,7 +2332,6 @@ void gametype::initialize()
 {
 	const auto& assets_info = AssetsInfo{};
 
-	mapon = {};
 	barrier_table = {};
 
 	const auto switches_per_level = assets_info.get_barrier_switches_per_level();
@@ -2436,6 +2432,12 @@ void gametype::decode_barrier_index(
 	}
 }
 
+void newgame_initialize()
+{
+	gamestate.initialize();
+
+	gamestate.initialize_barriers();
+}
 
 // --------------------------------------------------------------------------
 // UpdateBarrierTable(x,y,level) - Finds/Inserts arc entry in arc list
@@ -2502,9 +2504,69 @@ std::uint16_t UpdateBarrierTable(
 	const int x,
 	const int y)
 {
-	const auto new_level = (level == 0xFF ? gamestate.mapon : level);
+	const auto new_level = (level == 0xFF ?
+			std::min(levelInfo->LevelNumber-1, 0U) : level);
 
 	return UpdateBarrierTable(new_level, x, y, true);
+}
+
+// --------------------------------------------------------------------------
+// ScanBarrierTable(x,y) - Scans a switch table for a arc in this level
+//
+// RETURNS :
+//      0xFFFF - Not found in table
+//      barrier - barrier_table of the barrier for [num]
+//
+// --------------------------------------------------------------------------
+std::uint16_t ScanBarrierTable(
+	std::uint8_t x,
+	std::uint8_t y)
+{
+	const auto& assets_info = AssetsInfo{};
+	const auto max_switches = assets_info.get_barrier_switches_per_level();
+
+	const auto level = std::min(levelInfo->LevelNumber-1, 0U);
+	const auto barrier_group_index = gamestate.get_barrier_group_offset(level);
+
+	for (int i = 0; i < max_switches; ++i)
+	{
+		const auto& barrier = gamestate.barrier_table[barrier_group_index + i];
+
+		if (barrier.coord.tilex == x && barrier.coord.tiley == y)
+		{
+			const auto code = gamestate.encode_barrier_index(level, i);
+
+			// Found switch...
+			return static_cast<std::uint16_t>(code);
+		}
+	}
+
+	return static_cast<std::uint16_t>(0xFFFF); // Mark as EMPTY
+}
+
+bool GetBarrierState(uint16_t temp2)
+{
+	const auto barrier_index = gamestate.get_barrier_index(temp2);
+	return gamestate.barrier_table[barrier_index].on;
+}
+
+void ActivateWallSwitch(int num)
+{
+	//
+	// Update tile map & Display switch'd message
+	//
+	auto level = 0;
+	auto index = 0;
+	gamestate.decode_barrier_index(num, level, index);
+	const auto group_offset = gamestate.get_barrier_group_offset(level);
+
+	const auto barrier_index = group_offset + index;
+	auto& barrier = gamestate.barrier_table[barrier_index];
+
+	barrier.on ^= 1;
+
+	//DisplaySwitchOperateMsg(num);
+	//sd_play_player_sound(SWITCHSND, bstone::ActorChannel::item);
 }
 
 } // namespace bibendovsky
@@ -2521,4 +2583,12 @@ int GameMap::SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2)
 
 	const auto barrier_code = bibendovsky::UpdateBarrierTable(level, switch_x, switch_y);
 	return barrier_code;
+}
+
+// --------------------------------------------------------------------------
+// ActivateWallSwitch() - Updates the Map, Actors, and Tables for wall switchs
+// --------------------------------------------------------------------------
+void GameMap::ActivateWallSwitch(int barrier_code)
+{
+	bibendovsky::ActivateWallSwitch(barrier_code);
 }

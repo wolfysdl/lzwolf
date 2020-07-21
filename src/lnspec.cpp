@@ -1243,3 +1243,14 @@ FUNC(Operate_Concession)
 	}
 	return 0;
 }
+
+FUNC(Operate_WallSwitch)
+{
+	TicCmd_t &cmd = control[ConsolePlayer];
+	if(!cmd.buttonheld[bt_use])
+	{
+		map->ActivateWallSwitch(args[1]);
+		return 1;
+	}
+	return 0;
+}

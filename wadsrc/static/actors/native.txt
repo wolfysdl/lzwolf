@@ -163,6 +163,15 @@ actor Armor : Inventory native
 	inventory.pickupsound "misc/armor_pkup"
 }
 
+actor Barrier native
+{
+	action native A_InitBarrierAnim(int delay);
+	action native A_BarrierAnimDelay();
+
+	action native A_BarrierSpawn();
+	action native A_BarrierTransition();
+}
+
 actor BasicArmor : Armor native
 {
 	//+inventory.KEEPDEPLETED

@@ -36,7 +36,6 @@ tiles
 	trigger 45
 	{
 		action = "Operate_WallSwitch";
-		arg1 = 0;
 		playeruse = true;
 		monsteruse = false;
 		repeatable = true;
@@ -51,7 +50,6 @@ tiles
 	trigger 57
 	{
 		action = "Operate_WallSwitch";
-		arg1 = 1;
 		playeruse = true;
 		monsteruse = false;
 		repeatable = true;
