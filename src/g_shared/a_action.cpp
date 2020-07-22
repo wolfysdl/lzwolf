@@ -75,16 +75,101 @@ public:
 IMPLEMENT_CLASS (SwitchingDecoration)
 
 // Blake Stone Barrier ---------------
+//
+namespace bibendovsky
+{
+std::uint16_t ScanBarrierTable(
+	std::uint8_t x,
+	std::uint8_t y);
+
+bool GetBarrierState(uint16_t temp2);
+} // namespace bibendovsky
 
 class ABarrier : public AActor
 {
 	DECLARE_CLASS (ABarrier, AActor)
+
+	using TCoord = std::pair<WORD,WORD>;
+
+	void OnSpawn();
+
+	void OnLink();
+
+	void Transition();
 
 	std::uint16_t temp2;
 public:
 };
 
 IMPLEMENT_CLASS (Barrier)
+
+class ABarrierLinker : public AActor
+{
+	DECLARE_CLASS (ABarrierLinker, AActor)
+
+	void	Destroy() override;
+
+	static std::map<ABarrier::TCoord, ABarrier*> all_instances;
+};
+
+void ABarrierLinker::Destroy()
+{
+	all_instances.clear();
+}
+
+std::map<ABarrier::TCoord, ABarrier*> ABarrierLinker::all_instances;
+
+IMPLEMENT_CLASS (BarrierLinker)
+
+void ABarrier::OnSpawn()
+{
+	temp2 = bibendovsky::ScanBarrierTable(
+			static_cast<std::uint8_t>(tilex),
+			static_cast<std::uint8_t>(tiley));
+	ABarrierLinker::all_instances[std::make_pair(tilex,tiley)] = this;
+}
+
+void ABarrier::OnLink()
+{
+	// this barrier should be linked by another one
+	if(temp2 == 0xffff)
+		return;
+
+	std::function<void(WORD,WORD)> visit;
+	visit = [&visit, temp2=this->temp2](WORD tilex, WORD tiley) {
+		auto it = ABarrierLinker::all_instances.find(std::make_pair(tilex,tiley));
+		if(it != std::end(ABarrierLinker::all_instances))
+		{
+			auto barrier = it->second;
+			if(barrier->temp2 == 0xffff)
+			{
+				barrier->temp2 = temp2;
+				visit(tilex+1,tiley+0);
+				visit(tilex-1,tiley+0);
+				visit(tilex+0,tiley+1);
+				visit(tilex+0,tiley-1);
+			}
+		}
+	};
+	this->temp2 = 0xffff;
+	visit(tilex,tiley);
+}
+
+void ABarrier::Transition()
+{
+	//
+	// Check for Turn offs
+	//
+	if (temp2 != 0xffff)
+	{
+		auto onOff = bibendovsky::GetBarrierState(temp2);
+		if (!onOff)
+		{
+			auto state = FindState(NAME_Inactive);
+			SetState(state);
+		}
+	}
+}
 
 //------------------------------------------------------------------------------
 // Smart animation: Blake Stone used these to implement simple animation
@@ -108,38 +193,23 @@ ACTION_FUNCTION(A_BarrierAnimDelay)
 	return true;
 }
 
-namespace bibendovsky
+ACTION_FUNCTION(A_BarrierLink)
 {
-std::uint16_t ScanBarrierTable(
-	std::uint8_t x,
-	std::uint8_t y);
-
-bool GetBarrierState(uint16_t temp2);
-} // namespace bibendovsky
+	ABarrier *barrier = reinterpret_cast<ABarrier *>(self);
+	barrier->OnLink();
+	return true;
+}
 
 ACTION_FUNCTION(A_BarrierSpawn)
 {
 	ABarrier *barrier = reinterpret_cast<ABarrier *>(self);
-	barrier->temp2 = bibendovsky::ScanBarrierTable(
-			static_cast<std::uint8_t>(self->tilex),
-			static_cast<std::uint8_t>(self->tiley));
+	barrier->OnSpawn();
 	return true;
 }
 
 ACTION_FUNCTION(A_BarrierTransition)
 {
 	ABarrier *barrier = reinterpret_cast<ABarrier *>(self);
-	//
-	// Check for Turn offs
-	//
-	if (barrier->temp2 != 0xffff)
-	{
-		auto onOff = bibendovsky::GetBarrierState(barrier->temp2);
-		if (!onOff)
-		{
-			printf("foo %p\n", barrier);
-			//ToggleBarrier(obj);
-		}
-	}
+	barrier->Transition();
 	return true;
 }

@@ -97,7 +97,9 @@ actor ElectricArcBarrier : Barrier
 	states
 	{
 		Spawn:
+			ELCK A 1 bright A_SpawnItem("BarrierLinker")
 			ELCK A 1 bright A_BarrierSpawn
+			ELCK A 1 bright A_BarrierLink
 		Active:
 			ELCK A 1 bright A_InitBarrierAnim(random(3, 5))
 			ELCK A 1 bright A_ChangeFlag("SOLID", true)
@@ -128,7 +130,9 @@ actor ElectricPostBarrier : Barrier
 	states
 	{
 		Spawn:
+			ELCP A 1 bright A_SpawnItem("BarrierLinker")
 			ELCP A 1 bright A_BarrierSpawn
+			ELCP A 1 bright A_BarrierLink
 		Active:
 			ELCP A 1 bright A_InitBarrierAnim(random(3, 5))
 			ELCP A 1 bright A_ChangeFlag("SOLID", true)

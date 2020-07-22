@@ -167,9 +167,14 @@ actor Barrier native
 {
 	action native A_InitBarrierAnim(int delay);
 	action native A_BarrierAnimDelay();
-
+	action native A_BarrierLink();
 	action native A_BarrierSpawn();
 	action native A_BarrierTransition();
+}
+
+actor BarrierLinker native
+{
+	singlespawn 1
 }
 
 actor BasicArmor : Armor native

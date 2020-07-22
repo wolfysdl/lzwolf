@@ -1912,7 +1912,6 @@ int GameMap::SpawnConcession(std::uint16_t credits, std::uint16_t machinetype)
 		Quit("(CONCESSIONS) Too many 'cached msgs' loaded.");
 	}
 
-	printf("spawned %d %d %d\n", (int)ConHintList.NumMsgs, (int)ci->mInfo.local_val, (int)ci->type);
 	return ConHintList.NumMsgs;
 }
 
