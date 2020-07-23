@@ -108,8 +108,10 @@ actor ElectricArcBarrier : Barrier
 			ELCK ABC 1.5 bright A_BarrierAnimDelay A_BarrierTransition
 			loop
 		Inactive:
-			ELCK D -1 A_ChangeFlag("SOLID", false)
-			stop
+			ELCK D 1 A_ChangeFlag("SOLID", false)
+		InactiveLoop:
+			ELCK D 1.5 bright NOP A_BarrierTransition
+			loop
 	}
 }
 
@@ -141,8 +143,10 @@ actor ElectricPostBarrier : Barrier
 			ELCP ABC 1.5 bright A_BarrierAnimDelay A_BarrierTransition
 			loop
 		Inactive:
-			ELCP D -1 A_ChangeFlag("SOLID", false)
-			stop
+			ELCP D 1 A_ChangeFlag("SOLID", false)
+		InactiveLoop:
+			ELCP D 1.5 bright NOP A_BarrierTransition
+			loop
 	}
 }
 

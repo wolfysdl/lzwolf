@@ -134,7 +134,7 @@ class GameMap
 		struct Tile
 		{
 			Tile() : offsetVertical(false), offsetHorizontal(false),
-				mapped(0), dontOverlay(false), showSky(false)
+				mapped(0), dontOverlay(false), showSky(false), switchDestTile(NULL)
 			{
 				overhead.SetInvalid();
 				sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
@@ -152,6 +152,7 @@ class GameMap
 			bool			dontOverlay;
 			bool			showSky;
 			FString			switchTextureEast;
+			const Tile		*switchDestTile;
 		};
 		struct Sector
 		{
@@ -179,8 +180,7 @@ class GameMap
 				Map() : tile(NULL), sector(NULL), zone(NULL), visible(false),
 					amFlags(0), thinker(NULL), slideStyle(0),
 					pushDirection(Tile::East), pushAmount(0),
-					pushReceptor(NULL), tag(0), nexttag(NULL),
-					switchDestTile(NULL)
+					pushReceptor(NULL), tag(0), nexttag(NULL)
 				{
 					slideAmount[0] = slideAmount[1] = slideAmount[2] = slideAmount[3] = 0;
 					sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
@@ -213,7 +213,6 @@ class GameMap
 
 				unsigned int	tag;
 				Plane::Map		*nexttag;
-				const Tile		*switchDestTile;
 			}*	map;
 		};
 

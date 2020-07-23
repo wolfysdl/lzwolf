@@ -82,7 +82,7 @@ std::uint16_t ScanBarrierTable(
 	std::uint8_t x,
 	std::uint8_t y);
 
-bool GetBarrierState(uint16_t temp2);
+uint8_t GetBarrierState(uint16_t temp2);
 } // namespace bibendovsky
 
 class ABarrier : public AActor
@@ -98,6 +98,7 @@ class ABarrier : public AActor
 	void Transition();
 
 	std::uint16_t temp2;
+	bool curstate;
 public:
 };
 
@@ -126,6 +127,7 @@ void ABarrier::OnSpawn()
 	temp2 = bibendovsky::ScanBarrierTable(
 			static_cast<std::uint8_t>(tilex),
 			static_cast<std::uint8_t>(tiley));
+	curstate = true;
 	ABarrierLinker::all_instances[std::make_pair(tilex,tiley)] = this;
 }
 
@@ -163,9 +165,10 @@ void ABarrier::Transition()
 	if (temp2 != 0xffff)
 	{
 		auto onOff = bibendovsky::GetBarrierState(temp2);
-		if (!onOff)
+		if(onOff != curstate)
 		{
-			auto state = FindState(NAME_Inactive);
+			curstate = onOff;
+			auto state = FindState(curstate ? NAME_Active : NAME_Inactive);
 			SetState(state);
 		}
 	}

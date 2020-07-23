@@ -1062,6 +1062,35 @@ void GameMap::ReadPlanesData()
 		{ "OnSpawn_WallSwitch", onspawn_wallswitch },
 	};
 
+	auto init_switch_dest = [](TArray<Tile>& tilePalette) {
+		std::map<std::string, const MapTile*> tileByEastTexture;
+
+		for(unsigned int i = 0; i < tilePalette.Size(); ++i)
+		{
+			const auto &tile = tilePalette[i];
+			auto texture = tile.texture[MapTile::East];
+			if(texture.isValid() && TexMan[texture] != nullptr)
+			{
+				tileByEastTexture[TexMan[texture]->Name.GetChars()] = &tile;
+				printf("%s %p\n", TexMan[texture]->Name.GetChars(), &tile);
+			}
+		}
+
+		for(unsigned int i = 0; i < tilePalette.Size(); ++i)
+		{
+			auto &tile = tilePalette[i];
+			if(!tile.switchTextureEast.IsEmpty())
+			{
+				auto it = tileByEastTexture.find(
+						tile.switchTextureEast.GetChars());
+				if(it != std::end(tileByEastTexture))
+				{
+					tile.switchDestTile = it->second;
+				}
+			}
+		}
+	};
+
 	std::vector<WORD> oldnums(size);
 
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
@@ -1086,19 +1115,12 @@ void GameMap::ReadPlanesData()
 			case Plane_Tiles:
 			{
 				WORD tileStart = xlat.GetTilePalette(tilePalette);
+				init_switch_dest(tilePalette);
+
 				xlat.GetZonePalette(zonePalette);
 
 				TArray<WORD> fillSpots;
 				TMap<WORD, Xlat::ModZone> changeTriggerSpots;
-				std::map<std::string, const MapTile*> tileByEastTexture;
-
-				for(unsigned int i = 0; i < tilePalette.Size(); ++i)
-				{
-					const auto &tile = tilePalette[i];
-					auto texture = tile.texture[MapTile::East];
-					if(texture.isValid() && TexMan[texture] != nullptr)
-						tileByEastTexture[TexMan[texture]->Name.GetChars()] = &tile;
-				}
 
 				// read out the object plane early
 				lump->Read(&oldnums[0], size*2);
@@ -1108,20 +1130,7 @@ void GameMap::ReadPlanesData()
 					oldplane[i] = LittleShort(oldplane[i]);
 
 					if(xlat.IsValidTile(oldplane[i]))
-					{
 						mapPlane.map[i].SetTile(&tilePalette[oldplane[i]-tileStart]);
-
-						auto tile = mapPlane.map[i].tile;
-						if(!tile->switchTextureEast.IsEmpty())
-						{
-							auto it = tileByEastTexture.find(
-									tile->switchTextureEast.GetChars());
-							if(it != std::end(tileByEastTexture))
-							{
-								mapPlane.map[i].switchDestTile = it->second;
-							}
-						}
-					}
 					else
 						mapPlane.map[i].SetTile(NULL);
 
@@ -2279,6 +2288,13 @@ namespace bibendovsky
 class AssetsInfo
 {
 public:
+	int level() const noexcept
+	{
+		if(levelInfo->LevelNumber > 0)
+			return levelInfo->LevelNumber - 1;
+		return 0;
+	}
+
 	int get_levels_per_episode() const
 	{
 		return 15;
@@ -2292,6 +2308,28 @@ public:
 	int get_max_barrier_switches_per_level_bits() const noexcept
 	{
 		return 3;
+	}
+
+	bool is_secret_level(
+		const int level_number) const
+	{
+		return level_number <= 0 || level_number >= 10;
+	}
+
+	int secret_floor_get_index(
+		const int level_number) const
+	{
+		if (level_number <= 0)
+		{
+			return 0;
+		}
+
+		if (level_number >= 10)
+		{
+			return level_number - 10 + 1;
+		}
+
+		return -1;
 	}
 }; // AssetsInfo
 
@@ -2534,8 +2572,9 @@ std::uint16_t UpdateBarrierTable(
 	const int x,
 	const int y)
 {
+	const auto& assets_info = AssetsInfo{};
 	const auto new_level = (level == 0xFF ?
-			std::min(levelInfo->LevelNumber-1, 0U) : level);
+			assets_info.level() : level);
 
 	return UpdateBarrierTable(new_level, x, y, true);
 }
@@ -2563,7 +2602,7 @@ std::uint16_t ScanBarrierTable(
 	const auto& assets_info = AssetsInfo{};
 	const auto max_switches = assets_info.get_barrier_switches_per_level();
 
-	const auto level = std::min(levelInfo->LevelNumber-1, 0U);
+	const auto level = assets_info.level();
 	const auto barrier_group_index = gamestate.get_barrier_group_offset(level);
 
 	for (int i = 0; i < max_switches; ++i)
@@ -2582,10 +2621,52 @@ std::uint16_t ScanBarrierTable(
 	return static_cast<std::uint16_t>(0xFFFF); // Mark as EMPTY
 }
 
-bool GetBarrierState(uint16_t temp2)
+uint8_t GetBarrierState(uint16_t temp2)
 {
 	const auto barrier_index = gamestate.get_barrier_index(temp2);
 	return gamestate.barrier_table[barrier_index].on;
+}
+
+// --------------------------------------------------------------------------
+// DisplaySwitchOperateMsg() - Displays the Operating Barrier Switch message
+//      for a particular level across the InfoArea.
+// --------------------------------------------------------------------------
+void DisplaySwitchOperateMsg(
+	int coords)
+{
+	auto level = 0;
+	auto index = 0;
+	gamestate.decode_barrier_index(coords, level, index);
+	const auto group_offset = gamestate.get_barrier_group_offset(level);
+
+	const auto barrier_index = group_offset + index;
+	auto barrier = &gamestate.barrier_table[barrier_index];
+
+	static std::string message;
+
+	if (barrier->on != 0)
+	{
+		message = "\r\r  ACTIVATING BARRIER";
+	}
+	else
+	{
+		message = "\r\r DEACTIVATING BARRIER";
+	}
+
+	const auto& assets_info = AssetsInfo{};
+
+	if (assets_info.is_secret_level(level))
+	{
+		const auto secret_level = assets_info.secret_floor_get_index(level) + 1;
+
+		message += "\r  ON SECRET FLOOR " + std::to_string(secret_level);
+	}
+	else
+	{
+		message += "\r      ON FLOOR " + std::to_string(level);
+	}
+
+	StatusBar->InfoMessage(message.c_str());
 }
 
 void ActivateWallSwitch(int num)
@@ -2603,8 +2684,8 @@ void ActivateWallSwitch(int num)
 
 	barrier.on ^= 1;
 
-	//DisplaySwitchOperateMsg(num);
-	//sd_play_player_sound(SWITCHSND, bstone::ActorChannel::item);
+	DisplaySwitchOperateMsg(num);
+	SD_PlaySound ("switches/normbutn");
 
 	for(const auto &p : gamestate.switch_codes)
 	{
@@ -2613,9 +2694,9 @@ void ActivateWallSwitch(int num)
 			int x, y;
 			std::tie(x, y) = p.first;
 			auto spot = map->GetSpot(x, y, 0);
-			if(spot && spot->tile && spot->switchDestTile != nullptr)
+			if(spot && spot->tile && spot->tile->switchDestTile != nullptr)
 			{
-				spot->SetTile(spot->switchDestTile);
+				spot->SetTile(spot->tile->switchDestTile);
 			}
 		}
 	}
