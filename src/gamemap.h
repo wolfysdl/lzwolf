@@ -151,6 +151,7 @@ class GameMap
 			unsigned int	mapped; // filter level for always visible
 			bool			dontOverlay;
 			bool			showSky;
+			FString			switchTextureEast;
 		};
 		struct Sector
 		{
@@ -178,7 +179,8 @@ class GameMap
 				Map() : tile(NULL), sector(NULL), zone(NULL), visible(false),
 					amFlags(0), thinker(NULL), slideStyle(0),
 					pushDirection(Tile::East), pushAmount(0),
-					pushReceptor(NULL), tag(0), nexttag(NULL)
+					pushReceptor(NULL), tag(0), nexttag(NULL),
+					switchDestTile(NULL)
 				{
 					slideAmount[0] = slideAmount[1] = slideAmount[2] = slideAmount[3] = 0;
 					sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
@@ -211,6 +213,7 @@ class GameMap
 
 				unsigned int	tag;
 				Plane::Map		*nexttag;
+				const Tile		*switchDestTile;
 			}*	map;
 		};
 
@@ -272,7 +275,7 @@ class GameMap
 		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
 		void	InitInformantMessageState();
 		int		SpawnConcession(std::uint16_t credits, std::uint16_t machinetype);
-		int		SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2);
+		int		SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2, int x, int y);
 
 		FString	map;
 
@@ -330,6 +333,8 @@ FArchive &operator<< (FArchive &arc, MapTrigger &trigger);
 namespace bibendovsky
 {
 	void newgame_initialize();
+
+	void level_initialize();
 } // namespace bibendovsky
 
 #endif

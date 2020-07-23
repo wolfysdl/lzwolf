@@ -306,6 +306,8 @@ void SetupGameLevel (void)
 
 	gamestate.faceframe.SetInvalid();
 
+	bibendovsky::level_initialize();
+
 //
 // load the level
 //

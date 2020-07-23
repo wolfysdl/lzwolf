@@ -613,6 +613,7 @@ tiles
 		texturesouth = "SWITCHA1";
 		textureeast = "SWITCHA2";
 		texturewest = "SWITCHA2";
+		switchtextureeast = "SWITCHI2";
 	}
 	tile 46
 	{
@@ -697,6 +698,7 @@ tiles
 		texturesouth = "SWITCHI1";
 		textureeast = "SWITCHI2";
 		texturewest = "SWITCHI2";
+		switchtextureeast = "SWITCHA2";
 	}
 	tile 58
 	{

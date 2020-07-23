@@ -1048,7 +1048,8 @@ void GameMap::ReadPlanesData()
 		//const auto onOff = trigger.arg[1];
 		if ((oldnum & 0xFF00) == 0xF800)
 		{
-			const auto barrier_code = this->SpawnWallSwitch(oldnum, oldnum2);
+			const auto barrier_code = this->SpawnWallSwitch(oldnum, oldnum2,
+					trigger.x, trigger.y);
 			trigger.arg[1] = barrier_code;
 			oldnum = oldnum2 = 0;
 		}
@@ -1089,6 +1090,15 @@ void GameMap::ReadPlanesData()
 
 				TArray<WORD> fillSpots;
 				TMap<WORD, Xlat::ModZone> changeTriggerSpots;
+				std::map<std::string, const MapTile*> tileByEastTexture;
+
+				for(unsigned int i = 0; i < tilePalette.Size(); ++i)
+				{
+					const auto &tile = tilePalette[i];
+					auto texture = tile.texture[MapTile::East];
+					if(texture.isValid() && TexMan[texture] != nullptr)
+						tileByEastTexture[TexMan[texture]->Name.GetChars()] = &tile;
+				}
 
 				// read out the object plane early
 				lump->Read(&oldnums[0], size*2);
@@ -1098,7 +1108,20 @@ void GameMap::ReadPlanesData()
 					oldplane[i] = LittleShort(oldplane[i]);
 
 					if(xlat.IsValidTile(oldplane[i]))
+					{
 						mapPlane.map[i].SetTile(&tilePalette[oldplane[i]-tileStart]);
+
+						auto tile = mapPlane.map[i].tile;
+						if(!tile->switchTextureEast.IsEmpty())
+						{
+							auto it = tileByEastTexture.find(
+									tile->switchTextureEast.GetChars());
+							if(it != std::end(tileByEastTexture))
+							{
+								mapPlane.map[i].switchDestTile = it->second;
+							}
+						}
+					}
 					else
 						mapPlane.map[i].SetTile(NULL);
 
@@ -2277,6 +2300,8 @@ public:
 //
 struct tilecoord_t
 {
+	using pair_t = std::pair<int, int>;
+
 	// !!! Used in saved game.
 	std::uint8_t tilex;
 
@@ -2304,6 +2329,7 @@ struct gametype
 {
 	// !!! Used in saved game.
 	Barriers barrier_table;
+	std::map<tilecoord_t::pair_t, int> switch_codes;
 
 	void initialize();
 
@@ -2438,6 +2464,11 @@ void newgame_initialize()
 	gamestate.initialize_barriers();
 }
 
+void level_initialize()
+{
+	gamestate.switch_codes.clear();
+}
+
 // --------------------------------------------------------------------------
 // UpdateBarrierTable(x,y,level) - Finds/Inserts arc entry in arc list
 //
@@ -2509,6 +2540,14 @@ std::uint16_t UpdateBarrierTable(
 	return UpdateBarrierTable(new_level, x, y, true);
 }
 
+void UpdateSwitchCodes(
+	const int x,
+	const int y,
+	int barrier_code)
+{
+	gamestate.switch_codes[std::make_pair(x,y)] = barrier_code;
+}
+
 // --------------------------------------------------------------------------
 // ScanBarrierTable(x,y) - Scans a switch table for a arc in this level
 //
@@ -2566,6 +2605,20 @@ void ActivateWallSwitch(int num)
 
 	//DisplaySwitchOperateMsg(num);
 	//sd_play_player_sound(SWITCHSND, bstone::ActorChannel::item);
+
+	for(const auto &p : gamestate.switch_codes)
+	{
+		if(p.second == num)
+		{
+			int x, y;
+			std::tie(x, y) = p.first;
+			auto spot = map->GetSpot(x, y, 0);
+			if(spot && spot->tile && spot->switchDestTile != nullptr)
+			{
+				spot->SetTile(spot->switchDestTile);
+			}
+		}
+	}
 }
 
 } // namespace bibendovsky
@@ -2573,7 +2626,7 @@ void ActivateWallSwitch(int num)
 // --------------------------------------------------------------------------
 // SpawnWallSwitch()
 // --------------------------------------------------------------------------
-int GameMap::SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2)
+int GameMap::SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2, int x, int y)
 {
 	const auto level = oldnum & 0xFF;
 
@@ -2581,6 +2634,7 @@ int GameMap::SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2)
 	const auto switch_y = oldnum2 & 0xFF;
 
 	const auto barrier_code = bibendovsky::UpdateBarrierTable(level, switch_x, switch_y);
+	bibendovsky::UpdateSwitchCodes(x, y, barrier_code);
 	return barrier_code;
 }
 

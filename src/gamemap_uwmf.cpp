@@ -144,6 +144,11 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.showSky = sc->boolean;
 	}
+	else CheckKey("switchtextureeast")
+	{
+		sc.MustGetToken(TK_StringConst);
+		tile.switchTextureEast = sc->str;
+	}
 
 	EndParseBlock
 }
