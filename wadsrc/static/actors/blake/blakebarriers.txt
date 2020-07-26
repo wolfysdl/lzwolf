@@ -106,6 +106,7 @@ actor ElectricArcBarrier : Barrier
 			ELCK A 1 bright A_Jump(256, 1, 2, 3)
 		ActiveLoop:
 			ELCK ABC 1.5 bright A_BarrierAnimDelay A_BarrierTransition
+			ELCK C 1.0 bright A_Explode(500, 16, XF_HURTSOURCE, false, 16)
 			loop
 		Inactive:
 			ELCK D 1 A_ChangeFlag("SOLID", false)
@@ -141,6 +142,7 @@ actor ElectricPostBarrier : Barrier
 			ELCP A 1 bright A_Jump(256, 1, 2, 3)
 		ActiveLoop:
 			ELCP ABC 1.5 bright A_BarrierAnimDelay A_BarrierTransition
+			ELCP C 1.0 bright A_Explode(500, 16, XF_HURTSOURCE, false, 16)
 			loop
 		Inactive:
 			ELCP D 1 A_ChangeFlag("SOLID", false)
