@@ -114,11 +114,11 @@ graphics
 	"TITLE",           // 107
 	"PROMO1",          // 108
 	"PROMO2",          // 109
-	"WEAPON1",         // 110
-	"WEAPON2",         // 111
-	"WEAPON3",         // 112
-	"WEAPON4",         // 113
-	"WEAPON5",         // 114
+	"STWEAP1",         // 110
+	"STWEAP2",         // 111
+	"STWEAP3",         // 112
+	"STWEAP4",         // 113
+	"STWEAP5",         // 114
 	"WAIT",            // 115
 	"READY",           // 116
 	"FONTN032",        // 117 (space)

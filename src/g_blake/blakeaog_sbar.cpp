@@ -556,8 +556,8 @@ void BlakeAOGStatusBar::DrawStatusBar()
 		FTexture *weapon = TexMan(players[0].ReadyWeapon->icon);
 		if(weapon)
 		{
-			stx = 248;
-			sty = 176;
+			stx = 176;
+			sty = 152;
 			stw = weapon->GetScaledWidthDouble();
 			sth = weapon->GetScaledHeightDouble();
 			screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
