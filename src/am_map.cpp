@@ -816,6 +816,7 @@ void AutoMap::Draw()
 	if(msg)
 	{
 		Printf("%s\n", (*msg).c_str());
+		printf("%s\n", (*msg).c_str());
 	}
 
 	const fixed pany = FixedMul(ampany, amcos) - FixedMul(ampanx, amsin);
