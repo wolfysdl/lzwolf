@@ -210,6 +210,7 @@ protected:
 
 	void ParseStringArrayAssignment(TArray<FString> &dest)
 	{
+		dest.Clear();
 		sc.MustGetToken('=');
 		do
 		{
@@ -596,6 +597,10 @@ protected:
 
 GameInfo gameinfo;
 
+GameInfo::GameInfo() : PageIndexText("pg %d of %d")
+{
+}
+
 class GameInfoBlockParser : public MapInfoBlockParser
 {
 public:
@@ -775,6 +780,8 @@ protected:
 			ParseFontColorAssignment(gameinfo.FontColors[GameInfo::HIGHSCORES]);
 		else if(key.CompareNoCase("pageindexfontcolor") == 0)
 			ParseFontColorAssignment(gameinfo.FontColors[GameInfo::PAGEINDEX]);
+		else if(key.CompareNoCase("pageindextext") == 0)
+			ParseStringAssignment(gameinfo.PageIndexText);
 		else if(key.CompareNoCase("psyched") == 0)
 		{
 			ParseColorArrayAssignment(gameinfo.PsychedColors, 2);

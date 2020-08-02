@@ -1443,7 +1443,7 @@ SD_StartMusic(const char* chunk)
 
 	if (MusicMode == smm_AdLib)
 	{
-		int lumpNum = Wads.CheckNumForName(chunk, ns_music);
+		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
 		if(lumpNum == -1)
 			return;
 
@@ -1509,7 +1509,7 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 
 	if (MusicMode == smm_AdLib)
 	{
-		int lumpNum = Wads.CheckNumForName(chunk, ns_music);
+		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
 		if(lumpNum == -1)
 			return;
 
