@@ -65,6 +65,9 @@ enum
 	AMETA_DamageResistances,
 	AMETA_HaloLights,
 	AMETA_ZoneLights,
+	AMETA_FilterposWraps,
+	AMETA_FilterposThrusts,
+	AMETA_FilterposWaves,
 	AMETA_EnemyFactions,
 	AMETA_PickupMessage,
 	AMETA_Obituary,			// string (player was killed by this actor)
@@ -79,6 +82,16 @@ enum
 
 typedef TFlags<ActorFlag> ActorFlags;
 DEFINE_TFLAGS_OPERATORS (ActorFlags)
+
+namespace FilterposThrustSource
+{
+	enum e
+	{
+		forwardThrust,
+		sideThrust,
+		rotation,
+	};
+}
 
 typedef TFlags<ExtraActorFlag> ExtraActorFlags;
 DEFINE_TFLAGS_OPERATORS (ExtraActorFlags)
@@ -138,6 +151,7 @@ class AActor : public Thinker,
 				int             id;
 				int             light;
 				double          radius;
+				const ClassDef  *littype;
 		};
 		typedef LinkedList<HaloLight> HaloLightList;
 
@@ -148,6 +162,35 @@ class AActor : public Thinker,
 				int             light;
 		};
 		typedef LinkedList<ZoneLight> ZoneLightList;
+
+		struct FilterposWrap
+		{
+			public:
+				int             id;
+				double          x1,x2;
+				unsigned int    axis;
+		};
+		typedef LinkedList<FilterposWrap> FilterposWrapList;
+
+		struct FilterposThrust
+		{
+			public:
+				int             id;
+				unsigned int    axis;
+				FilterposThrustSource::e src;
+		};
+		typedef LinkedList<FilterposThrust> FilterposThrustList;
+
+		struct FilterposWave
+		{
+			public:
+				int             id;
+				unsigned int    axis;
+				double          amplitude;
+				double          period;
+				int             usesine;
+		};
+		typedef LinkedList<FilterposWave> FilterposWaveList;
 
 		struct EnemyFaction
 		{
@@ -177,6 +220,9 @@ class AActor : public Thinker,
 		DamageResistanceList		*GetDamageResistanceList() const;
 		HaloLightList		*GetHaloLightList() const;
 		ZoneLightList		*GetZoneLightList() const;
+		FilterposWrapList		*GetFilterposWrapList() const;
+		FilterposThrustList		*GetFilterposThrustList() const;
+		FilterposWaveList		*GetFilterposWaveList() const;
 		EnemyFactionList		*GetEnemyFactionList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
@@ -197,8 +243,12 @@ class AActor : public Thinker,
 
 		virtual void	Tick();
 		virtual void	Touch(AActor *toucher) {}
+		void            ApplyFilterpos (FilterposWrap wrap);
+		void            ApplyFilterpos (FilterposThrust thrust);
+		void            ApplyFilterpos (FilterposWave wave);
 
 		fixed           &GetCoordRef (unsigned int axis);
+		fixed           &GetFilterposWaveOldDelta (int id);
 
 		void PrintInventory();
 
@@ -207,6 +257,9 @@ class AActor : public Thinker,
 		static PointerIndexTable<DamageResistanceList> damageResistances;
 		static PointerIndexTable<HaloLightList> haloLights;
 		static PointerIndexTable<ZoneLightList> zoneLights;
+		static PointerIndexTable<FilterposWrapList> filterposWraps;
+		static PointerIndexTable<FilterposThrustList> filterposThrusts;
+		static PointerIndexTable<FilterposWaveList> filterposWaves;
 		static PointerIndexTable<EnemyFactionList> enemyFactions;
 
 		// Spawned actor ID
@@ -290,8 +343,15 @@ class AActor : public Thinker,
 		int         picX, picY;
 		int         haloLightMask;
 		int         zoneLightMask;
+		const ClassDef  *litfilter;
 		int         singlespawn;
 
+		struct FilterposWaveLastMove
+		{
+			int id;
+			fixed delta;
+		};
+		TArray<FilterposWaveLastMove> filterposwaveLastMoves;
 		const ClassDef  *faction;
 		std::pair<bool,int> spawnThingNum;
 		int			activationtype;	// How the thing behaves when activated with USESPECIAL or BUMPSPECIAL
@@ -340,6 +400,14 @@ public:
 	void Serialize(FArchive &arc);
 
 	TObjPtr<AActor> actualObject;
+};
+
+class ALit : public AActor
+{
+	DECLARE_NATIVE_CLASS(Lit, Actor)
+
+	public:
+		const ClassDef	*GetLitType() const;
 };
 
 namespace ActorSpawnID

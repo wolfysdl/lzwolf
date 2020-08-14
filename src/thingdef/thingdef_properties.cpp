@@ -307,6 +307,60 @@ HANDLE_PROPERTY(faction)
 		defaults->faction = ClassDef::FindClassTentative(type, NATIVE_CLASS(Faction));
 }
 
+HANDLE_PROPERTY(filterposthrust)
+{
+	INT_PARAM(axis, 0);
+	INT_PARAM(src, 1);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposThrusts, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposThrusts))
+		cls->Meta.SetMetaInt(AMETA_FilterposThrusts, AActor::filterposThrusts.Push(new AActor::FilterposThrustList()));
+
+	AActor::FilterposThrust filterposThrust;
+	filterposThrust.id = cls->GetNextFilterposId();
+	filterposThrust.axis = axis;
+	filterposThrust.src = (FilterposThrustSource::e)src;
+
+	AActor::filterposThrusts[cls->Meta.GetMetaInt(AMETA_FilterposThrusts)]->Push(filterposThrust);
+}
+
+HANDLE_PROPERTY(filterposwave)
+{
+	INT_PARAM(axis, 0);
+	FLOAT_PARAM(amplitude, 1);
+	FLOAT_PARAM(period, 2);
+	INT_PARAM(usesine, 3);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposWaves, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWaves))
+		cls->Meta.SetMetaInt(AMETA_FilterposWaves, AActor::filterposWaves.Push(new AActor::FilterposWaveList()));
+
+	AActor::FilterposWave filterposWave;
+	filterposWave.id = cls->GetNextFilterposId();
+	filterposWave.axis = axis;
+	filterposWave.amplitude = amplitude;
+	filterposWave.period = period;
+	filterposWave.usesine = usesine;
+
+	AActor::filterposWaves[cls->Meta.GetMetaInt(AMETA_FilterposWaves)]->Push(filterposWave);
+}
+
+HANDLE_PROPERTY(filterposwrap)
+{
+	FLOAT_PARAM(x1, 0);
+	FLOAT_PARAM(x2, 1);
+	INT_PARAM(axis, 2);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposWraps, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWraps))
+		cls->Meta.SetMetaInt(AMETA_FilterposWraps, AActor::filterposWraps.Push(new AActor::FilterposWrapList()));
+
+	AActor::FilterposWrap filterposWrap;
+	filterposWrap.id = cls->GetNextFilterposId();
+	filterposWrap.x1 = x1;
+	filterposWrap.x2 = x2;
+	filterposWrap.axis = axis;
+
+	AActor::filterposWraps[cls->Meta.GetMetaInt(AMETA_FilterposWraps)]->Push(filterposWrap);
+}
+
 HANDLE_PROPERTY(forwardmove)
 {
 	FIXED_PARAM(forwardmove1, 0);
@@ -340,6 +394,12 @@ HANDLE_PROPERTY(halolight)
 	haloLight.id = id;
 	haloLight.radius = radius;
 	haloLight.light = light;
+
+	if (PARAM_COUNT == 4)
+	{
+		STRING_PARAM(littype, 3);
+		haloLight.littype = ClassDef::FindClassTentative(littype, NATIVE_CLASS(Lit));
+	}
 
 	AActor::haloLights[cls->Meta.GetMetaInt(AMETA_HaloLights)]->Push(haloLight);
 }
@@ -393,6 +453,15 @@ HANDLE_PROPERTY(interhubamount)
 {
 	INT_PARAM(amt, 0);
 	((AInventory *)defaults)->interhubamount = amt;
+}
+
+HANDLE_PROPERTY(litfilter)
+{
+	STRING_PARAM(type, 0);
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		defaults->litfilter = NULL;
+	else
+		defaults->litfilter = ClassDef::FindClassTentative(type, NATIVE_CLASS(Lit));
 }
 
 HANDLE_PROPERTY(loaded)
@@ -846,6 +915,9 @@ extern const PropDef properties[] =
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP(enemyfaction, Actor, S),
 	DEFINE_PROP(faction, Actor, S),
+	DEFINE_PROP(filterposthrust, Actor, II),
+	DEFINE_PROP(filterposwave, Actor, IFFI),
+	DEFINE_PROP(filterposwrap, Actor, FFI),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(halolight, Actor, IFI_S),
@@ -855,6 +927,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
+	DEFINE_PROP(litfilter, Actor, S),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),
