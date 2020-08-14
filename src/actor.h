@@ -159,7 +159,8 @@ class AActor : public Thinker,
 		{
 			public:
 				int             id;
-				int             light;
+				int             light = 0;
+				const ClassDef  *littype = nullptr;
 		};
 		typedef LinkedList<ZoneLight> ZoneLightList;
 
