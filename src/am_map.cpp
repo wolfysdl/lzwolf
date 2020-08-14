@@ -324,10 +324,11 @@ public:
             0 )                    /* listen for clients, up to MaxConnects */
             report( "listen", 1 ); /* terminate */
 
-        fprintf( stderr, "Listening on port %i for clients...\n", PortNumber );
         /* a server traditionally listens indefinitely */
+        fprintf( stderr, "Listening on port %i for clients...\n", PortNumber );
         while( !m_abortloop )
         {
+
             struct sockaddr_in caddr;  /* client address */
             unsigned int len = sizeof( caddr ); /* address length could change */
 
@@ -347,15 +348,26 @@ public:
                 continue;
             }
 
-            /* read from client */
-            char buffer[ BuffSize + 1 ];
-            memset( buffer, '\0', sizeof( buffer ) );
-            int count = read( client_fd, buffer, sizeof( buffer ) );
-            if( count > 0 )
+            fprintf( stderr, "Connected\n" );
+            while( !m_abortloop )
             {
-                std::lock_guard< std::mutex > lk( m_mut );
-                m_msg_queue.push_back( buffer );
+                /* read from client */
+                char buffer[ 128 ];
+                memset( buffer, '\0', sizeof( buffer ) );
+                int count = read( client_fd, buffer, sizeof( buffer ) );
+                if( count == 128 )
+                {
+                    std::lock_guard< std::mutex > lk( m_mut );
+                    m_msg_queue.push_back( buffer );
+                }
+
+                if( count < 128 || strcmp(buffer, "QUIT") == 0 )
+                {
+                    fprintf( stderr, "Got quit, breaking connection\n" );
+                    break;
+                }
             }
+
             close( client_fd ); /* break connection */
         }                       /* while(1) */
     }
