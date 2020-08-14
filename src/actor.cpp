@@ -153,6 +153,9 @@ PointerIndexTable<AActor::DropList> AActor::dropItems;
 PointerIndexTable<AActor::DamageResistanceList> AActor::damageResistances;
 PointerIndexTable<AActor::HaloLightList> AActor::haloLights;
 PointerIndexTable<AActor::ZoneLightList> AActor::zoneLights;
+PointerIndexTable<AActor::FilterposWrapList> AActor::filterposWraps;
+PointerIndexTable<AActor::FilterposThrustList> AActor::filterposThrusts;
+PointerIndexTable<AActor::FilterposWaveList> AActor::filterposWaves;
 PointerIndexTable<AActor::EnemyFactionList> AActor::enemyFactions;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
@@ -459,6 +462,30 @@ AActor::ZoneLightList *AActor::GetZoneLightList() const
 	return zoneLights[zonelightsIndex];
 }
 
+AActor::FilterposWrapList *AActor::GetFilterposWrapList() const
+{
+	int filterposwrapsIndex = GetClass()->Meta.GetMetaInt(AMETA_FilterposWraps, -1);
+	if(filterposwrapsIndex == -1)
+		return NULL;
+	return filterposWraps[filterposwrapsIndex];
+}
+
+AActor::FilterposThrustList *AActor::GetFilterposThrustList() const
+{
+	int filterposthrustsIndex = GetClass()->Meta.GetMetaInt(AMETA_FilterposThrusts, -1);
+	if(filterposthrustsIndex == -1)
+		return NULL;
+	return filterposThrusts[filterposthrustsIndex];
+}
+
+AActor::FilterposWaveList *AActor::GetFilterposWaveList() const
+{
+	int filterposwavesIndex = GetClass()->Meta.GetMetaInt(AMETA_FilterposWaves, -1);
+	if(filterposwavesIndex == -1)
+		return NULL;
+	return filterposWaves[filterposwavesIndex];
+}
+
 AActor::EnemyFactionList *AActor::GetEnemyFactionList() const
 {
 	int enemyfactionsIndex = GetClass()->Meta.GetMetaInt(AMETA_EnemyFactions, -1);
@@ -550,6 +577,12 @@ void AActor::PrintInventory()
 	}
 }
 
+FArchive &operator<< (FArchive &arc, AActor::FilterposWaveLastMove &lastMove)
+{
+	arc << lastMove.id << lastMove.delta;
+	return arc;
+}
+
 void AActor::Serialize(FArchive &arc)
 {
 	bool hasActorRef = actors.IsLinked(this);
@@ -617,7 +650,9 @@ void AActor::Serialize(FArchive &arc)
 	arc << hasActorRef;
 	arc << haloLightMask;
 	arc << zoneLightMask;
+	arc << litfilter;
 	arc << singlespawn;
+	arc << filterposwaveLastMoves;
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)
 		arc << projectilepassheight;
@@ -698,11 +733,177 @@ bool AActor::Teleport(fixed x, fixed y, angle_t angle, bool nofog)
 	return true;
 }
 
+void AActor::ApplyFilterpos (FilterposWrap wrap)
+{
+	const double delta = wrap.x2 - wrap.x1;
+	if (wrap.axis >= 3 || delta <= 0)
+		Quit ("FilterposWrap has invalid parameters!");
+
+	double v[3];
+	v[0] = FIXED2FLOAT(x);
+	v[1] = FIXED2FLOAT(y);
+	v[2] = FIXED2FLOAT(z);
+
+	double &val = v[wrap.axis];
+	if (val < wrap.x1)
+		val += delta;
+	if (val > wrap.x2)
+		val -= delta;
+
+	x = FLOAT2FIXED(v[0]);
+	y = FLOAT2FIXED(v[1]);
+	z = FLOAT2FIXED(v[2]);
+}
+
 fixed &AActor::GetCoordRef (unsigned int axis)
 {
 	if (axis >= 3)
 		Quit ("Invalid axis!");
 	return (axis==0 ? x : (axis==1 ? y : z));
+}
+
+void AActor::ApplyFilterpos (FilterposThrust thrust)
+{
+	fixed move = 0;
+	switch (thrust.src)
+	{
+	case FilterposThrustSource::forwardThrust:
+		move = players[0].mo->forwardthrust;
+		break;
+	case FilterposThrustSource::sideThrust:
+		move = players[0].mo->sidethrust;
+		break;
+	case FilterposThrustSource::rotation:
+		move = players[0].mo->rotthrust * -50;
+		break;
+	}
+	GetCoordRef (thrust.axis) -= move;
+}
+
+fixed &AActor::GetFilterposWaveOldDelta (int id)
+{
+	unsigned int i;
+	for (i = 0; i < filterposwaveLastMoves.Size(); i++)
+	{
+		FilterposWaveLastMove &lm = filterposwaveLastMoves[i];
+		if (lm.id == id)
+			return lm.delta;
+	}
+
+	FilterposWaveLastMove lm;
+	lm.id = id;
+	lm.delta = 0;
+	return filterposwaveLastMoves[filterposwaveLastMoves.Push(lm)].delta;
+}
+
+void AActor::ApplyFilterpos (FilterposWave wave)
+{
+	const uint32_t durTicks = (uint32_t)(wave.period * 1000);
+	if (durTicks <= 0)
+		Quit ("Invalid duration!");
+	const uint32_t currentTick = (SDL_GetTicks() % durTicks);
+	const uint32_t curFineangle = currentTick*FINEANGLES/durTicks;
+	const fixed delta = FLOAT2FIXED(wave.amplitude *
+		FIXED2FLOAT((wave.usesine ? finesine : finecosine)[curFineangle]));
+	fixed &olddelta = GetFilterposWaveOldDelta (wave.id);
+	GetCoordRef (wave.axis) += delta - olddelta;
+	olddelta = delta;
+}
+
+namespace FilterposApplier
+{
+	class Base
+	{
+	public:
+		virtual ~Base() { }
+
+		virtual void Execute (AActor *actor) = 0;
+	};
+
+	template <typename T>
+	class Filter : public Base
+	{
+		T v;
+
+	public:
+		explicit Filter(T v_) : v(v_)
+		{
+		}
+
+		virtual void Execute (AActor *actor)
+		{
+			actor->ApplyFilterpos (v);
+		}
+	};
+
+	template <typename T>
+	TSharedPtr<Base> MakeFilter (T v)
+	{
+		return new Filter<T>(v);
+	}
+	
+	typedef std::map<int, TSharedPtr<Base> > ExecMap;
+
+	void InitExecMap (AActor *actor, ExecMap &m)
+	{
+		{
+			typedef AActor::FilterposWrapList Li;
+
+			Li *li = actor->GetFilterposWrapList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator filterposWrap = item;
+					m[filterposWrap->id] = MakeFilter (*filterposWrap);
+				}
+				while(item.Next());
+			}
+		}
+
+		{
+			typedef AActor::FilterposThrustList Li;
+
+			Li *li = actor->GetFilterposThrustList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator filterposThrust = item;
+					m[filterposThrust->id] = MakeFilter (*filterposThrust);
+				}
+				while(item.Next());
+			}
+		}
+
+		{
+			typedef AActor::FilterposWaveList Li;
+
+			Li *li = actor->GetFilterposWaveList();
+			if (li)
+			{
+				Li::Iterator item = li->Head();
+				do
+				{
+					Li::Iterator filterposWave = item;
+					m[filterposWave->id] = MakeFilter (*filterposWave);
+				}
+				while(item.Next());
+			}
+		}
+	}
+
+	void Execute (AActor *actor)
+	{
+		ExecMap m;
+		InitExecMap (actor, m);
+
+		int id;
+		for (id = 0; m.find(id) != m.end(); ++id)
+			m.find(id)->second->Execute (actor);
+	}
 }
 
 void AActor::Activate (AActor *activator)
@@ -744,6 +945,8 @@ void AActor::Tick()
 
 	if(flags & FL_MISSILE)
 		T_Projectile(this);
+	
+	FilterposApplier::Execute (this);
 }
 
 // Remove an actor from the game world without destroying it.  This will allow
@@ -952,4 +1155,16 @@ void FinishTravel ()
 		}
 	}
 	while(node.Next());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_CLASS(Lit)
+
+const ClassDef *ALit::GetLitType() const
+{
+	const ClassDef *cls = GetClass();
+	while(cls->GetParent() != NATIVE_CLASS(Lit))
+		cls = cls->GetParent();
+	return cls;
 }

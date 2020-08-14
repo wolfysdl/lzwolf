@@ -309,6 +309,7 @@ class ClassDef
 		static void				LoadActors();
 		bool					IsStateOwner(const Frame *frame) const { return frame >= &frameList[0] && frame < &frameList[frameList.Size()]; }
 		static void				UnloadActors();
+		int                     GetNextFilterposId ();
 
 		unsigned int			ClassIndex;
 		MetaTable				Meta;
@@ -359,6 +360,7 @@ class ClassDef
 		DObject			*(*ConstructNative)(const ClassDef *, void *);
 
 		static bool		bShutdown;
+		int             filterposRunningId;
 };
 
 // Functions below are actually a part of dobject.h, but moved here for dependency reasons
