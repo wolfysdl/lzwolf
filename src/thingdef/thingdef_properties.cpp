@@ -394,6 +394,7 @@ HANDLE_PROPERTY(halolight)
 	haloLight.id = id;
 	haloLight.radius = radius;
 	haloLight.light = light;
+	haloLight.littype = nullptr;
 
 	if (PARAM_COUNT == 4)
 	{
@@ -859,6 +860,13 @@ HANDLE_PROPERTY(zonelight)
 	AActor::ZoneLight zoneLight;
 	zoneLight.id = id;
 	zoneLight.light = light;
+	zoneLight.littype = nullptr;
+
+	if (PARAM_COUNT == 3)
+	{
+		STRING_PARAM(littype, 2);
+		zoneLight.littype = ClassDef::FindClassTentative(littype, NATIVE_CLASS(Lit));
+	}
 
 	AActor::zoneLights[cls->Meta.GetMetaInt(AMETA_ZoneLights)]->Push(zoneLight);
 }
@@ -973,7 +981,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(xscale, Actor, F),
 	DEFINE_PROP(yadjust, Weapon, F),
 	DEFINE_PROP(yscale, Actor, F),
-	DEFINE_PROP(zonelight, Actor, II),
+	DEFINE_PROP(zonelight, Actor, II_S),
 
 	{ NULL, NULL, NULL, NULL }
 };

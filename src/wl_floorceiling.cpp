@@ -66,7 +66,7 @@ namespace Shading
 	std::vector<Halo> halos;
 	std::map<Tile::Pos, Tile> tiles;
 	typedef unsigned short ZoneId;
-	std::map<ZoneId, int> zoneLightMap;
+	std::map<ZoneId, AActor::ZoneLight> zoneLightMap;
 
 	void PopulateHalos (void)
 	{
@@ -122,7 +122,14 @@ namespace Shading
 								unsigned int cury = check->y>>TILESHIFT;
 								MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
 								if (spot->zone != NULL)
-									zoneLightMap[spot->zone->index] += zoneLight->light<<3;
+								{
+									auto& zl = zoneLightMap[spot->zone->index];
+									zl.light += zoneLight->light<<3;
+									if (zoneLight->littype != nullptr)
+									{
+										zl.littype = zoneLight->littype;
+									}
+								}
 							}
 						}
 					}
@@ -324,7 +331,9 @@ namespace Shading
 					if (zonex > -1 && oldzone != INT_MAX &&
 						zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 					{
-						InsertSpan (zonex-lx, x-lx, spans, zoneLightMap.find((ZoneId)oldzone)->second, NULL);
+						const auto& zoneLight =
+							zoneLightMap.find((ZoneId)oldzone)->second;
+						InsertSpan (zonex-lx, x-lx, spans, zoneLight.light, zoneLight.littype);
 					}
 					oldzone = curzone;
 					zonex = x;
@@ -337,7 +346,9 @@ namespace Shading
 			if (zonex > -1 && INT_MAX != oldzone && zonex<rx &&
 				zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 			{
-				InsertSpan (zonex, rx, spans, zoneLightMap.find((ZoneId)oldzone)->second, NULL);
+				const auto& zoneLight =
+					zoneLightMap.find((ZoneId)oldzone)->second;
+				InsertSpan (zonex-lx, vw-1, spans, zoneLight.light, zoneLight.littype);
 			}
 
 			gu = gu0;
@@ -473,8 +484,11 @@ namespace Shading
 				spot = doorspot->GetAdjacent(doordir, !(oldmapxdoor&1));
 			}
 		}
-		if (spot && spot->zone != NULL && zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
-			light += zoneLightMap.find(spot->zone->index)->second;
+		if (spot && spot->zone != NULL &&
+				zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
+		{
+			light += zoneLightMap.find(spot->zone->index)->second.light;
+		}
 
 		return light;
 	}
