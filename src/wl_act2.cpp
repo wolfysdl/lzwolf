@@ -258,6 +258,12 @@ void T_Projectile (AActor *self)
 				if(check->player)
 					continue;
 			}
+			else if(self->target && self->target != check &&
+					(self->extraflags & FL_PROJHITENEMY) != 0 &&
+					(check->flags & FL_ISMONSTER) != 0)
+			{
+				// allow projectile with FL_PROJHITENEMY set to hit enemy
+			}
 			else
 			{
 				if(check->flags & FL_ISMONSTER)
@@ -322,7 +328,8 @@ ACTION_FUNCTION(A_CustomMissile)
 	enum
 	{
 		CMF_AIMOFFSET = 1,
-		CMF_AIMDIRECTION = 2
+		CMF_AIMDIRECTION = 2,
+		CMF_PROJHITENEMY = 4
 	};
 
 	ACTION_PARAM_STRING(missiletype, 0);
@@ -357,6 +364,8 @@ ACTION_FUNCTION(A_CustomMissile)
 		newobj->missileParent = self;
 	newobj->target = newobj->missileParent;
 	newobj->angle = iangle;
+	if (flags & CMF_PROJHITENEMY)
+		newobj->extraflags |= FL_PROJHITENEMY;
 
 	newobj->velx = FixedMul(newobj->speed,finecosine[iangle>>ANGLETOFINESHIFT]);
 	newobj->vely = -FixedMul(newobj->speed,finesine[iangle>>ANGLETOFINESHIFT]);
