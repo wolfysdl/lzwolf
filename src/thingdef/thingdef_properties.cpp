@@ -849,6 +849,12 @@ HANDLE_PROPERTY(yadjust)
 	def->yadjust = adjust;
 }
 
+HANDLE_PROPERTY(zoneindex)
+{
+	INT_PARAM(zoneindex, 0);
+	defaults->zoneindex = zoneindex;
+}
+
 HANDLE_PROPERTY(zonelight)
 {
 	INT_PARAM(id, 0);
@@ -981,6 +987,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(xscale, Actor, F),
 	DEFINE_PROP(yadjust, Weapon, F),
 	DEFINE_PROP(yscale, Actor, F),
+	DEFINE_PROP(zoneindex, Actor, I),
 	DEFINE_PROP(zonelight, Actor, II_S),
 
 	{ NULL, NULL, NULL, NULL }

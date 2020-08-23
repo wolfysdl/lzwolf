@@ -618,7 +618,8 @@ void AActor::Serialize(FArchive &arc)
 		<< viewx
 		<< viewheight
 		<< transx
-		<< transy;
+		<< transy
+		<< zoneindex;
 	if(GameSave::SaveVersion >= 1393719642)
 		arc << overheadIcon;
 	arc << sighttime
@@ -1100,6 +1101,7 @@ int32_t AActor::SpawnHealth() const
 DEFINE_SYMBOL(Actor, angle)
 DEFINE_SYMBOL(Actor, health)
 DEFINE_SYMBOL(Actor, loaded)
+DEFINE_SYMBOL(Actor, zoneindex)
 
 //==============================================================================
 
