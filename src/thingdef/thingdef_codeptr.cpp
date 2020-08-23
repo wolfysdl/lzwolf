@@ -911,6 +911,22 @@ ACTION_FUNCTION(A_TakeInventory)
 	return false;
 }
 
+ACTION_FUNCTION(A_UpdateZoneIndex)
+{
+	auto player = players[0].mo;
+	auto spot = map->GetSpot(player->tilex, player->tiley, 0);
+	if (spot && spot->zone)
+	{
+		self->zoneindex = spot->zone->index;
+	}
+	else
+	{
+		self->zoneindex = 0;
+	}
+	printf("%p: %d\n", self, self->zoneindex);
+	return true;
+}
+
 #include "wl_main.h"
 ACTION_FUNCTION(A_ZoomFactor)
 {

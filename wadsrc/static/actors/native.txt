@@ -77,10 +77,12 @@ actor Actor native
 	projectilepassheight -1
 	singlespawn 0
 	loaded 0
+	zoneindex 0
 
 	native angle_t angle;
 	native int health;
 	native int loaded;
+	native int zoneindex;
 
 	action native A_ActiveSound(int chance=256);
 	action native A_AlertMonsters();
@@ -123,6 +125,7 @@ actor Actor native
 	action native A_Stop();
 	action native A_StopSound(int slot = CHAN_VOICE);	// Bad default but that's what is originally was...
 	action native A_TakeInventory(string type, int amount);
+	action native A_UpdateZoneIndex();
 	action native A_Wander();
 	action native A_WolfAttack(int flags = 0, string sound = "*", float snipe = 1.0, int maxdamage = 64, int blocksize = 128, int pointblank = 2, int longrange = 4, float runspeed = 160.0);
 
