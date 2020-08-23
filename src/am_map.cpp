@@ -450,8 +450,10 @@ public:
             return false;
         }
 
+        auto cmdhost = getenv("COMMAND_HOST") ? getenv("COMMAND_HOST") : Host;
+
         /* get the address of the host */
-        struct hostent* hptr = gethostbyname( Host ); /* localhost: 127.0.0.1 */
+        struct hostent* hptr = gethostbyname( cmdhost ); /* localhost: 127.0.0.1 */
         if( !hptr )
         {
             report( "gethostbyname", 0 ); /* is hptr NULL? */
