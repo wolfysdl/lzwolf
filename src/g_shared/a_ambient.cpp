@@ -55,12 +55,14 @@ END_POINTERS
 
 void AAmbient::JumpState(const Frame *frame)
 {
+	auto get_zoneind = [](AActor *self) {
+		auto spot = map->GetSpot(self->tilex, self->tiley, 0);
+		const auto ind = (spot && spot->zone ? spot->zone->index : 0);
+		return ind;
+	};
+
 	auto player = players[0].mo;
-
-	auto spot = map->GetSpot(player->tilex, player->tiley, 0);
-	const auto ind = (spot && spot->zone ? spot->zone->index : 0);
-
-	if (ind == zoneindex)
+	if (get_zoneind(player) == get_zoneind(this))
 	{
 		SetState(frame);
 	}
