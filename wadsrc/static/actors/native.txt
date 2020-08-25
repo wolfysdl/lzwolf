@@ -86,6 +86,8 @@ actor Actor native
 
 	action native A_ActiveSound(int chance=256);
 	action native A_AlertMonsters();
+	action native A_AmbientJumpState(state frame);
+	action native A_AmbientPlay();
 	action native A_BossDeath();
 	action native A_CallSpecial(int special, int arg1=0, int arg2=0, int arg3=0, int arg4=0, int arg5=0);
 	action native A_ChangeFlag(string flag, bool value);
@@ -306,6 +308,42 @@ actor SwitchableDecoration native
 
 actor SwitchingDecoration : SwitchableDecoration native
 {
+}
+
+// Ambient: Ambient sounds -------------------------------------------------
+
+actor Ambient native
+{
+	ambient.lastwait 5
+	ambient.ambientsound "misc/end_bonus1"
+	zoneindex 18
+
+	states
+	{
+		Spawn:
+			TNT1 A 30
+		Check:
+			TNT1 A 180 A_AmbientJumpState("Play")
+			loop
+		Play:
+			TNT1 A 1 NOP A_AmbientPlay
+			goto Check
+		Wait1:
+			TNT1 A 360
+			goto Check
+		Wait2:
+			TNT1 A 480
+			goto Check
+		Wait3:
+			TNT1 A 720
+			goto Check
+		Wait4:
+			TNT1 A 960
+			goto Check
+		Wait5:
+			TNT1 A 1200
+			goto Check
+	}
 }
 
 // Random spawner ----------------------------------------------------------
