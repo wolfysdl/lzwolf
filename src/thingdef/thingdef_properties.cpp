@@ -36,6 +36,7 @@
 #include "actor.h"
 #include "thingdef.h"
 #include "a_inventory.h"
+#include "a_ambient.h"
 #include "a_playerpawn.h"
 #include "scanner.h"
 #include "thingdef/thingdef_type.h"
@@ -66,6 +67,12 @@ HANDLE_PROPERTY(activesound)
 {
 	STRING_PARAM(snd, 0);
 	defaults->activesound = snd;
+}
+
+HANDLE_PROPERTY(ambientsound)
+{
+	STRING_PARAM(snd, 0);
+	((AAmbient *)defaults)->ambientsound = snd;
 }
 
 HANDLE_PROPERTY(ammogive1)
@@ -454,6 +461,12 @@ HANDLE_PROPERTY(interhubamount)
 {
 	INT_PARAM(amt, 0);
 	((AInventory *)defaults)->interhubamount = amt;
+}
+
+HANDLE_PROPERTY(lastwait)
+{
+	INT_PARAM(amt, 0);
+	((AAmbient *)defaults)->lastwait = amt;
 }
 
 HANDLE_PROPERTY(litfilter)
@@ -904,6 +917,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(actionns, Actor, S),
 	DEFINE_PROP(activation, Actor, N),
 	DEFINE_PROP(activesound, Actor, S),
+	DEFINE_PROP(ambientsound, Ambient, S),
 	DEFINE_PROP(ammogive1, Weapon, I),
 	DEFINE_PROP(ammogive2, Weapon, I),
 	DEFINE_PROP(ammotype1, Weapon, S),
@@ -941,6 +955,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
 	DEFINE_PROP(interhubamount, Inventory, I),
+	DEFINE_PROP(lastwait, Ambient, I),
 	DEFINE_PROP(litfilter, Actor, S),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),

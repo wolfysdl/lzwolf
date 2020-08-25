@@ -44,6 +44,7 @@
 #include "g_mapinfo.h"
 #include "g_shared/a_deathcam.h"
 #include "g_shared/a_inventory.h"
+#include "g_shared/a_ambient.h"
 #include "lnspec.h"
 #include "m_random.h"
 #include "thingdef/thingdef.h"
@@ -153,6 +154,22 @@ ACTION_FUNCTION(A_ActiveSound)
 ACTION_FUNCTION(A_AlertMonsters)
 {
 	madenoise = true;
+	return true;
+}
+
+ACTION_FUNCTION(A_AmbientJumpState)
+{
+	ACTION_PARAM_STATE(frame, 0, NULL);
+
+	AAmbient* ambient_actor = reinterpret_cast<AAmbient*>(self);
+	ambient_actor->JumpState(frame);
+	return true;
+}
+
+ACTION_FUNCTION(A_AmbientPlay)
+{
+	AAmbient* ambient_actor = reinterpret_cast<AAmbient*>(self);
+	ambient_actor->PlaySound();
 	return true;
 }
 
@@ -923,7 +940,6 @@ ACTION_FUNCTION(A_UpdateZoneIndex)
 	{
 		self->zoneindex = 0;
 	}
-	printf("%p: %d\n", self, self->zoneindex);
 	return true;
 }
 
