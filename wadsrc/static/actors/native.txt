@@ -316,7 +316,6 @@ actor Ambient native
 {
 	ambient.lastwait 5
 	ambient.ambientsound "misc/end_bonus1"
-	zoneindex 18
 
 	states
 	{
