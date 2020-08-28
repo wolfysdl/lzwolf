@@ -1269,6 +1269,27 @@ namespace LoopedAudio
 		}
 	}
 
+	void setVolume (ObjId objId, double volume)
+	{
+		ChanMap::iterator it = chans.find(objId);
+		if (it != chans.end())
+		{
+			Chan &chan = it->second;
+
+			if (chan.channel != -1)
+			{
+				chan.volume = volume;
+
+				globalsoundpos *soundpos = &channelSoundPos[chan.channel];
+				if (soundpos->valid)
+				{
+					soundpos->volume = volume;
+					SD_SetChannelVolume (chan.channel, volume);
+				}
+			}
+		}
+	}
+
 	void Serialize(FArchive &arc)
 	{
 		arc << chans;

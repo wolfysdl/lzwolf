@@ -43,10 +43,7 @@ class AAmbient : public AActor
 	HAS_OBJECT_POINTERS
 
 	public:
-		FNameNoInit		ambientsound;
-		int             lastwait;
-
-		void JumpState(const Frame *frame);
+		void JumpState(const Frame *frame, bool enter);
 
 		void PlaySound();
 };

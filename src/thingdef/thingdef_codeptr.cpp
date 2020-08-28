@@ -160,16 +160,10 @@ ACTION_FUNCTION(A_AlertMonsters)
 ACTION_FUNCTION(A_AmbientJumpState)
 {
 	ACTION_PARAM_STATE(frame, 0, NULL);
+	ACTION_PARAM_BOOL(enter, 1);
 
 	AAmbient* ambient_actor = reinterpret_cast<AAmbient*>(self);
-	ambient_actor->JumpState(frame);
-	return true;
-}
-
-ACTION_FUNCTION(A_AmbientPlay)
-{
-	AAmbient* ambient_actor = reinterpret_cast<AAmbient*>(self);
-	ambient_actor->PlaySound();
+	ambient_actor->JumpState(frame, enter);
 	return true;
 }
 
@@ -823,6 +817,14 @@ ACTION_FUNCTION(A_SetTics)
 	}
 
 	self->ticcount = static_cast<int> (duration*2);
+	return true;
+}
+
+ACTION_FUNCTION(A_SetVolume)
+{
+	ACTION_PARAM_DOUBLE(volume, 0);
+
+	LoopedAudio::setVolume (self->spawnid, volume);
 	return true;
 }
 

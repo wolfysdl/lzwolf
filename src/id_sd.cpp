@@ -661,6 +661,11 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	return channel;
 }
 
+void SD_SetChannelVolume(int channel, double volume)
+{
+	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
+}
+
 void SD_ChannelFinished(int channel)
 {
 	SoundPlaying = FString();
