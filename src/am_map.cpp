@@ -425,6 +425,8 @@ private:
 };
 CIPCHandlerThread ipc_handler_thread;
 
+CVAR (String, ipc_command_host, "localhost", CVAR_ARCHIVE)
+
 class CCommandIssuer
 {
 public:
@@ -438,7 +440,7 @@ public:
     int send_msg( const char* msg ) const
     {
         static constexpr auto PortNumber = 9877;
-        static constexpr auto Host = "localhost";
+        //static constexpr auto Host = "localhost";
 
         /* fd for the socket */
         int sockfd = socket( AF_INET,     /* versus AF_LOCAL */
@@ -450,10 +452,9 @@ public:
             return false;
         }
 
-        auto cmdhost = getenv("COMMAND_HOST") ? getenv("COMMAND_HOST") : Host;
-
         /* get the address of the host */
-        struct hostent* hptr = gethostbyname( cmdhost ); /* localhost: 127.0.0.1 */
+        const char* host = ipc_command_host;
+        struct hostent* hptr = gethostbyname( host ); /* localhost: 127.0.0.1 */
         if( !hptr )
         {
             report( "gethostbyname", 0 ); /* is hptr NULL? */
