@@ -86,8 +86,7 @@ actor Actor native
 
 	action native A_ActiveSound(int chance=256);
 	action native A_AlertMonsters();
-	action native A_AmbientJumpState(state frame);
-	action native A_AmbientPlay();
+	action native A_AmbientJumpState(state frame, bool enter);
 	action native A_BossDeath();
 	action native A_CallSpecial(int special, int arg1=0, int arg2=0, int arg3=0, int arg4=0, int arg5=0);
 	action native A_ChangeFlag(string flag, bool value);
@@ -122,6 +121,7 @@ actor Actor native
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetProperty(string propName, auto value);
 	action native A_SetTics(float duration);
+	action native A_SetVolume(float volume);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
 	action native A_SpawnItemEx(string type, float xoffset = 0, float yoffset = 0, float zoffset = 0, float xvel = 0, float yvel = 0, float zvel = 0, float angle = 0, int flags = 0, int failchance = 0);
 	action native A_Stop();
@@ -314,33 +314,48 @@ actor SwitchingDecoration : SwitchableDecoration native
 
 actor Ambient native
 {
-	ambient.lastwait 5
-	ambient.ambientsound "misc/end_bonus1"
-
 	states
 	{
 		Spawn:
 			TNT1 A 30
 		Check:
-			TNT1 A 180 A_AmbientJumpState("Play")
+			TNT1 A 70 A_AmbientJumpState("Start", true)
 			loop
-		Play:
-			TNT1 A 1 NOP A_AmbientPlay
-			goto Check
-		Wait1:
-			TNT1 A 360
-			goto Check
-		Wait2:
-			TNT1 A 480
-			goto Check
-		Wait3:
-			TNT1 A 720
-			goto Check
-		Wait4:
-			TNT1 A 960
-			goto Check
-		Wait5:
-			TNT1 A 1200
+
+		Start:
+			TNT1 A 70 A_PlaySound("guard/sight", CHAN_AUTO, 0.2, true, ATTN_NONE)
+			goto StartLevel1
+		End:
+			TNT1 A 70 A_SetVolume(0.8)
+			goto EndLevel1
+			
+		StartLevel1:
+			TNT1 A 70 A_SetVolume(0.4)
+			goto StartLevel2
+		StartLevel2:
+			TNT1 A 70 A_SetVolume(0.6)
+			goto StartLevel3
+		StartLevel3:
+			TNT1 A 70 A_SetVolume(0.8)
+			goto StartLevel4
+		StartLevel4:
+			TNT1 A 70 A_SetVolume(1.0)
+			goto WaitEnd
+		WaitEnd:
+			TNT1 A 70 A_AmbientJumpState("End", false)
+			loop
+
+		EndLevel1:
+			TNT1 A 70 A_SetVolume(0.6)
+			goto EndLevel2
+		EndLevel2:
+			TNT1 A 70 A_SetVolume(0.4)
+			goto EndLevel3
+		EndLevel3:
+			TNT1 A 70 A_SetVolume(0.2)
+			goto EndLevel4
+		EndLevel4:
+			TNT1 A 70 A_StopSound
 			goto Check
 	}
 }

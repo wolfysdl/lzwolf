@@ -53,7 +53,7 @@ END_POINTERS
 //
 //===========================================================================
 
-void AAmbient::JumpState(const Frame *frame)
+void AAmbient::JumpState(const Frame *frame, bool enter)
 {
 	auto get_zoneind = [](AActor *self) {
 		auto spot = map->GetSpot(self->tilex, self->tiley, 0);
@@ -62,29 +62,8 @@ void AAmbient::JumpState(const Frame *frame)
 	};
 
 	auto player = players[0].mo;
-	if (get_zoneind(player) == get_zoneind(this))
+	if ((get_zoneind(player) == get_zoneind(this)) == enter)
 	{
 		SetState(frame);
 	}
-}
-
-//===========================================================================
-//
-// AAmbient :: PlaySound
-//
-// Play ambient sound
-//
-//===========================================================================
-
-FRandom pr_ambient("Ambient");
-void AAmbient::PlaySound()
-{
-	SD_PlaySound(ambientsound);
-
-	FString waitStateName;
-	waitStateName.Format("Wait%d", 1 + pr_ambient(lastwait));
-
-	auto state = FindState(waitStateName);
-	if (state)
-		SetState(state);
 }
