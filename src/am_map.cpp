@@ -82,6 +82,8 @@
 #include <netdb.h>
 #include <stdio.h> 
 #include <sys/shm.h> 
+#include <stdlib.h>
+#include <sys/time.h>
 
 static constexpr auto shared_segment_size = 0x6400;
 static constexpr auto SemaphoreName = "mysemaphore";
@@ -103,7 +105,12 @@ public:
                              IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR );
         if( segment_id == -1 )
         {
-            report_and_exit( "shmget" );
+            segment_id = shmget( shmkey, shared_segment_size,
+                                 IPC_EXCL | S_IRUSR | S_IWUSR );
+            if( segment_id == -1 )
+            {
+                report_and_exit( "shmget" );
+            }
         }
         /* Attach the shared memory segment.  */
         shared_memory = ( char* ) shmat( segment_id, 0, 0 );
@@ -283,7 +290,7 @@ public:
         {
             {
                 std::lock_guard< std::mutex > lk( m_mut );
-                m_abortloop = true;
+                m_abortloop = m_abortclient = true;
             }
 
             m_thread.join();
@@ -348,9 +355,34 @@ public:
                 continue;
             }
 
-            fprintf( stderr, "Connected\n" );
-            while( !m_abortloop )
+            Printf( "IPC handler accepted connection\n" );
+            while( !m_abortclient )
             {
+                fd_set rfds;
+                struct timeval tv;
+                int retval;
+
+                FD_ZERO( &rfds );
+                FD_SET( client_fd, &rfds );
+
+                tv.tv_sec = 1;
+                tv.tv_usec = 0;
+
+                retval = select( client_fd+1, &rfds, NULL, NULL, &tv );
+                if( retval == -1 )
+                {
+                    report( "select", 0 );
+                    continue;
+                }
+                else if( retval )
+                {
+                    // data available
+                }
+                else // no data in 1 second
+                {
+                    continue;
+                }
+
                 /* read from client */
                 char buffer[ 128 ];
                 memset( buffer, '\0', sizeof( buffer ) );
@@ -368,6 +400,7 @@ public:
                 }
             }
 
+            m_abortclient = false;
             close( client_fd ); /* break connection */
         }                       /* while(1) */
     }
@@ -415,15 +448,26 @@ public:
         return boost::none;
     }
 
+    void AbortClient()
+    {
+        m_abortclient = true;
+    }
+
 private:
     std::thread m_thread;
     std::mutex m_mut;
     bool m_abortloop = false;
+    bool m_abortclient = false;
     std::deque< std::string > m_msg_queue;
     CLogControl m_log_control;
     Uint32 m_last_ticks = 0;
 };
 CIPCHandlerThread ipc_handler_thread;
+
+CCMD(abortipcclient)
+{
+    ipc_handler_thread.AbortClient();
+}
 
 CVAR (String, ipc_command_host, "localhost", CVAR_ARCHIVE)
 
