@@ -290,7 +290,8 @@ public:
         {
             {
                 std::lock_guard< std::mutex > lk( m_mut );
-                m_abortloop = m_abortclient = true;
+                m_abortloop = true;
+                m_client_infos.clear();
             }
 
             m_thread.join();
@@ -335,7 +336,6 @@ public:
         fprintf( stderr, "Listening on port %i for clients...\n", PortNumber );
         while( !m_abortloop )
         {
-
             struct sockaddr_in caddr;  /* client address */
             unsigned int len = sizeof( caddr ); /* address length could change */
 
@@ -356,52 +356,87 @@ public:
             }
 
             Printf( "IPC handler accepted connection\n" );
-            while( !m_abortclient )
+
             {
-                fd_set rfds;
-                struct timeval tv;
-                int retval;
-
-                FD_ZERO( &rfds );
-                FD_SET( client_fd, &rfds );
-
-                tv.tv_sec = 1;
-                tv.tv_usec = 0;
-
-                retval = select( client_fd+1, &rfds, NULL, NULL, &tv );
-                if( retval == -1 )
+                std::unique_lock< std::mutex > lk( m_mut );
+                auto client_info_it = m_client_infos.find( client_fd );
+                if( client_info_it != std::end( m_client_infos ) )
                 {
-                    report( "select", 0 );
-                    continue;
-                }
-                else if( retval )
-                {
-                    // data available
-                }
-                else // no data in 1 second
-                {
-                    continue;
-                }
+                    auto& client_info = client_info_it->second;
+                    lk.unlock();
 
-                /* read from client */
-                char buffer[ 128 ];
-                memset( buffer, '\0', sizeof( buffer ) );
-                int count = read( client_fd, buffer, sizeof( buffer ) );
-                if( count == 128 )
-                {
-                    std::lock_guard< std::mutex > lk( m_mut );
-                    m_msg_queue.push_back( buffer );
-                }
+                    Printf( "Aborting thread for client_fd:%d\n", client_fd );
+                    client_info->m_thread.join();
 
-                if( count < 128 || strcmp(buffer, "QUIT") == 0 )
-                {
-                    fprintf( stderr, "Got quit, breaking connection\n" );
-                    break;
+                    lk.lock();
+                    m_client_infos.erase( client_info_it );
                 }
             }
 
-            m_abortclient = false;
-            close( client_fd ); /* break connection */
+            Printf( "Making new client for client_fd:%d\n", client_fd );
+            std::lock_guard< std::mutex > lk( m_mut );
+            auto& client_info = m_client_infos[ client_fd ];
+
+            client_info = std::make_shared< CClientInfo >();
+            client_info->m_thread = std::thread( [&, client_fd] {
+                while( true )
+                {
+                    {
+                        std::lock_guard< std::mutex > lk( m_mut );
+                        auto client_info_it = m_client_infos.find( client_fd );
+                        if( client_info_it == std::end( m_client_infos ) )
+                        {
+                            fprintf( stderr,
+                                     "Breaking connection due to missing "
+                                     "client or abort\n" );
+                            break;
+                        }
+                    }
+
+                    fd_set rfds;
+                    struct timeval tv;
+                    int retval;
+
+                    FD_ZERO( &rfds );
+                    FD_SET( client_fd, &rfds );
+
+                    tv.tv_sec = 1;
+                    tv.tv_usec = 0;
+
+                    retval = select( client_fd + 1, &rfds, NULL, NULL, &tv );
+                    if( retval == -1 )
+                    {
+                        report( "select", 0 );
+                        continue;
+                    }
+                    else if( retval )
+                    {
+                        // data available
+                    }
+                    else // no data in 1 second
+                    {
+                        continue;
+                    }
+
+                    /* read from client */
+                    char buffer[ 128 ];
+                    memset( buffer, '\0', sizeof( buffer ) );
+                    int count = read( client_fd, buffer, sizeof( buffer ) );
+                    if( count == 128 )
+                    {
+                        std::lock_guard< std::mutex > lk( m_mut );
+                        m_msg_queue.push_back( buffer );
+                    }
+
+                    if( count < 128 )
+                    {
+                        fprintf( stderr,
+                                 "Breaking connection due to read error\n" );
+                        break;
+                    }
+                }
+                close( client_fd ); /* break connection */
+            } );
         }                       /* while(1) */
     }
 
@@ -448,26 +483,21 @@ public:
         return boost::none;
     }
 
-    void AbortClient()
-    {
-        m_abortclient = true;
-    }
-
 private:
+    struct CClientInfo
+    {
+        std::thread m_thread;
+    };
+
     std::thread m_thread;
     std::mutex m_mut;
     bool m_abortloop = false;
-    bool m_abortclient = false;
     std::deque< std::string > m_msg_queue;
     CLogControl m_log_control;
     Uint32 m_last_ticks = 0;
+    std::map< int, std::shared_ptr< CClientInfo > > m_client_infos;
 };
 CIPCHandlerThread ipc_handler_thread;
-
-CCMD(abortipcclient)
-{
-    ipc_handler_thread.AbortClient();
-}
 
 CVAR (String, ipc_command_host, "localhost", CVAR_ARCHIVE)
 
