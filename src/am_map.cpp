@@ -419,16 +419,16 @@ public:
                     }
 
                     /* read from client */
-                    char buffer[ 128 ];
+                    char buffer[ 256 ];
                     memset( buffer, '\0', sizeof( buffer ) );
                     int count = read( client_fd, buffer, sizeof( buffer ) );
-                    if( count == 128 )
+                    if( count == 256 )
                     {
                         std::lock_guard< std::mutex > lk( m_mut );
                         m_msg_queue.push_back( buffer );
                     }
 
-                    if( count < 128 )
+                    if( count < 256 )
                     {
                         fprintf( stderr,
                                  "Breaking connection due to read error\n" );
