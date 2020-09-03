@@ -591,7 +591,7 @@ unsigned int CalcRotate (AActor *ob)
 =====================
 */
 
-#define MAXVISABLE 250
+#define MAXVISABLE 500
 
 typedef struct
 {
