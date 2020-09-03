@@ -1258,9 +1258,9 @@ void R_RenderView()
 	DrawScaleds();                  // draw scaled stuff
 
 	if (levelInfo->Atmos[1])
-		DrawRain(vbuf, vbufPitch);
+		DrawRain(vbuf, vbufPitch, 0, 0);
 	if (levelInfo->Atmos[2])
-		DrawSnow(vbuf, vbufPitch);
+		DrawSnow(vbuf, vbufPitch, 0, 0);
 
 	DrawPlayerWeapon ();    // draw player's hands
 
