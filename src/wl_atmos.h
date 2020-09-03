@@ -7,8 +7,8 @@ void DrawStarSky(byte *vbuf, uint32_t vbufPitch);
 
 void DrawHighQualityStarSky(byte *vbuf, uint32_t vbufPitch);
 
-void DrawRain(byte *vbuf, uint32_t vbufPitch);
+void DrawRain(byte *vbuf, uint32_t vbufPitch, byte *zbuf, uint32_t zbufPitch);
 
-void DrawSnow(byte *vbuf, uint32_t vbufPitch);
+void DrawSnow(byte *vbuf, uint32_t vbufPitch, byte *zbuf, uint32_t zbufPitch);
 
 #endif
