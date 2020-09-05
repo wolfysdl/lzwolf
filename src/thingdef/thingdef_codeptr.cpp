@@ -850,7 +850,8 @@ ACTION_FUNCTION(A_SpawnItemEx)
 {
 	enum
 	{
-		SXF_TRANSFERPOINTERS = 0x1
+		SXF_TRANSFERPOINTERS = 0x1,
+		SXF_PROJHITENEMY = 0x2,
 	};
 
 	ACTION_PARAM_STRING(className, 0);
@@ -886,6 +887,8 @@ ACTION_FUNCTION(A_SpawnItemEx)
 		if(newobj->flags & FL_ATTACKMODE)
 			newobj->speed = newobj->runspeed;
 	}
+	if (flags & SXF_PROJHITENEMY)
+		newobj->extraflags |= FL_PROJHITENEMY;
 
 	newobj->angle = static_cast<angle_t>(angle);
 

@@ -212,6 +212,28 @@ HANDLE_PROPERTY(damage)
 	}
 }
 
+HANDLE_PROPERTY(damagefactor)
+{
+	STRING_PARAM(str, 0);
+	FIXED_PARAM(id, 1);
+
+	if (str == NULL)
+	{
+		defaults->DamageFactor = id;
+	}
+	else
+	{
+		FName dmgType;
+		if (!stricmp(str, "Normal")) dmgType = NAME_None;
+		else dmgType=str;
+
+		if(cls->DamageFactors == nullptr)
+			cls->DamageFactors = new DmgFactors;
+
+		(*cls->DamageFactors)[ dmgType.GetChars() ] = id;
+	}
+}
+
 HANDLE_PROPERTY(damageresistance)
 {
 	STRING_PARAM(damagetype, 0);
@@ -922,6 +944,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(bobstyle, Weapon, S),
 	DEFINE_PROP(conversationid, Actor, I),
 	DEFINE_PROP(damage, Actor, I),
+	DEFINE_PROP(damagefactor, Actor, ZF),
 	DEFINE_PROP(damageresistance, Actor, S_I),
 	DEFINE_PROP_PREFIX(damagescreencolor, Actor, Player, S),
 	DEFINE_PROP(damagetype, Actor, S),
