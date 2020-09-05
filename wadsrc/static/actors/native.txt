@@ -20,6 +20,7 @@ const int GAF_NOAMMO = 2;
 const int GAF_MACDAMAGE = 4;
 
 const int SXF_TRANSFERPOINTERS = 1;
+const int SXF_PROJHITENEMY = 2;
 
 const int ASP_CHASE = 3;
 
@@ -64,6 +65,7 @@ actor Actor native
 {
 	actionns "lz"
 	damage 0
+	damagefactor 1.0
 	radius 20
 	height 16
 	health 1000

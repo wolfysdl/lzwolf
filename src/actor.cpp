@@ -653,6 +653,7 @@ void AActor::Serialize(FArchive &arc)
 	arc << zoneLightMask;
 	arc << litfilter;
 	arc << singlespawn;
+	arc << DamageFactor;
 	arc << filterposwaveLastMoves;
 
 	if(GameSave::SaveProdVersion >= 0x001002FF && GameSave::SaveVersion > 1374914454)

@@ -347,6 +347,7 @@ class AActor : public Thinker,
 		int         zoneLightMask;
 		const ClassDef  *litfilter;
 		int         singlespawn;
+		fixed       DamageFactor;
 
 		struct FilterposWaveLastMove
 		{
