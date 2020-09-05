@@ -249,28 +249,18 @@ void T_Projectile (AActor *self)
 		while(iter.Next())
 		{
 			AActor *check = iter;
-			if(check == self)
-				continue;
-
-			// Pass through allies
-			if(playermissile)
-			{
-				if(check->player)
-					continue;
-			}
-			else if(self->target && self->target != check &&
-					(self->extraflags & FL_PROJHITENEMY) != 0 &&
-					(check->flags & FL_ISMONSTER) != 0)
-			{
-				// allow projectile with FL_PROJHITENEMY set to hit enemy
-			}
-			else
-			{
-				if(check->flags & FL_ISMONSTER)
-					continue;
-			}
-
-			if((check->flags & (FL_SHOOTABLE|FL_SOLID)) && lastHit != check)
+			if(
+				check != self
+				// Pass through allies if fired by player
+				&& !(playermissile && check->player)
+				&& (
+					(check->flags & FL_ISMONSTER)
+					// Non-player missile cannot hit monster without
+					// FL_PROJHITENEMY
+					? (playermissile || (self->extraflags & FL_PROJHITENEMY) != 0)
+					: true)
+				&& ((check->flags & (FL_SHOOTABLE|FL_SOLID))
+				&& lastHit != check))
 			{
 				fixed deltax = abs(self->x - check->x);
 				fixed deltay = abs(self->y - check->y);
