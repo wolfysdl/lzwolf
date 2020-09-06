@@ -64,7 +64,9 @@ namespace Shading
 	std::vector<Span> spans;
 	Span *curspan;
 	std::vector<Halo> halos;
-	std::map<Tile::Pos, Tile> tiles;
+	std::vector<Tile> tiles;
+	Halo::Id lastHaloId;
+	std::vector<byte> rowHaloIds;
 	typedef unsigned short ZoneId;
 	std::map<ZoneId, AActor::ZoneLight> zoneLightMap;
 
@@ -138,7 +140,14 @@ namespace Shading
 			}
 		}
 
-		tiles.clear();
+		const auto numtiles = mapwidth * mapheight;
+		if (numtiles != tiles.size())
+		{
+			tiles.resize(numtiles);
+		}
+		std::fill(std::begin(tiles), std::end(tiles), Tile{});
+
+		lastHaloId = 0;
 		{
 			typedef std::vector<Halo> HaloVec;
 			const HaloVec &v = halos;
@@ -149,15 +158,25 @@ namespace Shading
 				(h.C - h.R).Convert(low);
 				(h.C + h.R).Convert(high);
 
+				const auto haloId = it - v.begin();
+
 				int x;
 				for (x = low.X; x <= high.X; x++)
 				{
 					int y;
 					for (y = low.Y; y <= high.Y; y++)
-						tiles[Tile::Pos(x, y)].haloIds.push_back(it - v.begin());
+					{
+						if (map->IsValidTileCoordinate(x,y,0))
+						{
+							tiles[x+y*mapwidth].haloIds.push_back(haloId);
+							lastHaloId = std::max(lastHaloId,
+									static_cast<Halo::Id>(haloId + 1));
+						}
+					}
 				}
 			}
 		}
+		rowHaloIds = std::vector<byte>((lastHaloId+7)/8);
 	}
 
 	void PrepareConstants (int halfheight_, fixed planeheight_, fixed planenumerator_)
@@ -243,8 +262,7 @@ namespace Shading
 		const unsigned int mapwidth = map->GetHeader().width;
 		const unsigned int mapheight = map->GetHeader().height;
 
-		typedef std::set<Halo::Id> HaloIds;
-		HaloIds haloIds;
+		std::memset(rowHaloIds.data(), 0, rowHaloIds.size());
 		{
 			const fixed gu0 = gu;
 			const fixed gv0 = gv;
@@ -271,12 +289,11 @@ namespace Shading
 						const int mapx = (int)(oldmapx%mapwidth);
 						const int mapy = (int)(oldmapy%mapheight);
 
-						const std::vector<Halo::Id> &ids =
-							tiles[Tile::Pos(mapx,mapy)].haloIds;
-						if (ids.size() > 0)
+						const auto &ids =
+							tiles[mapx+mapy*mapwidth].haloIds;
+						for (auto id : ids)
 						{
-							std::copy(ids.begin(), ids.end(),
-								std::inserter(haloIds, haloIds.end()));
+							rowHaloIds[id/8] |= 1<<(id&7);
 						}
 
 						MapSpot spot = map->GetSpot(mapx, mapy, 0);
@@ -377,9 +394,12 @@ namespace Shading
 
 		const double a = V|V;
 
-		for (HaloIds::const_iterator it = haloIds.begin(); it != haloIds.end(); ++it)
+		for (Halo::Id id = 0; id < lastHaloId; ++id)
 		{
-			const Halo &halo = halos[*it];
+			if (!(rowHaloIds[id/8] & 1<<(id&7)))
+				continue;
+
+			const Halo &halo = halos[id];
 			const Vec2 C = halo.C;
 			const double R = halo.R;
 
@@ -441,7 +461,7 @@ namespace Shading
 
 		int light = 0;
 		typedef std::vector<Halo::Id> Vec;
-		const Vec &v = tiles[Tile::Pos(curx%mapwidth,cury%mapheight)].haloIds;
+		const Vec &v = tiles[(curx%mapwidth)+(cury%mapheight)*mapwidth].haloIds;
 		if (v.size() > 0)
 		{
 			const double x = FIXED2FLOAT(xintercept);
