@@ -950,6 +950,11 @@ size_t player_t::PropagateMark()
 	GC::Mark(ReadyWeapon);
 	if(PendingWeapon != WP_NOCHANGE)
 		GC::Mark(PendingWeapon);
+
+	std::size_t i;
+	for(i = 0; i < weaponSlotStates.size(); i++)
+		GC::Mark(weaponSlotStates[i].LastWeapon);
+
 	return sizeof(*this);
 }
 
@@ -959,6 +964,8 @@ void player_t::Reborn()
 	PendingWeapon = WP_NOCHANGE;
 	flags = 0;
 	FOV = DesiredFOV;
+	std::fill(std::begin(weaponSlotStates), std::end(weaponSlotStates),
+			WeaponSlotState{});
 
 	if(state == PST_ENTER)
 	{
@@ -977,6 +984,15 @@ void player_t::Reborn()
 FArchive &operator<< (FArchive &arc, player_t::WeaponSlotState &player)
 {
 	arc << player.LastWeapon;
+	return arc;
+}
+
+FArchive &operator<< (FArchive &arc,
+		player_t::TWeaponSlotStates &weaponSlotStates)
+{
+	std::size_t i;
+	for(i = 0; i < weaponSlotStates.size(); i++)
+		arc << weaponSlotStates[i];
 	return arc;
 }
 

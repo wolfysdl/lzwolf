@@ -102,7 +102,8 @@ void APlayerPawn::Die()
 		player->PendingWeapon = WP_NOCHANGE;
 		if(player->ReadyWeapon)
 			player->SetPSprite(player->ReadyWeapon->GetDownState(), player_t::ps_weapon);
-		player->weaponSlotStates.Clear();
+		std::fill(std::begin(player->weaponSlotStates),
+				std::end(player->weaponSlotStates), player_t::WeaponSlotState{});
 	}
 	Super::Die();
 }
@@ -181,8 +182,8 @@ void APlayerPawn::RemoveInventory(AInventory *item)
 	}
 
 #ifdef USE_LASTWEAPON
-	unsigned int i;
-	for (i = 0; i < player->weaponSlotStates.Size(); i++)
+	std::size_t i;
+	for (i = 0; i < player->weaponSlotStates.size(); i++)
 	{
 		player_t::WeaponSlotState &slot = player->weaponSlotStates[i];
 		if (slot.LastWeapon == item)
