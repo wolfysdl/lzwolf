@@ -483,6 +483,12 @@ public:
         return boost::none;
     }
 
+    void AddMsg( const std::string& msg )
+    {
+        std::lock_guard< std::mutex > lk( m_mut );
+        m_msg_queue.push_back( msg );
+    }
+
 private:
     struct CClientInfo
     {
@@ -580,6 +586,18 @@ CCMD(sendcmd)
 
     printf("sending cmd: %s\n", cmd.c_str());
     CCommandIssuer{}.SendIPCMessage( cmd );
+}
+
+CCMD(logred)
+{
+    std::stringstream ss;
+    ss << TEXTCOLOR_RED;
+    for( int i = 1; i < argv.argc(); i++ )
+    {
+        ss << argv[i] << ' ';
+    }
+    auto msg = ss.str();
+    ipc_handler_thread.AddMsg( msg );
 }
 
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
