@@ -67,6 +67,9 @@ player_t		players[MAXPLAYERS];
 void ClipMove (AActor *ob, int32_t xmove, int32_t ymove);
 static void Thrust (APlayerPawn *player, angle_t angle, int32_t speed);
 
+int ApplyMobjDamageFactor(int damage, const FName &damagetype,
+		const DmgFactors *factors);
+
 /*
 =============================================================================
 
@@ -363,6 +366,19 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 	// fix for baby mode
 	if (points <= 0 && damage > 0)
 		points = 1;
+
+	if(ReadyWeapon)
+	{
+		if(points > 0)
+		{
+			points = FixedMul(points, ReadyWeapon->DamageFactor);
+			if(points > 0 && damagetype != nullptr)
+				points = ApplyMobjDamageFactor(points,
+						damagetype->GetName(),
+						ReadyWeapon->GetClass()->DamageFactors);
+		}
+	}
+
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
 	if (points > 0 && mo->inventory)
