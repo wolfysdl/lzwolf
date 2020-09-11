@@ -545,8 +545,7 @@ void Scale3DSpriter(AActor *actor, int x1, int x2, FTexture *tex, bool flip, con
 	{
 		while(i > nexti)
 		{
-			++x;
-			assert(x < texWidth);
+			x = std::min(x + 1, texWidth - 1);
 			src = tex->GetColumn(flip ? texWidth - x - 1 : x, NULL);
 
 			dxa += dxx;
