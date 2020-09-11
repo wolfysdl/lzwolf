@@ -58,6 +58,8 @@ static void FirstSighting (AActor *ob, const Frame *state);
 int ApplyMobjDamageFactor(int damage, const FName &damagetype,
 		const DmgFactors *factors);
 
+EXTERN_CVAR (Bool, notargetmode)
+
 /*
 =============================================================================
 

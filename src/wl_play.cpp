@@ -59,7 +59,7 @@ extern bool ShadowingEnabled;
 
 bool noclip, ammocheat, mouselook = false;
 int godmode, singlestep;
-bool notargetmode = false;
+CVAR(Bool, notargetmode, false, CVAR_ARCHIVE)
 unsigned int extravbls = 0; // to remove flicker (gray stuff at the bottom)
 
 //
