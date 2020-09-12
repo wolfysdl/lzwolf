@@ -65,6 +65,8 @@ int DebugKeys (void);
 
 void ScalePost();
 
+EXTERN_CVAR (Bool, notargetmode)
+
 /*
 =============================================================================
 

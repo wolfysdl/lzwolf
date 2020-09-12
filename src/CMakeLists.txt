@@ -69,6 +69,10 @@ if( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 	set( CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-missing-field-initializers ${CMAKE_CXX_FLAGS}" )
 endif()
 
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+#SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+#SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+
 if(WIN32)
 	set(NO_GTK ON)
 	set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} comctl32)
@@ -167,6 +171,7 @@ set(SOURCE_FILES
 	g_blake/bibendovsky.cpp
 	g_shared/a_armor.cpp
 	g_shared/a_action.cpp
+	g_shared/a_ambient.cpp
 	g_shared/a_deathcam.cpp
 	g_shared/a_inventory.cpp
 	g_shared/a_keys.cpp

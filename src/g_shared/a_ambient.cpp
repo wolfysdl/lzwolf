@@ -1,8 +1,8 @@
 /*
-** wl_iwad.h
+** a_ambient.cpp
 **
 **---------------------------------------------------------------------------
-** Copyright 2012 Braden Obrzut
+** Copyright 2020 Linux Wolf
 ** All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without
@@ -32,49 +32,38 @@
 **
 */
 
-#ifndef __WL_IWAD_H__
-#define __WL_IWAD_H__
+#include "a_ambient.h"
+#include "id_sd.h"
+#include "templates.h"
+#include "thinker.h"
+#include "thingdef/thingdef.h"
+#include "m_random.h"
+#include "wl_def.h"
+#include "wl_agent.h"
+#include "id_ca.h"
 
-#include "zstring.h"
+IMPLEMENT_POINTY_CLASS(Ambient)
+END_POINTERS
 
-// For IWad Pickers so not in namespace
-struct WadStuff
+//===========================================================================
+//
+// AAmbient :: JumpState
+//
+// Jump to play state if player zone index matches the zoneindex property.
+//
+//===========================================================================
+
+void AAmbient::JumpState(const Frame *frame, bool enter)
 {
-	WadStuff() : Type(-1), Hidden(false) {}
-
-	TArray<FString> Path;
-	FString Extension;
-	FString Name;
-	int Type;
-	bool Hidden;
-};
-
-namespace IWad
-{
-	enum Flags
-	{
-		REGISTERED = 1, // Enables not-shareware warning
-		HELPHACK = 2,   // Fixes helpart art assets
-		PREVIEW = 4,    // Only show in picker if user opts in
-		RESOURCE = 8    // Used as a component of another option
+	auto get_zoneind = [](AActor *self) {
+		auto spot = map->GetSpot(self->tilex, self->tiley, 0);
+		const auto ind = (spot && spot->zone ? spot->zone->index : 0);
+		return ind;
 	};
 
-	struct IWadData
+	auto player = players[0].mo;
+	if ((get_zoneind(player) == get_zoneind(this)) == enter)
 	{
-		FString Name;
-		FString Autoname;
-		FString Mapinfo;
-		TArray<FString> Ident;
-		TArray<FString> Required;
-		FName Game;
-		unsigned int Flags;
-		bool LevelSet;
-	};
-
-	bool CheckGameFilter(FName filter);
-	const IWadData &GetGame();
-	unsigned int GetNumIWads();
-	void SelectGame(TArray<FString> &wadfiles, const char* iwad, const char* datawad, const FString &progdir);
+		SetState(frame);
+	}
 }
-
-#endif

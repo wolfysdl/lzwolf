@@ -2,6 +2,7 @@
 #define __WL_AGENT__
 
 #include <vector>
+#include <array>
 #include "wl_def.h"
 #include "a_playerpawn.h"
 #include "weaponslots.h"
@@ -159,14 +160,13 @@ extern class player_t
 			{
 			}
 		};
-		TArray<WeaponSlotState> weaponSlotStates;
+		// this is enough entries for bt_slot0, ..., bt_slot9
+		using TWeaponSlotStates = std::array<WeaponSlotState, 10>;
+		TWeaponSlotStates weaponSlotStates;
 
 		WeaponSlotState &GetWeaponSlotState (unsigned int slot)
 		{
-			TArray<WeaponSlotState> &v = weaponSlotStates;
-			if (slot >= v.Size())
-				v.Resize(slot + 1);
-			return v[slot];
+			return weaponSlotStates[slot];
 		}
 } players[];
 

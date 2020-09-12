@@ -28,6 +28,7 @@
 #include "a_inventory.h"
 #include "thingdef/thingdef.h"
 #include "c_console.h"
+#include "wl_menu.h"
 
 /*
 =============================================================================
@@ -590,7 +591,7 @@ unsigned int CalcRotate (AActor *ob)
 =====================
 */
 
-#define MAXVISABLE 250
+#define MAXVISABLE 500
 
 typedef struct
 {
@@ -1257,9 +1258,9 @@ void R_RenderView()
 	DrawScaleds();                  // draw scaled stuff
 
 	if (levelInfo->Atmos[1])
-		DrawRain(vbuf, vbufPitch);
+		DrawRain(vbuf, vbufPitch, 0, 0);
 	if (levelInfo->Atmos[2])
-		DrawSnow(vbuf, vbufPitch);
+		DrawSnow(vbuf, vbufPitch, 0, 0);
 
 	DrawPlayerWeapon ();    // draw player's hands
 
@@ -1353,4 +1354,7 @@ void    ThreeDRefresh (void)
 			fps_frames=0;
 		}
 	}
+
+	if (gameinfo.DrawGameMessage)
+		DrawGameMessage ();
 }

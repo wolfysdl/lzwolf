@@ -388,6 +388,8 @@ namespace Shading
 	void PrepareConstants (int halfheight, fixed planeheight, fixed planenumerator);
 
 	void NextY (int y, int lx, int rx);
+
+	const ClassDef *LitForPix ();
 }
 
 void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height)
@@ -446,6 +448,28 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
 
+	const ClassDef * const litfilter = actor->litfilter;
+	if (litfilter != NULL)
+	{
+		//std::cerr << actor << " " << (upperedge>>3) << " " << actor->z << " " << tex->GetScaledTopOffsetDouble() << std::endl;
+		const fixed planeheight = viewz;
+		const int halfheight = (viewheight >> 1) - viewshift;
+		fixed planenumerator = FixedMul(heightnumerator, planeheight);
+		planenumerator *= -1; // floor
+		Shading::PrepareConstants (halfheight, planeheight, planenumerator);
+
+		const fixed heightFactor = abs(planeheight)>>8;
+		int y = ((height*heightFactor)>>FRACBITS) - abs(viewshift);
+
+		int pixcnt = 0;
+		unsigned int i;
+		fixed x;
+		for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i)
+			pixcnt++;
+
+		Shading::NextY (y, actx+startX, MIN((actx+startX)+pixcnt,(unsigned)viewwidth));
+	}
+
 	const BYTE *src;
 	byte *destBase = vbuf + actx + startX + ((upperedge>>3) > 0 ? vbufPitch*(upperedge>>3) : 0);
 	byte *dest = destBase;
@@ -453,6 +477,8 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 	fixed x, y;
 	for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i, dest = ++destBase)
 	{
+		if(litfilter != NULL && Shading::LitForPix () != litfilter)
+			continue;
 		if(wallheight[i] > (signed)height)
 			continue;
 
@@ -519,8 +545,7 @@ void Scale3DSpriter(AActor *actor, int x1, int x2, FTexture *tex, bool flip, con
 	{
 		while(i > nexti)
 		{
-			++x;
-			assert(x < texWidth);
+			x = std::min(x + 1, texWidth - 1);
 			src = tex->GetColumn(flip ? texWidth - x - 1 : x, NULL);
 
 			dxa += dxx;
@@ -662,7 +687,7 @@ void R_DrawPlayerSprite(AActor *actor, const Frame *frame, fixed offsetX, fixed 
 		colormap = NormalLight.Maps;
 	else
 	{
-		const int shade = LIGHT2SHADE(gLevelLight + Shading::LightForIntercept (viewx, viewy)) - (gLevelMaxLightVis/LIGHTVISIBILITY_FACTOR);
+		const int shade = LIGHT2SHADE(gLevelLight) - (gLevelMaxLightVis/LIGHTVISIBILITY_FACTOR);
 		colormap = &NormalLight.Maps[GETPALOOKUP(0, shade)<<8];
 	}
 

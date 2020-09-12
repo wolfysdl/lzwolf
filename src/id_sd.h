@@ -168,5 +168,6 @@ extern  void    SD_SetDigiDevice(SDSMode);
 extern  struct Mix_Chunk *SD_PrepareSound(int which);
 extern  int     SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChannel chan=SD_GENERIC,bool looping=false,int distance=0,double volume=1.0);
 extern  void    SD_StopDigitized(void);
+extern  void    SD_SetChannelVolume(int channel, double volume);
 
 #endif

@@ -5,6 +5,7 @@ const int CHF_NOPLAYACTIVE = 8;
 
 const int CMF_AIMOFFSET = 1;
 const int CMF_AIMDIRECTION = 2;
+const int CMF_PROJHITENEMY = 4;
 
 const int CPF_USEAMMO = 1;
 const int CPF_ALWAYSPLAYSOUND = 2;
@@ -19,6 +20,7 @@ const int GAF_NOAMMO = 2;
 const int GAF_MACDAMAGE = 4;
 
 const int SXF_TRANSFERPOINTERS = 1;
+const int SXF_PROJHITENEMY = 2;
 
 const int ASP_CHASE = 3;
 
@@ -66,6 +68,7 @@ actor Actor native
 {
 	actionns "lz"
 	damage 0
+	damagefactor 1.0
 	radius 20
 	height 16
 	health 1000
@@ -79,13 +82,16 @@ actor Actor native
 	projectilepassheight -1
 	singlespawn 0
 	loaded 0
+	zoneindex 0
 
 	native angle_t angle;
 	native int health;
 	native int loaded;
+	native int zoneindex;
 
 	action native A_ActiveSound(int chance=256);
 	action native A_AlertMonsters();
+	action native A_AmbientJumpState(state frame, bool enter);
 	action native A_BossDeath();
 	action native A_CallSpecial(int special, int arg1=0, int arg2=0, int arg3=0, int arg4=0, int arg5=0);
 	action native A_ChangeFlag(string flag, bool value);
@@ -120,11 +126,13 @@ actor Actor native
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetProperty(string propName, auto value);
 	action native A_SetTics(float duration);
+	action native A_SetVolume(float volume);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
 	action native A_SpawnItemEx(string type, float xoffset = 0, float yoffset = 0, float zoffset = 0, float xvel = 0, float yvel = 0, float zvel = 0, float angle = 0, int flags = 0, int failchance = 0);
 	action native A_Stop();
 	action native A_StopSound(int slot = CHAN_VOICE);	// Bad default but that's what is originally was...
 	action native A_TakeInventory(string type, int amount);
+	action native A_UpdateZoneIndex();
 	action native A_Wander();
 	action native A_WolfAttack(int flags = 0, string sound = "*", float snipe = 1.0, int maxdamage = 64, int blocksize = 128, int pointblank = 2, int longrange = 4, float runspeed = 160.0);
 
@@ -326,6 +334,56 @@ actor SwitchableDecoration native
 
 actor SwitchingDecoration : SwitchableDecoration native
 {
+}
+
+// Ambient: Ambient sounds -------------------------------------------------
+
+actor Ambient native
+{
+	states
+	{
+		Spawn:
+			TNT1 A 30
+		Check:
+			TNT1 A 70 A_AmbientJumpState("Start", true)
+			loop
+
+		Start:
+			TNT1 A 70 A_PlaySound("guard/sight", CHAN_AUTO, 0.2, true, ATTN_NONE)
+			goto StartLevel1
+		End:
+			TNT1 A 70 A_SetVolume(0.8)
+			goto EndLevel1
+			
+		StartLevel1:
+			TNT1 A 70 A_SetVolume(0.4)
+			goto StartLevel2
+		StartLevel2:
+			TNT1 A 70 A_SetVolume(0.6)
+			goto StartLevel3
+		StartLevel3:
+			TNT1 A 70 A_SetVolume(0.8)
+			goto StartLevel4
+		StartLevel4:
+			TNT1 A 70 A_SetVolume(1.0)
+			goto WaitEnd
+		WaitEnd:
+			TNT1 A 70 A_AmbientJumpState("End", false)
+			loop
+
+		EndLevel1:
+			TNT1 A 70 A_SetVolume(0.6)
+			goto EndLevel2
+		EndLevel2:
+			TNT1 A 70 A_SetVolume(0.4)
+			goto EndLevel3
+		EndLevel3:
+			TNT1 A 70 A_SetVolume(0.2)
+			goto EndLevel4
+		EndLevel4:
+			TNT1 A 70 A_StopSound
+			goto Check
+	}
 }
 
 // Random spawner ----------------------------------------------------------

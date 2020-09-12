@@ -215,6 +215,7 @@ enum ExtraActorFlag
 	FL_RANDOMTURN       = 0x00000004,
 	FL_BLAKEPATROL      = 0x00000008,
 	FL_MUSTATTACK       = 0x00000010,
+	FL_PROJHITENEMY     = 0x00000020,
 };
 
 enum ItemFlag

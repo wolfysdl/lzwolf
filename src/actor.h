@@ -65,6 +65,9 @@ enum
 	AMETA_DamageResistances,
 	AMETA_HaloLights,
 	AMETA_ZoneLights,
+	AMETA_FilterposWraps,
+	AMETA_FilterposThrusts,
+	AMETA_FilterposWaves,
 	AMETA_EnemyFactions,
 	AMETA_InterrogateItems,
 	AMETA_PickupMessage,
@@ -81,6 +84,16 @@ enum
 
 typedef TFlags<ActorFlag> ActorFlags;
 DEFINE_TFLAGS_OPERATORS (ActorFlags)
+
+namespace FilterposThrustSource
+{
+	enum e
+	{
+		forwardThrust,
+		sideThrust,
+		rotation,
+	};
+}
 
 typedef TFlags<ExtraActorFlag> ExtraActorFlags;
 DEFINE_TFLAGS_OPERATORS (ExtraActorFlags)
@@ -140,6 +153,7 @@ class AActor : public Thinker,
 				int             id;
 				int             light;
 				double          radius;
+				const ClassDef  *littype;
 		};
 		typedef LinkedList<HaloLight> HaloLightList;
 
@@ -147,9 +161,39 @@ class AActor : public Thinker,
 		{
 			public:
 				int             id;
-				int             light;
+				int             light = 0;
+				const ClassDef  *littype = nullptr;
 		};
 		typedef LinkedList<ZoneLight> ZoneLightList;
+
+		struct FilterposWrap
+		{
+			public:
+				int             id;
+				double          x1,x2;
+				unsigned int    axis;
+		};
+		typedef LinkedList<FilterposWrap> FilterposWrapList;
+
+		struct FilterposThrust
+		{
+			public:
+				int             id;
+				unsigned int    axis;
+				FilterposThrustSource::e src;
+		};
+		typedef LinkedList<FilterposThrust> FilterposThrustList;
+
+		struct FilterposWave
+		{
+			public:
+				int             id;
+				unsigned int    axis;
+				double          amplitude;
+				double          period;
+				int             usesine;
+		};
+		typedef LinkedList<FilterposWave> FilterposWaveList;
 
 		struct EnemyFaction
 		{
@@ -191,6 +235,9 @@ class AActor : public Thinker,
 		DamageResistanceList		*GetDamageResistanceList() const;
 		HaloLightList		*GetHaloLightList() const;
 		ZoneLightList		*GetZoneLightList() const;
+		FilterposWrapList		*GetFilterposWrapList() const;
+		FilterposThrustList		*GetFilterposThrustList() const;
+		FilterposWaveList		*GetFilterposWaveList() const;
 		EnemyFactionList		*GetEnemyFactionList() const;
 		InterrogateItemList		*GetInterrogateItemList() const;
 		const MapZone	*GetZone() const { return soundZone; }
@@ -214,7 +261,12 @@ class AActor : public Thinker,
 		virtual void	Touch(AActor *toucher) {}
 		virtual const char *InfoMessage ();
 
+		void            ApplyFilterpos (FilterposWrap wrap);
+		void            ApplyFilterpos (FilterposThrust thrust);
+		void            ApplyFilterpos (FilterposWave wave);
+
 		fixed           &GetCoordRef (unsigned int axis);
+		fixed           &GetFilterposWaveOldDelta (int id);
 
 		void PrintInventory();
 
@@ -223,6 +275,9 @@ class AActor : public Thinker,
 		static PointerIndexTable<DamageResistanceList> damageResistances;
 		static PointerIndexTable<HaloLightList> haloLights;
 		static PointerIndexTable<ZoneLightList> zoneLights;
+		static PointerIndexTable<FilterposWrapList> filterposWraps;
+		static PointerIndexTable<FilterposThrustList> filterposThrusts;
+		static PointerIndexTable<FilterposWaveList> filterposWaves;
 		static PointerIndexTable<EnemyFactionList> enemyFactions;
 		static PointerIndexTable<InterrogateItemList> interrogateItems;
 
@@ -278,6 +333,7 @@ class AActor : public Thinker,
 		fixed	radius;
 		fixed	projectilepassheight;
 		int     loaded;
+		int     zoneindex;
 
 		const Frame		*state;
 		unsigned int	sprite;
@@ -308,6 +364,7 @@ class AActor : public Thinker,
 		int         picX, picY;
 		int         haloLightMask;
 		int         zoneLightMask;
+		const ClassDef  *litfilter;
 		int         singlespawn;
 		int         interrogateItemsUsed;
 		struct
@@ -316,7 +373,14 @@ class AActor : public Thinker,
 			uint8_t s_tilex;
 			uint8_t s_tiley;
 		} informant;
+		fixed       DamageFactor;
 
+		struct FilterposWaveLastMove
+		{
+			int id;
+			fixed delta;
+		};
+		TArray<FilterposWaveLastMove> filterposwaveLastMoves;
 		const ClassDef  *faction;
 		std::pair<bool,unsigned int> spawnThingNum;
 		int			activationtype;	// How the thing behaves when activated with USESPECIAL or BUMPSPECIAL
@@ -365,6 +429,14 @@ public:
 	void Serialize(FArchive &arc);
 
 	TObjPtr<AActor> actualObject;
+};
+
+class ALit : public AActor
+{
+	DECLARE_NATIVE_CLASS(Lit, Actor)
+
+	public:
+		const ClassDef	*GetLitType() const;
 };
 
 namespace ActorSpawnID

@@ -39,6 +39,7 @@
 #include "tarray.h"
 #include "wl_def.h"
 #include "zstring.h"
+#include <map>
 
 class ClassDef;
 class Frame;
@@ -243,6 +244,19 @@ class MetaTable
 		void	FreeTable();
 };
 
+struct DmgFactors : public std::map<std::string, fixed>
+{
+	const fixed *CheckFactor(const std::string& type) const
+	{
+		auto it = find( type );
+		if( it == end() && type != "None" )
+		{
+			it = find( "None" );
+		}
+		return ( it != end() ? &it->second : nullptr );
+	}
+};
+
 class ClassDef
 {
 	public:
@@ -310,9 +324,11 @@ class ClassDef
 		static void				LoadActors();
 		bool					IsStateOwner(const Frame *frame) const { return frame >= &frameList[0] && frame < &frameList[frameList.Size()]; }
 		static void				UnloadActors();
+		int                     GetNextFilterposId ();
 
 		unsigned int			ClassIndex;
 		MetaTable				Meta;
+		DmgFactors              *DamageFactors;
 
 		static bool	SetFlag(const ClassDef *newClass, AActor *instance, const FString &prefix, const FString &flagName, bool set);
 
@@ -361,6 +377,7 @@ class ClassDef
 		DObject			*(*ConstructNative)(const ClassDef *, void *);
 
 		static bool		bShutdown;
+		int             filterposRunningId;
 };
 
 // Functions below are actually a part of dobject.h, but moved here for dependency reasons

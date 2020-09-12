@@ -36,6 +36,7 @@
 #include "actor.h"
 #include "thingdef.h"
 #include "a_inventory.h"
+#include "a_ambient.h"
 #include "a_playerpawn.h"
 #include "scanner.h"
 #include "thingdef/thingdef_type.h"
@@ -211,6 +212,28 @@ HANDLE_PROPERTY(damage)
 	}
 }
 
+HANDLE_PROPERTY(damagefactor)
+{
+	STRING_PARAM(str, 0);
+	FIXED_PARAM(id, 1);
+
+	if (str == NULL)
+	{
+		defaults->DamageFactor = id;
+	}
+	else
+	{
+		FName dmgType;
+		if (!stricmp(str, "Normal")) dmgType = NAME_None;
+		else dmgType=str;
+
+		if(cls->DamageFactors == nullptr)
+			cls->DamageFactors = new DmgFactors;
+
+		(*cls->DamageFactors)[ dmgType.GetChars() ] = id;
+	}
+}
+
 HANDLE_PROPERTY(damageresistance)
 {
 	STRING_PARAM(damagetype, 0);
@@ -307,6 +330,60 @@ HANDLE_PROPERTY(faction)
 		defaults->faction = ClassDef::FindClassTentative(type, NATIVE_CLASS(Faction));
 }
 
+HANDLE_PROPERTY(filterposthrust)
+{
+	INT_PARAM(axis, 0);
+	INT_PARAM(src, 1);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposThrusts, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposThrusts))
+		cls->Meta.SetMetaInt(AMETA_FilterposThrusts, AActor::filterposThrusts.Push(new AActor::FilterposThrustList()));
+
+	AActor::FilterposThrust filterposThrust;
+	filterposThrust.id = cls->GetNextFilterposId();
+	filterposThrust.axis = axis;
+	filterposThrust.src = (FilterposThrustSource::e)src;
+
+	AActor::filterposThrusts[cls->Meta.GetMetaInt(AMETA_FilterposThrusts)]->Push(filterposThrust);
+}
+
+HANDLE_PROPERTY(filterposwave)
+{
+	INT_PARAM(axis, 0);
+	FLOAT_PARAM(amplitude, 1);
+	FLOAT_PARAM(period, 2);
+	INT_PARAM(usesine, 3);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposWaves, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWaves))
+		cls->Meta.SetMetaInt(AMETA_FilterposWaves, AActor::filterposWaves.Push(new AActor::FilterposWaveList()));
+
+	AActor::FilterposWave filterposWave;
+	filterposWave.id = cls->GetNextFilterposId();
+	filterposWave.axis = axis;
+	filterposWave.amplitude = amplitude;
+	filterposWave.period = period;
+	filterposWave.usesine = usesine;
+
+	AActor::filterposWaves[cls->Meta.GetMetaInt(AMETA_FilterposWaves)]->Push(filterposWave);
+}
+
+HANDLE_PROPERTY(filterposwrap)
+{
+	FLOAT_PARAM(x1, 0);
+	FLOAT_PARAM(x2, 1);
+	INT_PARAM(axis, 2);
+
+	if(cls->Meta.GetMetaInt(AMETA_FilterposWraps, -1) == -1 || cls->Meta.IsInherited(AMETA_FilterposWraps))
+		cls->Meta.SetMetaInt(AMETA_FilterposWraps, AActor::filterposWraps.Push(new AActor::FilterposWrapList()));
+
+	AActor::FilterposWrap filterposWrap;
+	filterposWrap.id = cls->GetNextFilterposId();
+	filterposWrap.x1 = x1;
+	filterposWrap.x2 = x2;
+	filterposWrap.axis = axis;
+
+	AActor::filterposWraps[cls->Meta.GetMetaInt(AMETA_FilterposWraps)]->Push(filterposWrap);
+}
+
 HANDLE_PROPERTY(forwardmove)
 {
 	FIXED_PARAM(forwardmove1, 0);
@@ -340,6 +417,13 @@ HANDLE_PROPERTY(halolight)
 	haloLight.id = id;
 	haloLight.radius = radius;
 	haloLight.light = light;
+	haloLight.littype = nullptr;
+
+	if (PARAM_COUNT == 4)
+	{
+		STRING_PARAM(littype, 3);
+		haloLight.littype = ClassDef::FindClassTentative(littype, NATIVE_CLASS(Lit));
+	}
 
 	AActor::haloLights[cls->Meta.GetMetaInt(AMETA_HaloLights)]->Push(haloLight);
 }
@@ -445,6 +529,15 @@ HANDLE_PROPERTY(interrogate)
 	auto pit = AActor::interrogateItems[cls->Meta.GetMetaInt(AMETA_InterrogateItems)];
 	interrogateItem.id = pit->Size();
 	pit->Push(interrogateItem);
+}
+
+HANDLE_PROPERTY(litfilter)
+{
+	STRING_PARAM(type, 0);
+	if(stricmp(type, "none") == 0 || *type == '\0')
+		defaults->litfilter = NULL;
+	else
+		defaults->litfilter = ClassDef::FindClassTentative(type, NATIVE_CLASS(Lit));
 }
 
 HANDLE_PROPERTY(loaded)
@@ -825,6 +918,12 @@ HANDLE_PROPERTY(yadjust)
 	def->yadjust = adjust;
 }
 
+HANDLE_PROPERTY(zoneindex)
+{
+	INT_PARAM(zoneindex, 0);
+	defaults->zoneindex = zoneindex;
+}
+
 HANDLE_PROPERTY(zonelight)
 {
 	INT_PARAM(id, 0);
@@ -836,6 +935,13 @@ HANDLE_PROPERTY(zonelight)
 	AActor::ZoneLight zoneLight;
 	zoneLight.id = id;
 	zoneLight.light = light;
+	zoneLight.littype = nullptr;
+
+	if (PARAM_COUNT == 3)
+	{
+		STRING_PARAM(littype, 2);
+		zoneLight.littype = ClassDef::FindClassTentative(littype, NATIVE_CLASS(Lit));
+	}
 
 	AActor::zoneLights[cls->Meta.GetMetaInt(AMETA_ZoneLights)]->Push(zoneLight);
 }
@@ -884,6 +990,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(bobstyle, Weapon, S),
 	DEFINE_PROP(conversationid, Actor, I),
 	DEFINE_PROP(damage, Actor, I),
+	DEFINE_PROP(damagefactor, Actor, ZF),
 	DEFINE_PROP(damageresistance, Actor, S_I),
 	DEFINE_PROP_PREFIX(damagescreencolor, Actor, Player, S),
 	DEFINE_PROP(damagetype, Actor, S),
@@ -892,6 +999,9 @@ extern const PropDef properties[] =
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP(enemyfaction, Actor, S),
 	DEFINE_PROP(faction, Actor, S),
+	DEFINE_PROP(filterposthrust, Actor, II),
+	DEFINE_PROP(filterposwave, Actor, IFFI),
+	DEFINE_PROP(filterposwrap, Actor, FFI),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(halolight, Actor, IFI_S),
@@ -903,6 +1013,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(infomessage, Actor, T),
 	DEFINE_PROP(interhubamount, Inventory, I),
 	DEFINE_PROP(interrogate, Actor, TSII_I),
+	DEFINE_PROP(litfilter, Actor, S),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),
 	DEFINE_PROP(maxamount, Inventory, I),
@@ -948,7 +1059,8 @@ extern const PropDef properties[] =
 	DEFINE_PROP(xscale, Actor, F),
 	DEFINE_PROP(yadjust, Weapon, F),
 	DEFINE_PROP(yscale, Actor, F),
-	DEFINE_PROP(zonelight, Actor, II),
+	DEFINE_PROP(zoneindex, Actor, I),
+	DEFINE_PROP(zonelight, Actor, II_S),
 
 	{ NULL, NULL, NULL, NULL }
 };

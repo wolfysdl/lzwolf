@@ -46,6 +46,8 @@ class GameMap;
 extern class GameInfo
 {
 public:
+	GameInfo();
+
 	FString	SignonLump;
 	int		MenuFadeColor;
 	int		MenuColors[6];
@@ -55,6 +57,7 @@ public:
 	int		PsychedColors[2];
 	int 	PsychedOffset;
 	bool	DrawReadThis;
+	bool	DrawGameMessage;
 	bool	TrackHighScores;
 
 	int		TitleTime;
@@ -78,6 +81,7 @@ public:
 	FString GameOverPic;
 	FString VictoryPic;
 	FString GameLanguage;
+	FString PageIndexText;
 	// Special stack for strings like the default translator.
 	// This will allow the previous default to be included.
 	class FStringStack

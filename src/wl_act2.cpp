@@ -249,22 +249,18 @@ void T_Projectile (AActor *self)
 		while(iter.Next())
 		{
 			AActor *check = iter;
-			if(check == self)
-				continue;
-
-			// Pass through allies
-			if(playermissile)
-			{
-				if(check->player)
-					continue;
-			}
-			else
-			{
-				if(check->flags & FL_ISMONSTER)
-					continue;
-			}
-
-			if((check->flags & (FL_SHOOTABLE|FL_SOLID)) && lastHit != check)
+			if(
+				check != self
+				// Pass through allies if fired by player
+				&& !(playermissile && check->player)
+				&& (
+					(check->flags & FL_ISMONSTER)
+					// Non-player missile cannot hit monster without
+					// FL_PROJHITENEMY
+					? (playermissile || (self->extraflags & FL_PROJHITENEMY) != 0)
+					: true)
+				&& ((check->flags & (FL_SHOOTABLE|FL_SOLID))
+				&& lastHit != check))
 			{
 				fixed deltax = abs(self->x - check->x);
 				fixed deltay = abs(self->y - check->y);
@@ -322,7 +318,8 @@ ACTION_FUNCTION(A_CustomMissile)
 	enum
 	{
 		CMF_AIMOFFSET = 1,
-		CMF_AIMDIRECTION = 2
+		CMF_AIMDIRECTION = 2,
+		CMF_PROJHITENEMY = 4
 	};
 
 	ACTION_PARAM_STRING(missiletype, 0);
@@ -357,6 +354,8 @@ ACTION_FUNCTION(A_CustomMissile)
 		newobj->missileParent = self;
 	newobj->target = newobj->missileParent;
 	newobj->angle = iangle;
+	if (flags & CMF_PROJHITENEMY)
+		newobj->extraflags |= FL_PROJHITENEMY;
 
 	newobj->velx = FixedMul(newobj->speed,finecosine[iangle>>ANGLETOFINESHIFT]);
 	newobj->vely = -FixedMul(newobj->speed,finesine[iangle>>ANGLETOFINESHIFT]);

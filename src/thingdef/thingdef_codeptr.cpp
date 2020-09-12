@@ -44,6 +44,7 @@
 #include "g_mapinfo.h"
 #include "g_shared/a_deathcam.h"
 #include "g_shared/a_inventory.h"
+#include "g_shared/a_ambient.h"
 #include "lnspec.h"
 #include "m_random.h"
 #include "thingdef/thingdef.h"
@@ -153,6 +154,16 @@ ACTION_FUNCTION(A_ActiveSound)
 ACTION_FUNCTION(A_AlertMonsters)
 {
 	madenoise = true;
+	return true;
+}
+
+ACTION_FUNCTION(A_AmbientJumpState)
+{
+	ACTION_PARAM_STATE(frame, 0, NULL);
+	ACTION_PARAM_BOOL(enter, 1);
+
+	AAmbient* ambient_actor = reinterpret_cast<AAmbient*>(self);
+	ambient_actor->JumpState(frame, enter);
 	return true;
 }
 
@@ -809,6 +820,14 @@ ACTION_FUNCTION(A_SetTics)
 	return true;
 }
 
+ACTION_FUNCTION(A_SetVolume)
+{
+	ACTION_PARAM_DOUBLE(volume, 0);
+
+	LoopedAudio::setVolume (self->spawnid, volume);
+	return true;
+}
+
 ACTION_FUNCTION(A_SpawnItem)
 {
 	ACTION_PARAM_STRING(className, 0);
@@ -831,7 +850,8 @@ ACTION_FUNCTION(A_SpawnItemEx)
 {
 	enum
 	{
-		SXF_TRANSFERPOINTERS = 0x1
+		SXF_TRANSFERPOINTERS = 0x1,
+		SXF_PROJHITENEMY = 0x2,
 	};
 
 	ACTION_PARAM_STRING(className, 0);
@@ -867,6 +887,8 @@ ACTION_FUNCTION(A_SpawnItemEx)
 		if(newobj->flags & FL_ATTACKMODE)
 			newobj->speed = newobj->runspeed;
 	}
+	if (flags & SXF_PROJHITENEMY)
+		newobj->extraflags |= FL_PROJHITENEMY;
 
 	newobj->angle = static_cast<angle_t>(angle);
 
@@ -909,6 +931,21 @@ ACTION_FUNCTION(A_TakeInventory)
 		return true;
 	}
 	return false;
+}
+
+ACTION_FUNCTION(A_UpdateZoneIndex)
+{
+	auto player = players[0].mo;
+	auto spot = map->GetSpot(player->tilex, player->tiley, 0);
+	if (spot && spot->zone)
+	{
+		self->zoneindex = spot->zone->index;
+	}
+	else
+	{
+		self->zoneindex = 0;
+	}
+	return true;
 }
 
 #include "wl_main.h"

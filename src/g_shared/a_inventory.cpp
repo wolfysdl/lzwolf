@@ -44,6 +44,7 @@
 #include "wl_game.h"
 #include "wl_play.h"
 #include "wl_loadsave.h"
+#include "wl_menu.h"
 
 IMPLEMENT_POINTY_CLASS(Inventory)
 	DECLARE_POINTER(owner)
@@ -222,6 +223,7 @@ void AInventory::Touch(AActor *toucher)
 	if(message != NULL)
 	{
 		Printf (PRINT_LOW, "%s\n", message);
+		GameMessage (message);
 	}
 
 	const char *infomessage = InfoMessage ();

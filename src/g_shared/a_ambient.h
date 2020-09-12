@@ -1,8 +1,8 @@
 /*
-** wl_iwad.h
+** a_ambient.h
 **
 **---------------------------------------------------------------------------
-** Copyright 2012 Braden Obrzut
+** Copyright 2020 Linux Wolf
 ** All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without
@@ -32,49 +32,20 @@
 **
 */
 
-#ifndef __WL_IWAD_H__
-#define __WL_IWAD_H__
+#ifndef __A_AMBIENT_H__
+#define __A_AMBIENT_H__
 
-#include "zstring.h"
+#include "actor.h"
 
-// For IWad Pickers so not in namespace
-struct WadStuff
+class AAmbient : public AActor
 {
-	WadStuff() : Type(-1), Hidden(false) {}
+	DECLARE_NATIVE_CLASS(Ambient, Actor)
+	HAS_OBJECT_POINTERS
 
-	TArray<FString> Path;
-	FString Extension;
-	FString Name;
-	int Type;
-	bool Hidden;
+	public:
+		void JumpState(const Frame *frame, bool enter);
+
+		void PlaySound();
 };
-
-namespace IWad
-{
-	enum Flags
-	{
-		REGISTERED = 1, // Enables not-shareware warning
-		HELPHACK = 2,   // Fixes helpart art assets
-		PREVIEW = 4,    // Only show in picker if user opts in
-		RESOURCE = 8    // Used as a component of another option
-	};
-
-	struct IWadData
-	{
-		FString Name;
-		FString Autoname;
-		FString Mapinfo;
-		TArray<FString> Ident;
-		TArray<FString> Required;
-		FName Game;
-		unsigned int Flags;
-		bool LevelSet;
-	};
-
-	bool CheckGameFilter(FName filter);
-	const IWadData &GetGame();
-	unsigned int GetNumIWads();
-	void SelectGame(TArray<FString> &wadfiles, const char* iwad, const char* datawad, const FString &progdir);
-}
 
 #endif

@@ -211,6 +211,7 @@ protected:
 
 	void ParseStringArrayAssignment(TArray<FString> &dest)
 	{
+		dest.Clear();
 		sc.MustGetToken('=');
 		do
 		{
@@ -597,6 +598,10 @@ protected:
 
 GameInfo gameinfo;
 
+GameInfo::GameInfo() : PageIndexText("pg %d of %d")
+{
+}
+
 class GameInfoBlockParser : public MapInfoBlockParser
 {
 public:
@@ -693,6 +698,8 @@ protected:
 			ParseNameAssignment(gameinfo.DoorSoundSequence);
 		else if(key.CompareNoCase("drawreadthis") == 0)
 			ParseBoolAssignment(gameinfo.DrawReadThis);
+		else if(key.CompareNoCase("drawgamemessage") == 0)
+			ParseBoolAssignment(gameinfo.DrawGameMessage);
 		else if(key.CompareNoCase("trackhighscores") == 0)
 			ParseBoolAssignment(gameinfo.TrackHighScores);
 		else if(key.CompareNoCase("gamecolormap") == 0)
@@ -774,6 +781,8 @@ protected:
 			ParseFontColorAssignment(gameinfo.FontColors[GameInfo::HIGHSCORES]);
 		else if(key.CompareNoCase("pageindexfontcolor") == 0)
 			ParseFontColorAssignment(gameinfo.FontColors[GameInfo::PAGEINDEX]);
+		else if(key.CompareNoCase("pageindextext") == 0)
+			ParseStringAssignment(gameinfo.PageIndexText);
 		else if(key.CompareNoCase("psyched") == 0)
 		{
 			ParseColorArrayAssignment(gameinfo.PsychedColors, 2);

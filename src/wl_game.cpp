@@ -339,6 +339,8 @@ void SetupGameLevel (void)
 		if(players[0].mo == NULL)
 			throw CRecoverableError("No player 1 start!");
 	}
+
+	ClearGameMessage ();
 }
 
 
@@ -801,6 +803,8 @@ void Died (void)
 
 	if ((players[0].lives > -1) || (gamestate.difficulty->LivesCount < 0))
 		players[0].state = player_t::PST_REBORN;
+
+	ClearGameMessage ();
 }
 
 //==========================================================================
@@ -1054,6 +1058,8 @@ restartgame:
 					VW_FadeOut ();
 				if(viewsize == 21) DrawPlayScreen();
 
+				ClearGameMessage ();
+
 				if(next.CompareNoCase("EndDemo") == 0)
 				{
 					CheckHighScore (players[0].score,levelInfo);
@@ -1263,6 +1269,27 @@ namespace LoopedAudio
 			}
 
 			chans.erase(objId);
+		}
+	}
+
+	void setVolume (ObjId objId, double volume)
+	{
+		ChanMap::iterator it = chans.find(objId);
+		if (it != chans.end())
+		{
+			Chan &chan = it->second;
+
+			if (chan.channel != -1)
+			{
+				chan.volume = volume;
+
+				globalsoundpos *soundpos = &channelSoundPos[chan.channel];
+				if (soundpos->valid)
+				{
+					soundpos->volume = volume;
+					SD_SetChannelVolume (chan.channel, volume);
+				}
+			}
 		}
 	}
 

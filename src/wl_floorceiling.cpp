@@ -26,9 +26,10 @@ namespace Shading
 	public:
 		int len;
 		int light;
+		const ClassDef *littype;
 		const byte *shades;
 
-		explicit Span(int len_, int light_) : len(len_), light(light_), shades(0)
+		explicit Span(int len_, int light_, const ClassDef *littype_) : len(len_), light(light_), littype(littype_), shades(0)
 		{
 		}
 	};
@@ -41,9 +42,10 @@ namespace Shading
 		TVector2<double> C;
 		double R;
 		int light;
+		const ClassDef *littype;
 
-		Halo(TVector2<double> C_, double R_, int light_) :
-			C(C_), R(R_), light(light_)
+		Halo(TVector2<double> C_, double R_, int light_, const ClassDef *littype_) :
+			C(C_), R(R_), light(light_), littype(littype_)
 		{
 		}
 	};
@@ -62,9 +64,11 @@ namespace Shading
 	std::vector<Span> spans;
 	Span *curspan;
 	std::vector<Halo> halos;
-	std::map<Tile::Pos, Tile> tiles;
+	std::vector<Tile> tiles;
+	Halo::Id lastHaloId;
+	std::vector<byte> rowHaloIds;
 	typedef unsigned short ZoneId;
-	std::map<ZoneId, int> zoneLightMap;
+	std::map<ZoneId, AActor::ZoneLight> zoneLightMap;
 
 	void PopulateHalos (void)
 	{
@@ -94,7 +98,7 @@ namespace Shading
 							{
 								const double x = FIXED2FLOAT(check->x);
 								const double y = FIXED2FLOAT(check->y);
-								halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3));
+								halos.push_back(Halo(TVector2<double>(x, y), haloLight->radius, haloLight->light<<3, haloLight->littype));
 							}
 						}
 					}
@@ -120,7 +124,14 @@ namespace Shading
 								unsigned int cury = check->y>>TILESHIFT;
 								MapSpot spot = map->GetSpot(curx%mapwidth, cury%mapheight, 0);
 								if (spot->zone != NULL)
-									zoneLightMap[spot->zone->index] += zoneLight->light<<3;
+								{
+									auto& zl = zoneLightMap[spot->zone->index];
+									zl.light += zoneLight->light<<3;
+									if (zoneLight->littype != nullptr)
+									{
+										zl.littype = zoneLight->littype;
+									}
+								}
 							}
 						}
 					}
@@ -129,7 +140,14 @@ namespace Shading
 			}
 		}
 
-		tiles.clear();
+		const auto numtiles = mapwidth * mapheight;
+		if (numtiles != tiles.size())
+		{
+			tiles.resize(numtiles);
+		}
+		std::fill(std::begin(tiles), std::end(tiles), Tile{});
+
+		lastHaloId = 0;
 		{
 			typedef std::vector<Halo> HaloVec;
 			const HaloVec &v = halos;
@@ -140,15 +158,25 @@ namespace Shading
 				(h.C - h.R).Convert(low);
 				(h.C + h.R).Convert(high);
 
+				const auto haloId = it - v.begin();
+
 				int x;
 				for (x = low.X; x <= high.X; x++)
 				{
 					int y;
 					for (y = low.Y; y <= high.Y; y++)
-						tiles[Tile::Pos(x, y)].haloIds.push_back(it - v.begin());
+					{
+						if (map->IsValidTileCoordinate(x,y,0))
+						{
+							tiles[x+y*mapwidth].haloIds.push_back(haloId);
+							lastHaloId = std::max(lastHaloId,
+									static_cast<Halo::Id>(haloId + 1));
+						}
+					}
 				}
 			}
 		}
+		rowHaloIds = std::vector<byte>((lastHaloId+7)/8);
 	}
 
 	void PrepareConstants (int halfheight_, fixed planeheight_, fixed planenumerator_)
@@ -159,7 +187,7 @@ namespace Shading
 		heightFactor = abs(planeheight)>>8;
 	}
 
-	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light)
+	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light, const ClassDef *littype)
 	{
 		typedef std::vector<Span> Vec;
 
@@ -185,20 +213,22 @@ namespace Shading
 				if (x2 >= sx+v[i].len)
 				{
 					v[i].light += light;
+					v[i].littype = littype;
 					x1 = sx+v[i].len;
 					if (x1 < x2)
 						continue;
 				}
 				else // x2 < sx+v[i].len
 				{
-					v.insert(v.begin()+i+1, Span((sx+v[i].len)-x2,v[i].light));
+					v.insert(v.begin()+i+1, Span((sx+v[i].len)-x2,v[i].light,v[i].littype));
 					v[i].len = x2-x1;
 					v[i].light += light;
+					v[i].littype = littype;
 				}
 			}
 			else // x1 > sx
 			{
-				v.insert(v.begin()+i+1, Span(v[i].len-(x1-sx),v[i].light));
+				v.insert(v.begin()+i+1, Span(v[i].len-(x1-sx),v[i].light,v[i].littype));
 				v[i].len = x1-sx;
 				continue;
 			}
@@ -227,13 +257,12 @@ namespace Shading
 		const fixed tz = FixedMul(FixedDiv(r_depthvisibility, abs(planeheight)), abs(((halfheight)<<16) - ((halfheight-y)<<16)));
 
 		spans.clear();
-		spans.push_back(Span(vw, 0));
+		spans.push_back(Span(vw, 0, NULL));
 
 		const unsigned int mapwidth = map->GetHeader().width;
 		const unsigned int mapheight = map->GetHeader().height;
 
-		typedef std::set<Halo::Id> HaloIds;
-		HaloIds haloIds;
+		std::memset(rowHaloIds.data(), 0, rowHaloIds.size());
 		{
 			const fixed gu0 = gu;
 			const fixed gv0 = gv;
@@ -260,12 +289,11 @@ namespace Shading
 						const int mapx = (int)(oldmapx%mapwidth);
 						const int mapy = (int)(oldmapy%mapheight);
 
-						const std::vector<Halo::Id> &ids =
-							tiles[Tile::Pos(mapx,mapy)].haloIds;
-						if (ids.size() > 0)
+						const auto &ids =
+							tiles[mapx+mapy*mapwidth].haloIds;
+						for (auto id : ids)
 						{
-							std::copy(ids.begin(), ids.end(),
-								std::inserter(haloIds, haloIds.end()));
+							rowHaloIds[id/8] |= 1<<(id&7);
 						}
 
 						MapSpot spot = map->GetSpot(mapx, mapy, 0);
@@ -320,7 +348,9 @@ namespace Shading
 					if (zonex > -1 && oldzone != INT_MAX &&
 						zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 					{
-						InsertSpan (zonex-lx, x-lx, spans, zoneLightMap.find((ZoneId)oldzone)->second);
+						const auto& zoneLight =
+							zoneLightMap.find((ZoneId)oldzone)->second;
+						InsertSpan (zonex-lx, x-lx, spans, zoneLight.light, zoneLight.littype);
 					}
 					oldzone = curzone;
 					zonex = x;
@@ -333,7 +363,9 @@ namespace Shading
 			if (zonex > -1 && INT_MAX != oldzone && zonex<rx &&
 				zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 			{
-				InsertSpan (zonex, rx, spans, zoneLightMap.find((ZoneId)oldzone)->second);
+				const auto& zoneLight =
+					zoneLightMap.find((ZoneId)oldzone)->second;
+				InsertSpan (zonex-lx, vw-1, spans, zoneLight.light, zoneLight.littype);
 			}
 
 			gu = gu0;
@@ -362,9 +394,12 @@ namespace Shading
 
 		const double a = V|V;
 
-		for (HaloIds::const_iterator it = haloIds.begin(); it != haloIds.end(); ++it)
+		for (Halo::Id id = 0; id < lastHaloId; ++id)
 		{
-			const Halo &halo = halos[*it];
+			if (!(rowHaloIds[id/8] & 1<<(id&7)))
+				continue;
+
+			const Halo &halo = halos[id];
 			const Vec2 C = halo.C;
 			const double R = halo.R;
 
@@ -382,7 +417,7 @@ namespace Shading
 				const int x2 = t2*vw;
 
 				if (x1<x2)
-					InsertSpan (x1, x2, spans, halo.light);
+					InsertSpan (x1, x2, spans, halo.light, halo.littype);
 			}
 		}
 
@@ -405,6 +440,15 @@ namespace Shading
 		return curshades;
 	}
 
+	const ClassDef *LitForPix ()
+	{
+		const ClassDef *curlit = curspan->littype;
+		curspan->len--;
+		if (!curspan->len)
+			curspan++;
+		return curlit;
+	}
+
 	int LightForIntercept (fixed xintercept, fixed yintercept)
 	{
 		unsigned int curx,cury;
@@ -417,7 +461,7 @@ namespace Shading
 
 		int light = 0;
 		typedef std::vector<Halo::Id> Vec;
-		const Vec &v = tiles[Tile::Pos(curx%mapwidth,cury%mapheight)].haloIds;
+		const Vec &v = tiles[(curx%mapwidth)+(cury%mapheight)*mapwidth].haloIds;
 		if (v.size() > 0)
 		{
 			const double x = FIXED2FLOAT(xintercept);
@@ -460,8 +504,11 @@ namespace Shading
 				spot = doorspot->GetAdjacent(doordir, !(oldmapxdoor&1));
 			}
 		}
-		if (spot && spot->zone != NULL && zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
-			light += zoneLightMap.find(spot->zone->index)->second;
+		if (spot && spot->zone != NULL &&
+				zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
+		{
+			light += zoneLightMap.find(spot->zone->index)->second.light;
+		}
 
 		return light;
 	}

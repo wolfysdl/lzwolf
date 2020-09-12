@@ -240,6 +240,8 @@ namespace LoopedAudio
 	void updateSoundPos (void);
 
 	void stopSoundFrom (ObjId objId);
+
+	void setVolume (ObjId objId, double volume);
 }
 
 #endif

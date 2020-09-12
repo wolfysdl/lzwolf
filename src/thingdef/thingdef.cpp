@@ -98,6 +98,7 @@ const struct FlagDef
 	DEFINE_FLAG(FL, OLDRANDOMCHASE, Actor, flags),
 	DEFINE_FLAG(FL, PICKUP, Actor, flags),
 	DEFINE_FLAG(FL, PLOTONAUTOMAP, Actor, flags),
+	DEFINE_FLAG(FL, PROJHITENEMY, Actor, extraflags),
 	DEFINE_FLAG(FL, RANDOMIZE, Actor, flags),
 	DEFINE_FLAG(FL, RANDOMTURN, Actor, extraflags),
 	DEFINE_FLAG(FL, REQUIREKEYS, Actor, flags),
@@ -476,7 +477,8 @@ bool ClassDef::bShutdown = false;
 // Minimize warning spam for deprecated feature in 1.4
 static bool g_ThingEdNumWarning;
 
-ClassDef::ClassDef() : tentative(false)
+ClassDef::ClassDef() : DamageFactors(nullptr), tentative(false),
+	filterposRunningId(0)
 {
 	defaultInstance = NULL;
 	FlatPointers = Pointers = NULL;
@@ -491,6 +493,8 @@ ClassDef::~ClassDef()
 	}
 	for(unsigned int i = 0;i < symbols.Size();++i)
 		delete symbols[i];
+	if (DamageFactors != nullptr)
+		delete DamageFactors;
 }
 
 TMap<FName, ClassDef *> &ClassDef::ClassTable()
@@ -1149,6 +1153,23 @@ static int ParseThingActivation (Scanner &sc)
 
 //==========================================================================
 
+struct ParsePropertyNoComma
+{
+	void Set()
+	{
+		flag = true;
+	}
+
+	bool Clear()
+	{
+		const auto res = flag;
+		flag = false;
+		return res;
+	}
+
+	bool flag = false;
+};
+
 bool ClassDef::SetProperty(AActor* actor, const ClassDef *cls, const char* propName, const char* value)
 {
 	Scanner sc( value, strlen(value) );
@@ -1225,6 +1246,8 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 			unsigned int paramc = 0;
 			if(*p != 0)
 			{
+				ParsePropertyNoComma nocomma;
+
 				do
 				{
 					if(*p != 0)
@@ -1288,6 +1311,16 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 								}
 								params[paramc].f = (negate ? -1 : 1) * sc->decimal;
 								break;
+
+							case 'Z':	// an optional string. Does not allow any numerical value.
+								if (sc.CheckToken(TK_FloatConst))
+								{
+									nocomma.Set();
+									sc.Rewind();
+									break;
+								}
+								// fall through
+
 							case 'S':
 								if(!optional)
 									sc.MustGetToken(TK_StringConst);
@@ -1328,7 +1361,7 @@ bool ClassDef::SetProperty(ClassDef *newClass, const char* className, const char
 					else
 						sc.GetNextToken();
 				}
-				while(sc.CheckToken(','));
+				while(nocomma.Clear() || sc.CheckToken(','));
 			}
 			if(!optional && *p != 0 && *p != '_')
 				sc.ScriptMessage(Scanner::ERROR, "Not enough parameters.");
@@ -1403,6 +1436,13 @@ void ClassDef::UnloadActors()
 	AActor::damageExpressions.Clear();
 	for(unsigned int i = 0;i < globalSymbols.Size();++i)
 		delete globalSymbols[i];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int ClassDef::GetNextFilterposId()
+{
+    return filterposRunningId++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

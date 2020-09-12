@@ -68,6 +68,9 @@ player_t		players[MAXPLAYERS];
 void ClipMove (AActor *ob, int32_t xmove, int32_t ymove);
 static void Thrust (APlayerPawn *player, angle_t angle, int32_t speed);
 
+int ApplyMobjDamageFactor(int damage, const FName &damagetype,
+		const DmgFactors *factors);
+
 /*
 =============================================================================
 
@@ -153,6 +156,47 @@ void CheckWeaponChange (AActor *self)
 
 
 /*
+======================
+=
+= ThrustTracker
+=
+======================
+*/
+namespace ThrustTracker
+{
+	TVector2<double> p0;
+	int32_t	a0;
+
+	void Start (APlayerPawn *ob)
+	{
+		ob->forwardthrust = 0;
+		ob->sidethrust = 0;
+		ob->rotthrust = 0;
+		p0 = TVector2<double>(FIXED2FLOAT(ob->x), FIXED2FLOAT(ob->y));
+		a0 = ob->angle>>ANGLETOFINESHIFT;
+	}
+
+	void Finish (APlayerPawn *ob)
+	{
+		const TVector2<double> p1(FIXED2FLOAT(ob->x), FIXED2FLOAT(ob->y));
+
+		const TVector2<double> fwd(FIXED2FLOAT(viewcos), -FIXED2FLOAT(viewsin));
+		const TVector2<double> side = fwd.Rotated90CCW();
+
+		ob->forwardthrust = FLOAT2FIXED((p1-p0)|fwd);
+		ob->sidethrust = FLOAT2FIXED((p1-p0)|side);
+
+		const int32_t a1 = (int32_t)(ob->angle>>ANGLETOFINESHIFT);
+
+		int32_t a = a1 - a0;
+		a += (a>(FINEANGLES/2)) ? -FINEANGLES : (a<-(FINEANGLES/2)) ? FINEANGLES : 0;
+
+		ob->rotthrust = a;
+	}
+}
+
+
+/*
 =======================
 =
 = ControlMovement
@@ -177,6 +221,7 @@ void ControlMovement (APlayerPawn *ob)
 	int strafe = controlstrafe;
 
 	ob->player->thrustspeed = 0;
+	ThrustTracker::Start (ob);
 
 	oldx = ob->x;
 	oldy = ob->y;
@@ -262,6 +307,8 @@ void ControlMovement (APlayerPawn *ob)
 
 	if (gamestate.victoryflag)              // watching the BJ actor
 		return;
+	
+	ThrustTracker::Finish (ob);
 }
 
 /*
@@ -323,6 +370,19 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 	// fix for baby mode
 	if (points <= 0 && damage > 0)
 		points = 1;
+
+	if(ReadyWeapon)
+	{
+		if(points > 0)
+		{
+			points = FixedMul(points, ReadyWeapon->DamageFactor);
+			if(points > 0 && damagetype != nullptr)
+				points = ApplyMobjDamageFactor(points,
+						damagetype->GetName(),
+						ReadyWeapon->GetClass()->DamageFactors);
+		}
+	}
+
 	NetDPrintf("%s %d points\n", __FUNCTION__, points);
 
 	if (points > 0 && mo->inventory)
@@ -1067,6 +1127,11 @@ size_t player_t::PropagateMark()
 	GC::Mark(ReadyWeapon);
 	if(PendingWeapon != WP_NOCHANGE)
 		GC::Mark(PendingWeapon);
+
+	std::size_t i;
+	for(i = 0; i < weaponSlotStates.size(); i++)
+		GC::Mark(weaponSlotStates[i].LastWeapon);
+
 	return sizeof(*this);
 }
 
@@ -1076,6 +1141,8 @@ void player_t::Reborn()
 	PendingWeapon = WP_NOCHANGE;
 	flags = 0;
 	FOV = DesiredFOV;
+	std::fill(std::begin(weaponSlotStates), std::end(weaponSlotStates),
+			WeaponSlotState{});
 
 	if(state == PST_ENTER)
 	{
@@ -1094,6 +1161,15 @@ void player_t::Reborn()
 FArchive &operator<< (FArchive &arc, player_t::WeaponSlotState &player)
 {
 	arc << player.LastWeapon;
+	return arc;
+}
+
+FArchive &operator<< (FArchive &arc,
+		player_t::TWeaponSlotStates &weaponSlotStates)
+{
+	std::size_t i;
+	for(i = 0; i < weaponSlotStates.size(); i++)
+		arc << weaponSlotStates[i];
 	return arc;
 }
 

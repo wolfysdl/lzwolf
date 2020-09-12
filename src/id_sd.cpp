@@ -628,21 +628,27 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 
 	SoundInfo.SetLastPlayTick(which, currentTick);
 
+	// just throw looping effects on group 2
+	auto group = looping ? 2 : 1;
+
 	int channel = chan;
 	if(chan == SD_GENERIC)
 	{
-		channel = Mix_GroupAvailable(1);
+		channel = Mix_GroupAvailable(group);
 		if(channel == -1)
 		{
-			channel = Mix_GroupOldest(1);
+			channel = Mix_GroupOldest(group);
 
 			// nobody is allowed to steal from looped audio
 			if (LoopedAudio::claimed (channel))
 				channel = -1;
 		}
 		if(channel == -1)           // All sounds stopped in the meantime?
-			channel = Mix_GroupAvailable(1);
+			channel = Mix_GroupAvailable(group);
 	}
+	if(channel == -1)
+		return -1;
+
 	SD_SetPosition(channel, leftpos, rightpos, distance);
 
 	DigiPlaying = true;
@@ -659,6 +665,11 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	}
 
 	return channel;
+}
+
+void SD_SetChannelVolume(int channel, double volume)
+{
+	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
 }
 
 void SD_ChannelFinished(int channel)
@@ -1080,8 +1091,12 @@ SD_Startup(void)
 	}
 	atterm(Mix_CloseAudio);
 
-	Mix_ReserveChannels(2);  // reserve player and boss weapon channels
-	Mix_GroupChannels(2, MIX_CHANNELS-1, 1); // group remaining channels
+	// reserve player and boss weapon channels
+	Mix_ReserveChannels(2);
+	// reserve 2 channels under group 2
+	Mix_GroupChannels(2, 3, 2);
+	// group remaining channels under group 1
+	Mix_GroupChannels(4, MIX_CHANNELS-1, 1);
 
 	// Init music
 	if(YM3812Init(1,3579545,param_samplerate))
@@ -1443,7 +1458,7 @@ SD_StartMusic(const char* chunk)
 
 	if (MusicMode == smm_AdLib)
 	{
-		int lumpNum = Wads.CheckNumForName(chunk, ns_music);
+		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
 		if(lumpNum == -1)
 			return;
 
@@ -1509,7 +1524,7 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 
 	if (MusicMode == smm_AdLib)
 	{
-		int lumpNum = Wads.CheckNumForName(chunk, ns_music);
+		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
 		if(lumpNum == -1)
 			return;
 

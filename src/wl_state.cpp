@@ -54,6 +54,10 @@ static const dirtype diagonal[9][9] =
 bool MoveObj (AActor *ob, int32_t move);
 
 static void FirstSighting (AActor *ob, const Frame *state);
+int ApplyMobjDamageFactor(int damage, const FName &damagetype,
+		const DmgFactors *factors);
+
+EXTERN_CVAR (Bool, notargetmode)
 
 /*
 =============================================================================
@@ -817,6 +821,16 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 			return;
 	}
 
+	if (damage > 0)
+	{
+		damage = FixedMul(damage, ob->DamageFactor);
+		if (damage > 0 && damagetype != nullptr)
+		{
+			damage = ApplyMobjDamageFactor(damage, damagetype->GetName(),
+					ob->GetClass()->DamageFactors);
+		}
+	}
+
 	NetDPrintf("%s %d points\n", __FUNCTION__, FixedMul(damage, gamestate.difficulty->PlayerDamageFactor));
 	ob->health -= FixedMul(damage, gamestate.difficulty->PlayerDamageFactor);
 	// Ensure that we're targetting a player for now.
@@ -856,6 +870,29 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 		if (painstate)
 			ob->SetState(painstate);
 	}
+}
+
+/*
+===================
+=
+= ApplyMobjDamageFactor
+=
+===================
+*/
+
+int ApplyMobjDamageFactor(int damage, const FName &damagetype,
+		const DmgFactors *factors)
+{
+	if (factors != nullptr)
+	{
+		auto p_factor = factors->CheckFactor(damagetype.GetChars());
+		if (p_factor)
+		{
+			return FixedMul(damage, *p_factor);
+		}
+	}
+	
+	return damage;
 }
 
 /*
