@@ -819,7 +819,7 @@ namespace FilterposApplier
 	public:
 		virtual ~Base() { }
 
-		virtual void Execute (AActor *actor) const = 0;
+		virtual void Execute (AActor *actor) = 0;
 	};
 
 	template <typename T>
@@ -832,7 +832,7 @@ namespace FilterposApplier
 		{
 		}
 
-		virtual void Execute (AActor *actor) const
+		virtual void Execute (AActor *actor)
 		{
 			actor->ApplyFilterpos (v);
 		}
@@ -897,81 +897,10 @@ namespace FilterposApplier
 		}
 	}
 
-	int CalculateMinId (AActor *actor)
-	{
-		int id = -1;
-
-		auto update_min_id = [&id](int next_id) {
-			id = (id == -1 ?  next_id : std::min(next_id, id));
-		};
-
-		{
-			typedef AActor::FilterposWrapList Li;
-
-			Li *li = actor->GetFilterposWrapList();
-			if (li)
-			{
-				Li::Iterator item = li->Head();
-				do
-				{
-					Li::Iterator filterposWrap = item;
-					update_min_id(filterposWrap->id);
-				}
-				while(item.Next());
-			}
-		}
-
-		{
-			typedef AActor::FilterposThrustList Li;
-
-			Li *li = actor->GetFilterposThrustList();
-			if (li)
-			{
-				Li::Iterator item = li->Head();
-				do
-				{
-					Li::Iterator filterposThrust = item;
-					update_min_id(filterposThrust->id);
-				}
-				while(item.Next());
-			}
-		}
-
-		{
-			typedef AActor::FilterposWaveList Li;
-
-			Li *li = actor->GetFilterposWaveList();
-			if (li)
-			{
-				Li::Iterator item = li->Head();
-				do
-				{
-					Li::Iterator filterposWave = item;
-					update_min_id(filterposWave->id);
-				}
-				while(item.Next());
-			}
-		}
-
-		return id;
-	}
-
-	using TExecMapByMinId = std::map<int, ExecMap>;
-	TExecMapByMinId execMaps;
-
 	void Execute (AActor *actor)
 	{
-		const auto min_id = CalculateMinId(actor);
-		if(min_id == -1)
-			return;
-
-		if(execMaps.find(min_id) == std::end(execMaps))
-		{
-			auto &m = execMaps[min_id];
-			InitExecMap (actor, m);
-		}
-
-		const auto &m = execMaps[min_id];
+		ExecMap m;
+		InitExecMap (actor, m);
 
 		int id;
 		for (id = 0; m.find(id) != m.end(); ++id)
