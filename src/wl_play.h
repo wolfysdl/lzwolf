@@ -34,7 +34,6 @@ extern unsigned int ConsolePlayer;
 extern TicCmd_t control[MAXPLAYERS];
 extern  exit_t      playstate;
 extern  bool        madenoise;
-extern  int         godmode;
 extern  gameaction_t gameaction;
 
 extern  bool        demorecord,demoplayback;

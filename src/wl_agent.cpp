@@ -70,6 +70,8 @@ static void Thrust (APlayerPawn *player, angle_t angle, int32_t speed);
 int ApplyMobjDamageFactor(int damage, const FName &damagetype,
 		const DmgFactors *factors);
 
+EXTERN_CVAR (Int, godmode)
+
 /*
 =============================================================================
 
