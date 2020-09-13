@@ -469,12 +469,12 @@ void MetaTable::SetMetaString(uint32_t id, const char* value)
 static TMap<int, ClassDef *> EditorNumberTable, ConversationIDTable;
 SymbolTable ClassDef::globalSymbols;
 bool ClassDef::bShutdown = false;
+int ClassDef::filterposRunningId = 0;
 
 // Minimize warning spam for deprecated feature in 1.4
 static bool g_ThingEdNumWarning;
 
-ClassDef::ClassDef() : DamageFactors(nullptr), tentative(false),
-	filterposRunningId(0)
+ClassDef::ClassDef() : DamageFactors(nullptr), tentative(false)
 {
 	defaultInstance = NULL;
 	FlatPointers = Pointers = NULL;

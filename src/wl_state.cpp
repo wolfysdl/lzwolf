@@ -1,6 +1,7 @@
 // WL_STATE.C
 
 #include <sstream>
+#include <map>
 #include "wl_def.h"
 #include "id_ca.h"
 #include "id_sd.h"
@@ -15,6 +16,8 @@
 #include "wl_net.h"
 #include "wl_play.h"
 #include "wl_state.h"
+#include "wl_draw.h"
+#include "wl_framedata.h"
 #include "templates.h"
 
 /*
@@ -729,13 +732,24 @@ bool MoveObj (AActor *ob, int32_t move)
 	}
 	ob->distance -=move;
 
-	// Check for touching objects
-	for(AActor::Iterator iter = AActor::GetIterator().Next();iter;)
-	{
-		AActor *check = iter;
-		iter.Next();
+	static FrameData framedata;
 
-		if(check == ob || (check->flags & FL_SOLID))
+	if(frameon != moveobj_frameon)
+	{
+		moveobj_frameon = frameon;
+
+		framedata.InitXActors([](AActor *check) {
+				return (check->flags & FL_SOLID) != 0;
+			} );
+	}
+
+	const auto max_r = framedata.max_radius + ob->radius;
+	for(auto it = framedata.xactors.lower_bound(ob->x - max_r);
+			it != framedata.xactors.upper_bound(ob->x + max_r); ++it)
+	{
+		auto check = it->second;
+
+		if(check == ob)
 			continue;
 
 		fixed r = check->radius + ob->radius;

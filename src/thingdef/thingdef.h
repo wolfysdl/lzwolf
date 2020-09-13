@@ -375,7 +375,7 @@ class ClassDef
 		DObject			*(*ConstructNative)(const ClassDef *, void *);
 
 		static bool		bShutdown;
-		int             filterposRunningId;
+		static int		filterposRunningId;
 };
 
 // Functions below are actually a part of dobject.h, but moved here for dependency reasons

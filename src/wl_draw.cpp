@@ -75,6 +75,8 @@ unsigned vbufPitch = 0;
 
 int32_t	lasttimecount;
 int32_t	frameon;
+int32_t	moveobj_frameon;
+int32_t	projectile_frameon;
 bool	fpscounter;
 int		r_extralight;
 
