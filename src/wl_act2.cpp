@@ -21,6 +21,7 @@
 #include "wl_game.h"
 #include "wl_net.h"
 #include "wl_state.h"
+#include "wl_framedata.h"
 
 static const angle_t dirangle[9] = {0,ANGLE_45,2*ANGLE_45,3*ANGLE_45,4*ANGLE_45,
 					5*ANGLE_45,6*ANGLE_45,7*ANGLE_45,0};
@@ -232,6 +233,17 @@ void T_Projectile (AActor *self)
 		movey /= steps;
 	}
 
+	static FrameData framedata;
+
+	if(frameon != projectile_frameon)
+	{
+		projectile_frameon = frameon;
+
+		framedata.InitXActors([](AActor *check) {
+				return !(check->flags & (FL_SHOOTABLE|FL_SOLID));
+			} );
+	}
+
 	AActor *lastHit = NULL; // For ripping, so we only hit an actor once per tic
 	do
 	{
@@ -245,10 +257,12 @@ void T_Projectile (AActor *self)
 		}
 
 		const bool playermissile = self->target && self->target->player;
-		AActor::Iterator iter = AActor::GetIterator();
-		while(iter.Next())
+
+		const auto max_r = framedata.max_radius + self->radius;
+		for(auto it = framedata.xactors.lower_bound(self->x - max_r);
+				it != framedata.xactors.upper_bound(self->x + max_r); ++it)
 		{
-			AActor *check = iter;
+			auto check = it->second;
 			if(
 				check != self
 				// Pass through allies if fired by player

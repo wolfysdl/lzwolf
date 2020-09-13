@@ -22,6 +22,8 @@ extern  TUniquePtr<int[]> wallheight;
 extern  TUniquePtr<int[]> skywallheight;
 extern  word horizwall[],vertwall[];
 extern  int32_t    frameon;
+extern  int32_t    moveobj_frameon;
+extern  int32_t    projectile_frameon;
 extern	int r_extralight;
 
 extern  unsigned screenloc[3];

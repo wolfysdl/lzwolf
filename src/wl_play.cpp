@@ -1084,6 +1084,8 @@ void PlayLoop (void)
 	playstate = ex_stillplaying;
 	ResetTimeCount();
 	frameon = 0;
+	moveobj_frameon = 0;
+	projectile_frameon = 0;
 	funnyticount = 0;
 	memset (control[ConsolePlayer].buttonstate, 0, sizeof (control[ConsolePlayer].buttonstate));
 	ClearPaletteShifts ();
@@ -1130,6 +1132,7 @@ void PlayLoop (void)
 			{
 				PollControls(!i);
 
+				++frameon;
 				++gamestate.TimeCount;
 				thinkerList->Tick();
 				AActor::FinishSpawningActors();
