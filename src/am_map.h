@@ -48,7 +48,8 @@ enum
 };
 
 extern unsigned automap;
-EXTERN_CVAR (Bool, am_cheat)
+//EXTERN_CVAR (Bool, am_cheat)
+extern bool am_cheat;
 EXTERN_CVAR (Int, am_rotate)
 EXTERN_CVAR (Bool, am_overlaytextured)
 EXTERN_CVAR (Bool, am_drawtexturedwalls)

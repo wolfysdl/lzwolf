@@ -624,7 +624,8 @@ enum
 };
 
 unsigned automap = 0;
-CVAR (Bool, am_cheat, false, CVAR_ARCHIVE)
+//CVAR (Bool, am_cheat, false, CVAR_ARCHIVE)
+bool am_cheat = true;
 CVAR (Int, am_rotate, 0, CVAR_ARCHIVE)
 CVAR (Bool, am_overlaytextured, false, CVAR_ARCHIVE)
 CVAR (Bool, am_drawtexturedwalls, true, CVAR_ARCHIVE)

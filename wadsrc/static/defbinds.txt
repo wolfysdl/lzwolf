@@ -13,5 +13,4 @@ bind "i" "sendcmd led.status"
 bind "t" "sendcmd btn.notify action press"
 bind "u" "sendcmd btn.notify mic_mute press"
 
-bind "l" "logred START"
-bind "p" "logred FINISH"
+bind "p" "sendcmd ping"
