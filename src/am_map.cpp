@@ -286,16 +286,15 @@ public:
 
     ~CIPCHandlerThread()
     {
-        if( m_thread.get_id() != std::thread::id{} )
+        for( auto& kv: m_client_infos )
         {
-            {
-                std::lock_guard< std::mutex > lk( m_mut );
-                m_abortloop = true;
-                m_client_infos.clear();
-            }
-
-            m_thread.join();
+            auto client_fd = kv.first;
+            fprintf( stderr, "Closing client_fd:%d\n", client_fd );
+            close( client_fd );
         }
+
+        m_abortloop = true;
+        m_thread.join();
     }
 
     void report( const char* msg, int terminate )
@@ -407,7 +406,7 @@ public:
                     if( retval == -1 )
                     {
                         report( "select", 0 );
-                        continue;
+                        break;
                     }
                     else if( retval )
                     {
@@ -438,6 +437,13 @@ public:
                 close( client_fd ); /* break connection */
             } );
         }                       /* while(1) */
+
+        for( auto& kv: m_client_infos )
+        {
+            fprintf( stderr, "Joining client thread for client_fd:%d\n", kv.first );
+            kv.second->m_thread.join();
+        }
+        m_client_infos.clear();
     }
 
     const boost::optional< std::string > GetMsg()
