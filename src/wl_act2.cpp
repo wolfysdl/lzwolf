@@ -271,7 +271,11 @@ void T_Projectile (AActor *self)
 					(check->flags & FL_ISMONSTER)
 					// Non-player missile cannot hit monster without
 					// FL_PROJHITENEMY
-					? (playermissile || (self->extraflags & FL_PROJHITENEMY) != 0)
+					? (playermissile ||
+						(
+						 (self->extraflags & FL_PROJHITENEMY) != 0 &&
+						 self->target != check
+						))
 					: true)
 				&& ((check->flags & (FL_SHOOTABLE|FL_SOLID))
 				&& lastHit != check))
