@@ -585,6 +585,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		Shading::NextY (y, 0, viewwidth);
 
 		lasttex.SetInvalid();
+		oldmapx = oldmapy = INT_MAX;
+		tex = NULL;
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
@@ -602,21 +604,32 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 					if(spot->sector)
 					{
 						FTextureID curtex = spot->sector->texture[floor ? MapSector::Floor : MapSector::Ceiling];
-						if (curtex != lasttex && curtex.isValid())
+						if (curtex.isValid())
 						{
-							FTexture * const texture = TexMan(curtex);
-							lasttex = curtex;
-							tex = texture->GetPixels();
-							texwidth = texture->GetWidth();
-							texheight = texture->GetHeight();
-							texxscale = texture->xScale>>10;
-							texyscale = -texture->yScale>>10;
+							if(curtex != lasttex)
+							{
+								FTexture * const texture = TexMan(curtex);
+								lasttex = curtex;
+								tex = texture->GetPixels();
+								texwidth = texture->GetWidth();
+								texheight = texture->GetHeight();
+								texxscale = texture->xScale>>10;
+								texyscale = -texture->yScale>>10;
 
-							useOptimized = texwidth == 64 && texheight == 64 && texxscale == FRACUNIT>>10 && texyscale == -FRACUNIT>>10;
+								useOptimized = texwidth == 64 && texheight == 64 && texxscale == FRACUNIT>>10 && texyscale == -FRACUNIT>>10;
+							}
+						}
+						else
+						{
+							tex = NULL;
+							lasttex.SetInvalid();
 						}
 					}
 					else
+					{
 						tex = NULL;
+						lasttex.SetInvalid();
+					}
 				}
 
 				curshades = Shading::ShadeForPix ();

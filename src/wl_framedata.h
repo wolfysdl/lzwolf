@@ -2,6 +2,7 @@
 #define __WL_FRAMEDATA_H__
 
 #include <map>
+#include <functional>
 #include "wl_def.h"
 #include "actor.h"
 
