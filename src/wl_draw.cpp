@@ -280,6 +280,7 @@ int CalcHeight()
 const byte *postsource;
 int postx;
 int32_t postshadex, postshadey;
+bool postbright;
 
 // from wl_floorceiling.cpp
 namespace Shading
@@ -297,7 +298,11 @@ void ScalePost()
 
 	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
 	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx]);
-	BYTE *curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
+	const BYTE *curshades;
+	if(postbright)
+		curshades = NormalLight.Maps;
+	else
+		curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
 	ywcount = yd = wallheight[postx];
 	if(yd <= 0)
@@ -436,6 +441,7 @@ void HitVertWall (void)
 		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
+		postbright = tilehit->tile->bright;
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -448,6 +454,7 @@ void HitVertWall (void)
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
 	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	postbright = tilehit->tile->bright;
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -516,6 +523,7 @@ void HitHorizWall (void)
 		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
+		postbright = tilehit->tile->bright;
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -528,6 +536,7 @@ void HitHorizWall (void)
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
 	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	postbright = tilehit->tile->bright;
 	postx = pixx;
 	FTexture *source = NULL;
 
