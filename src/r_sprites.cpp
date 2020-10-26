@@ -685,6 +685,14 @@ void R_DrawPlayerSprite(AActor *actor, const Frame *frame, fixed offsetX, fixed 
 	const BYTE *colormap;
 	if(frame->fullbright)
 		colormap = NormalLight.Maps;
+	else if(frame->zonebright)
+	{
+		fixed nx = TILEGLOBAL*2;
+		unsigned height = (word)((heightnumerator<<8)/nx);
+		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (viewx, viewy));
+		const int tz = FixedMul(r_depthvisibility<<8, height);
+		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
+	}
 	else
 	{
 		const int shade = LIGHT2SHADE(gLevelLight) - (gLevelMaxLightVis/LIGHTVISIBILITY_FACTOR);

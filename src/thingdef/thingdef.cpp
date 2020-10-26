@@ -846,6 +846,7 @@ void ClassDef::InstallStates(const TArray<StateDefinition> &stateDefs)
 			thisFrame->duration = thisStateDef.duration;
 			thisFrame->randDuration = thisStateDef.randDuration;
 			thisFrame->fullbright = thisStateDef.fullbright;
+			thisFrame->zonebright = thisStateDef.zonebright;
 			thisFrame->offsetX = thisStateDef.offsetX;
 			thisFrame->offsetY = thisStateDef.offsetY;
 			thisFrame->action = thisStateDef.functions[0];
