@@ -144,6 +144,11 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.showSky = sc->boolean;
 	}
+	else CheckKey("bright")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.bright = sc->boolean;
+	}
 
 	EndParseBlock
 }
