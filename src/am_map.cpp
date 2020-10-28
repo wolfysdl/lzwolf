@@ -232,7 +232,12 @@ public:
             }
         }
 
-        return !accept_msg;
+        return m_inverted_rejects ? accept_msg : !accept_msg;
+    }
+
+    void ToggleInvertLogRejects()
+    {
+        m_inverted_rejects = !m_inverted_rejects;
     }
 
 private:
@@ -269,6 +274,7 @@ private:
     }
 
     std::map< TLogPrefix, CPrefixInfo > m_prefix_infos;
+    bool m_inverted_rejects = false;
 };
 
 class CIPCHandlerThread
@@ -495,6 +501,11 @@ public:
         m_msg_queue.push_back( msg );
     }
 
+    void ToggleInvertLogRejects()
+    {
+        m_log_control.ToggleInvertLogRejects();
+    }
+
 private:
     struct CClientInfo
     {
@@ -512,6 +523,11 @@ private:
 CIPCHandlerThread ipc_handler_thread;
 
 CVAR (String, ipc_command_host, "localhost", CVAR_ARCHIVE)
+
+CCMD(toggleinvertlogrejects)
+{
+    ipc_handler_thread.ToggleInvertLogRejects();
+}
 
 class CCommandIssuer
 {
