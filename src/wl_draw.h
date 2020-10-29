@@ -34,6 +34,8 @@ extern  fixed   viewx,viewy;                    // the focal point
 extern  fixed   viewsin,viewcos;
 
 void    ThreeDRefresh (void);
+int     WallMidY (int ywcount, int bot);
+int     InvWallMidY(int y, int bot);
 
 typedef struct
 {

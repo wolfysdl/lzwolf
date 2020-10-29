@@ -55,6 +55,8 @@
 namespace Shading
 {
 	void PopulateHalos (void);
+
+	int LightForIntercept (fixed xintercept, fixed yintercept);
 }
 
 void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight);
@@ -103,6 +105,7 @@ angle_t viewangle;
 fixed   viewsin,viewcos;
 int viewshift = 0;
 fixed viewz = 32;
+fixed viewcamz[2] = {0,0};
 
 fixed gLevelVisibility = VISIBILITY_DEFAULT;
 fixed gLevelMaxLightVis = MAXLIGHTVIS_DEFAULT;
@@ -282,12 +285,6 @@ int postx;
 int32_t postshadex, postshadey;
 bool postbright;
 
-// from wl_floorceiling.cpp
-namespace Shading
-{
-	int LightForIntercept (fixed xintercept, fixed yintercept);
-}
-
 void ScalePost()
 {
 	if(postsource == NULL)
@@ -310,16 +307,14 @@ void ScalePost()
 
 	// Calculate starting and ending offsets
 	{
-		// ywcount can be large enough to cause an overflow if we don't reduce
-		// fixed point precision here
-		const int topoffset = ywcount*((viewz + fixed(map->GetPlane(0).depth<<FRACBITS))>>8)/(32<<(FRACBITS-5));
-		const int botoffset = ywcount*(viewz>>8)/(32<<(FRACBITS-5));
+		int ywcount2 = ywcount >> 3;
+		int midy = (viewheight / 2) - WallMidY(ywcount2, -1);
 
-		yoffs = (viewheight / 2 - topoffset - viewshift) * vbufPitch;
+		yoffs = midy * vbufPitch;
 		if(yoffs < 0) yoffs = 0;
 		yoffs += postx;
 
-		yendoffs = viewheight / 2 - botoffset - 1 - viewshift;
+		yendoffs = (viewheight / 2) + WallMidY(ywcount2, 1);
 		yw=(texyscale>>2)-1;
 	}
 
@@ -356,6 +351,55 @@ void ScalePost()
 		yendoffs -= vbufPitch;
 	}
 }
+
+
+/*
+===================
+=
+= Camz
+=
+===================
+*/
+
+inline fixed Camz (fixed height, int bot)
+{
+	unsigned int depth = map->GetPlane(0).depth;
+	if(bot < 0 && depth > 64)
+		height -= fixed((depth-64)<<FRACBITS);
+	fixed camz = (height / 64) - (TILEGLOBAL / 2);
+	return camz;
+}
+
+
+/*
+===================
+=
+= WallMidY
+=
+===================
+*/
+
+int WallMidY (int ywcount, int bot)
+{
+	const fixed camz = viewcamz[(bot+1)>>1];
+	return ((TILEGLOBAL + (bot * camz * 2)) * ywcount)>>FRACBITS;
+}
+
+
+/*
+===================
+=
+= InvWallMidY
+=
+===================
+*/
+
+int InvWallMidY(int y, int bot)
+{
+	const fixed camz = viewcamz[(bot+1)>>1];
+	return ((FixedDiv((y<<FRACBITS), TILEGLOBAL + (bot * camz * 2)))>>FRACBITS) + 1;
+}
+
 
 void GlobalScalePost(byte *vidbuf, unsigned pitch)
 {
@@ -1210,7 +1254,11 @@ void WallRefresh (void)
 	const fixed playerMovebob = players[ConsolePlayer].mo->GetClass()->Meta.GetMetaFixed(APMETA_MoveBob);
 	fixed curbob = gamestate.victoryflag ? 0 : FixedMul(FixedMul(players[ConsolePlayer].bob, playerMovebob)>>1, finesine[bobangle]);
 
-	viewz = curbob - players[ConsolePlayer].mo->viewheight;
+	fixed height = players[ConsolePlayer].mo->viewheight;
+	viewz = curbob - height;
+
+	viewcamz[0] = Camz (height - curbob, -1);
+	viewcamz[1] = Camz (height - curbob, 1);
 
 	AsmRefresh();
 	ScalePost ();                   // no more optimization on last post

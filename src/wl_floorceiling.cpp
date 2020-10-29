@@ -534,8 +534,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	if(planeheight == 0) // Eye level
 		return;
 	
-	const fixed heightFactor = abs(planeheight)>>8;
-	int y0 = ((min_wallheight*heightFactor)>>FRACBITS) - abs(viewshift);
+	int y0 = (min_wallheight>>3);
 	if(y0 > halfheight)
 		return; // view obscured by walls
 	if(y0 <= 0) y0 = 1; // don't let division by zero
@@ -548,13 +547,15 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	int tex_offsetPitch;
 	if(floor)
 	{
-		tex_offset = vbuf + (signed)vbufPitch * (halfheight + y0);
+		unsigned bot_offset0 = vbufPitch * (halfheight + WallMidY(y0, 1));
+		tex_offset = vbuf + bot_offset0;
 		tex_offsetPitch = vbufPitch-viewwidth;
 		planenumerator *= -1;
 	}
 	else
 	{
-		tex_offset = vbuf + (signed)vbufPitch * (halfheight - y0 - 1);
+		unsigned top_offset0 = vbufPitch * (halfheight - WallMidY(y0, -1) - 1);
+		tex_offset = vbuf + top_offset0;
 		tex_offsetPitch = -viewwidth-vbufPitch;
 	}
 
@@ -562,17 +563,18 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 	unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
 	const byte* curshades = NormalLight.Maps;
+	const int bot = (floor ? 1 : -1);
 	// draw horizontal lines
-	for(int y = y0;floor ? y+halfheight < viewheight : y < halfheight; ++y, tex_offset += tex_offsetPitch)
+	for(int y = WallMidY(y0, bot);y < halfheight; ++y, tex_offset += tex_offsetPitch)
 	{
-		if(floor ? (y+halfheight < 0) : (y < halfheight - viewheight))
+		if(y < 0)
 		{
 			tex_offset += viewwidth;
 			continue;
 		}
 
 		// Shift in some extra bits so that we don't get spectacular round off.
-		dist = (planenumerator / (y + 1))<<8;
+		dist = ((heightnumerator<<5) / InvWallMidY(y, bot))<<8;
 		gu =  (viewx<<8) + FixedMul(dist, viewcos);
 		gv = -(viewy<<8) + FixedMul(dist, viewsin);
 		tex_step = dist / scale;
@@ -590,7 +592,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
-			if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
+			if(y >= WallMidY(wallheight[x]>>3, bot))
 			{
 				unsigned int curx = (gu >> (TILESHIFT+8));
 				unsigned int cury = (-(gv >> (TILESHIFT+8)) - 1);
