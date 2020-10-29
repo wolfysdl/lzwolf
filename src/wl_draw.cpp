@@ -335,7 +335,7 @@ void ScalePost()
 	yendoffs = yendoffs * vbufPitch + postx;
 	while(yoffs <= yendoffs)
 	{
-		vbuf[yendoffs] = col;
+		vbuf[yendoffs] = 15;//col;
 		ywcount -= texyscale;
 		if(ywcount <= 0)
 		{
@@ -363,9 +363,10 @@ void ScalePost()
 
 inline fixed Camz (fixed height, int bot)
 {
-	unsigned int depth = map->GetPlane(0).depth;
+	unsigned int depth = 128;
+	//unsigned int depth = map->GetPlane(0).depth;
 	if(bot < 0 && depth > 64)
-		height -= fixed((depth-64)<<FRACBITS);
+		height -= (fixed(depth-64)<<FRACBITS);
 	fixed camz = (height / 64) - (TILEGLOBAL / 2);
 	return camz;
 }

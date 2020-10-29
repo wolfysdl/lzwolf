@@ -59,8 +59,6 @@ namespace Shading
 
 	int halfheight;
 	fixed planeheight;
-	fixed heightFactor;
-	fixed planenumerator;
 	std::vector<Span> spans;
 	Span *curspan;
 	std::vector<Halo> halos;
@@ -179,12 +177,10 @@ namespace Shading
 		rowHaloIds = std::vector<byte>((lastHaloId+7)/8);
 	}
 
-	void PrepareConstants (int halfheight_, fixed planeheight_, fixed planenumerator_)
+	void PrepareConstants (int halfheight_, fixed planeheight_)
 	{
 		halfheight = halfheight_;
 		planeheight = planeheight_;
-		planenumerator = planenumerator_;
-		heightFactor = abs(planeheight)>>8;
 	}
 
 	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light, const ClassDef *littype)
@@ -236,7 +232,7 @@ namespace Shading
 		}
 	}
 
-	void NextY (int y, int lx, int rx)
+	void NextY (int y, int lx, int rx, int bot)
 	{
 		fixed dist;
 		fixed gu, gv, du, dv;
@@ -244,7 +240,7 @@ namespace Shading
 
 		const int vw = rx-lx;
 
-		dist = (planenumerator / (y + 1));
+		dist = ((heightnumerator<<5) / InvWallMidY(y, bot));
 		gu = viewx + FixedMul(dist, viewcos);
 		gv = viewy - FixedMul(dist, viewsin);
 		tex_step = dist / scale;
@@ -275,7 +271,7 @@ namespace Shading
 			MapSpot doorspot = NULL;
 			for (int x = lx; x < rx; x++)
 			{
-				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
+				if(y >= WallMidY(wallheight[x]>>3, bot))
 				{
 					unsigned int curx = (gu >> TILESHIFT);
 					unsigned int cury = (gv >> TILESHIFT);
@@ -554,12 +550,12 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	}
 	else
 	{
-		unsigned top_offset0 = vbufPitch * (halfheight - WallMidY(y0, -1) - 1);
+		unsigned top_offset0 = vbufPitch * (halfheight - WallMidY(y0, -1));
 		tex_offset = vbuf + top_offset0;
 		tex_offsetPitch = -viewwidth-vbufPitch;
 	}
 
-	Shading::PrepareConstants (halfheight, planeheight, planenumerator);
+	Shading::PrepareConstants (halfheight, planeheight);
 
 	unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
 	const byte* curshades = NormalLight.Maps;
@@ -584,7 +580,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
 
 		curshades = NormalLight.Maps;
-		Shading::NextY (y, 0, viewwidth);
+		Shading::NextY (y, 0, viewwidth, bot);
 
 		lasttex.SetInvalid();
 		oldmapx = oldmapy = INT_MAX;

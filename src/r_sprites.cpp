@@ -385,9 +385,9 @@ namespace Shading
 {
 	int LightForIntercept (fixed xintercept, fixed yintercept);
 
-	void PrepareConstants (int halfheight, fixed planeheight, fixed planenumerator);
+	void PrepareConstants (int halfheight, fixed planeheight);
 
-	void NextY (int y, int lx, int rx);
+	void NextY (int y, int lx, int rx, int bot);
 
 	const ClassDef *LitForPix ();
 }
@@ -454,9 +454,7 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		//std::cerr << actor << " " << (upperedge>>3) << " " << actor->z << " " << tex->GetScaledTopOffsetDouble() << std::endl;
 		const fixed planeheight = viewz;
 		const int halfheight = (viewheight >> 1) - viewshift;
-		fixed planenumerator = FixedMul(heightnumerator, planeheight);
-		planenumerator *= -1; // floor
-		Shading::PrepareConstants (halfheight, planeheight, planenumerator);
+		Shading::PrepareConstants (halfheight, planeheight);
 
 		const fixed heightFactor = abs(planeheight)>>8;
 		int y = ((height*heightFactor)>>FRACBITS) - abs(viewshift);
@@ -467,7 +465,7 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		for(i = actx+startX, x = startX*xStep;x < xRun;x += xStep, ++i)
 			pixcnt++;
 
-		Shading::NextY (y, actx+startX, MIN((actx+startX)+pixcnt,(unsigned)viewwidth));
+		Shading::NextY (y, actx+startX, MIN((actx+startX)+pixcnt,(unsigned)viewwidth), 1);
 	}
 
 	const BYTE *src;
