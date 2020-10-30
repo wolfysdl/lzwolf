@@ -548,7 +548,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 	}
 	else
 	{
-		unsigned top_offset0 = vbufPitch * (halfheight - y0[1]);
+		unsigned top_offset0 = vbufPitch * (halfheight - y0[1] - 1);
 		tex_offset = vbuf + top_offset0;
 		tex_offsetPitch = -viewwidth-vbufPitch;
 	}
@@ -561,7 +561,6 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 	const int bot = (floor ? 1 : -1);
 	const int botind = 1+((bot+1)>>1);
 	int y0bot = y0[botind];
-	if(y0bot <= 0) y0bot = 1; // don't let division by zero
 
 	// draw horizontal lines
 	for(int y = y0bot;y < halfheight; ++y, tex_offset += tex_offsetPitch)
