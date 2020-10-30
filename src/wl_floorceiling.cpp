@@ -59,8 +59,6 @@ namespace Shading
 
 	int halfheight;
 	fixed planeheight;
-	fixed heightFactor;
-	fixed planenumerator;
 	std::vector<Span> spans;
 	Span *curspan;
 	std::vector<Halo> halos;
@@ -179,12 +177,10 @@ namespace Shading
 		rowHaloIds = std::vector<byte>((lastHaloId+7)/8);
 	}
 
-	void PrepareConstants (int halfheight_, fixed planeheight_, fixed planenumerator_)
+	void PrepareConstants (int halfheight_, fixed planeheight_)
 	{
 		halfheight = halfheight_;
 		planeheight = planeheight_;
-		planenumerator = planenumerator_;
-		heightFactor = abs(planeheight)>>8;
 	}
 
 	void InsertSpan (int x1, int x2, std::vector<Span> &v, int light, const ClassDef *littype)
@@ -236,15 +232,16 @@ namespace Shading
 		}
 	}
 
-	void NextY (int y, int lx, int rx)
+	void NextY (int y, int lx, int rx, int bot)
 	{
 		fixed dist;
 		fixed gu, gv, du, dv;
 		fixed tex_step;
 
+		const int botind = 1+((bot+1)>>1);
 		const int vw = rx-lx;
 
-		dist = (planenumerator / (y + 1));
+		dist = ((heightnumerator<<8) / InvWallMidY(y<<3, bot));
 		gu = viewx + FixedMul(dist, viewcos);
 		gv = viewy - FixedMul(dist, viewsin);
 		tex_step = dist / scale;
@@ -275,7 +272,7 @@ namespace Shading
 			MapSpot doorspot = NULL;
 			for (int x = lx; x < rx; x++)
 			{
-				if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
+				if(y >= wallheight[x][botind]>>3)
 				{
 					unsigned int curx = (gu >> TILESHIFT);
 					unsigned int cury = (gv >> TILESHIFT);
@@ -519,7 +516,7 @@ static inline bool R_PixIsTrans(byte col, const std::pair<bool, byte> &trans)
 	return trans.first && col == trans.second;
 }
 
-static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
+static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
 {
 	fixed dist;                                // distance to row projection
 	fixed tex_step;                            // global step per one screen pixel
@@ -534,11 +531,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	if(planeheight == 0) // Eye level
 		return;
 	
-	const fixed heightFactor = abs(planeheight)>>8;
-	int y0 = ((min_wallheight*heightFactor)>>FRACBITS) - abs(viewshift);
-	if(y0 > halfheight)
-		return; // view obscured by walls
-	if(y0 <= 0) y0 = 1; // don't let division by zero
+	TWallHeight y0 = TWallHeight{min_wallheight[0]>>3,min_wallheight[1]>>3,min_wallheight[2]>>3};
 
 	const unsigned int mapwidth = map->GetHeader().width;
 	const unsigned int mapheight = map->GetHeader().height;
@@ -548,31 +541,39 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	int tex_offsetPitch;
 	if(floor)
 	{
-		tex_offset = vbuf + (signed)vbufPitch * (halfheight + y0);
+		unsigned bot_offset0 = vbufPitch * (halfheight + y0[2]);
+		tex_offset = vbuf + bot_offset0;
 		tex_offsetPitch = vbufPitch-viewwidth;
 		planenumerator *= -1;
 	}
 	else
 	{
-		tex_offset = vbuf + (signed)vbufPitch * (halfheight - y0 - 1);
+		unsigned top_offset0 = vbufPitch * (halfheight - y0[1]);
+		tex_offset = vbuf + top_offset0;
 		tex_offsetPitch = -viewwidth-vbufPitch;
 	}
 
-	Shading::PrepareConstants (halfheight, planeheight, planenumerator);
+	Shading::PrepareConstants (halfheight, planeheight);
 
 	unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
 	const byte* curshades = NormalLight.Maps;
+
+	const int bot = (floor ? 1 : -1);
+	const int botind = 1+((bot+1)>>1);
+	int y0bot = y0[botind];
+	if(y0bot <= 0) y0bot = 1; // don't let division by zero
+
 	// draw horizontal lines
-	for(int y = y0;floor ? y+halfheight < viewheight : y < halfheight; ++y, tex_offset += tex_offsetPitch)
+	for(int y = y0bot;y < halfheight; ++y, tex_offset += tex_offsetPitch)
 	{
-		if(floor ? (y+halfheight < 0) : (y < halfheight - viewheight))
+		if(y < 0)
 		{
 			tex_offset += viewwidth;
 			continue;
 		}
 
 		// Shift in some extra bits so that we don't get spectacular round off.
-		dist = (planenumerator / (y + 1))<<8;
+		dist = ((heightnumerator<<8) / InvWallMidY(y<<3, bot))<<8;
 		gu =  (viewx<<8) + FixedMul(dist, viewcos);
 		gv = -(viewy<<8) + FixedMul(dist, viewsin);
 		tex_step = dist / scale;
@@ -582,7 +583,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		gv -= (viewwidth >> 1) * dv; // starting point (leftmost)
 
 		curshades = NormalLight.Maps;
-		Shading::NextY (y, 0, viewwidth);
+		Shading::NextY (y, 0, viewwidth, bot);
 
 		lasttex.SetInvalid();
 		oldmapx = oldmapy = INT_MAX;
@@ -590,7 +591,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
-			if(((wallheight[x]*heightFactor)>>FRACBITS) <= y)
+			if(y >= wallheight[x][botind]>>3)
 			{
 				unsigned int curx = (gu >> (TILESHIFT+8));
 				unsigned int cury = (-(gv >> (TILESHIFT+8)) - 1);
@@ -667,7 +668,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 // Textured Floor and Ceiling by DarkOne
 // With multi-textured floors and ceilings stored in lower and upper bytes of
 // according tile in third mapplane, respectively.
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight)
 {
 	const int halfheight = (viewheight >> 1) - viewshift;
 

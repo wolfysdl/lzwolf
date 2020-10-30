@@ -121,8 +121,8 @@ void	VL_SetVGAPlaneMode (bool forSignon)
 	scaleFactorY = CleanYfac;
 
 	pixelangle = new short[SCREENWIDTH];
-	wallheight = new int[SCREENWIDTH];
-	skywallheight = new int[SCREENWIDTH];
+	wallheight = new TWallHeight[SCREENWIDTH];
+	skywallheight = new TWallHeight[SCREENWIDTH];
 
 	NewViewSize(viewsize);
 }
