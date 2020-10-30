@@ -61,7 +61,7 @@ void Scale3DShaper(int x1, int x2, FTexture *shape, uint32_t flags, fixed ny1, f
 		{
 			unsigned scale1=(unsigned)(height>>14);
 
-			if(wallheight[slinex]<(height>>12) && scale1)
+			if(wallheight[slinex][0]<(height>>12) && scale1)
 			{
 				int pixheight=scale1;
 				int upperedge=(viewheight-pixheight)/2;

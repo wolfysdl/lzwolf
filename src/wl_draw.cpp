@@ -55,9 +55,11 @@
 namespace Shading
 {
 	void PopulateHalos (void);
+
+	int LightForIntercept (fixed xintercept, fixed yintercept);
 }
 
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight);
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight);
 
 const RatioInformation AspectCorrection[] =
 {
@@ -82,10 +84,10 @@ int		r_extralight;
 
 int fps_frames=0, fps_time=0, fps=0;
 
-TUniquePtr<int[]> wallheight;
-int min_wallheight;
+TUniquePtr<TWallHeight[]> wallheight;
+TWallHeight min_wallheight;
 
-TUniquePtr<int[]> skywallheight;
+TUniquePtr<TWallHeight[]> skywallheight;
 
 //
 // math tables
@@ -103,6 +105,7 @@ angle_t viewangle;
 fixed   viewsin,viewcos;
 int viewshift = 0;
 fixed viewz = 32;
+fixed viewcamz[2] = {0,0};
 
 fixed gLevelVisibility = VISIBILITY_DEFAULT;
 fixed gLevelMaxLightVis = MAXLIGHTVIS_DEFAULT;
@@ -257,13 +260,20 @@ void TransformActor (AActor *ob)
 ====================
 */
 
-int CalcHeight()
+TWallHeight CalcHeight()
 {
 	fixed z = FixedMul(xintercept - viewx, viewcos)
 		- FixedMul(yintercept - viewy, viewsin);
 	if(z < MINDIST) z = MINDIST;
-	int height = (heightnumerator << 8) / z;
-	if(height < min_wallheight) min_wallheight = height;
+	TWallHeight height;
+	height[0] = (heightnumerator << 8) / z;
+	if(height[0] < min_wallheight[0]) min_wallheight[0] = height[0];
+	for(int i = 1; i < 3; i++)
+	{
+		const int bot = ((i-1)*2 - 1);
+		height[i] = WallMidY (height[0], bot);
+		if(height[i] < min_wallheight[i]) min_wallheight[i] = height[i];
+	}
 	return height;
 }
 
@@ -282,12 +292,6 @@ int postx;
 int32_t postshadex, postshadey;
 bool postbright;
 
-// from wl_floorceiling.cpp
-namespace Shading
-{
-	int LightForIntercept (fixed xintercept, fixed yintercept);
-}
-
 void ScalePost()
 {
 	if(postsource == NULL)
@@ -297,29 +301,28 @@ void ScalePost()
 	byte col;
 
 	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
-	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx]);
+	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx][0]);
 	const BYTE *curshades;
 	if(postbright)
 		curshades = NormalLight.Maps;
 	else
 		curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
-	ywcount = yd = wallheight[postx];
+	ywcount = yd = wallheight[postx][0];
 	if(yd <= 0)
 		yd = 100;
 
 	// Calculate starting and ending offsets
 	{
-		// ywcount can be large enough to cause an overflow if we don't reduce
-		// fixed point precision here
-		const int topoffset = ywcount*((viewz + fixed(map->GetPlane(0).depth<<FRACBITS))>>8)/(32<<(FRACBITS-5));
-		const int botoffset = ywcount*(viewz>>8)/(32<<(FRACBITS-5));
+		int ywcount = wallheight[postx][1]>>3;
+		int midy = (viewheight / 2) - ywcount;
 
-		yoffs = (viewheight / 2 - topoffset - viewshift) * vbufPitch;
+		yoffs = midy * vbufPitch;
 		if(yoffs < 0) yoffs = 0;
 		yoffs += postx;
 
-		yendoffs = viewheight / 2 - botoffset - 1 - viewshift;
+		ywcount = wallheight[postx][2]>>3;
+		yendoffs = (viewheight / 2) + ywcount;
 		yw=(texyscale>>2)-1;
 	}
 
@@ -356,6 +359,55 @@ void ScalePost()
 		yendoffs -= vbufPitch;
 	}
 }
+
+
+/*
+===================
+=
+= Camz
+=
+===================
+*/
+
+inline fixed Camz (fixed height, int bot)
+{
+	unsigned int depth = map->GetPlane(0).depth;
+	if(bot < 0 && depth > 64)
+		height -= (fixed(depth-64)<<FRACBITS);
+	fixed camz = (height / 64) - (TILEGLOBAL / 2);
+	return camz;
+}
+
+
+/*
+===================
+=
+= WallMidY
+=
+===================
+*/
+
+int WallMidY (int ywcount, int bot)
+{
+	const fixed camz = viewcamz[(bot+1)>>1];
+	return ((TILEGLOBAL + (bot * camz * 2)) * ywcount)>>FRACBITS;
+}
+
+
+/*
+===================
+=
+= InvWallMidY
+=
+===================
+*/
+
+int InvWallMidY(int y, int bot)
+{
+	const fixed camz = viewcamz[(bot+1)>>1];
+	return ((FixedDiv((y<<FRACBITS), TILEGLOBAL + (bot * camz * 2)))>>FRACBITS) + 1;
+}
+
 
 void GlobalScalePost(byte *vidbuf, unsigned pitch)
 {
@@ -438,7 +490,7 @@ void HitVertWall (void)
 
 		ScalePost();
 		wallheight[pixx] = CalcHeight();
-		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
@@ -453,7 +505,7 @@ void HitVertWall (void)
 	lastintercept=xtile;
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
-	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
 	postx = pixx;
 	FTexture *source = NULL;
@@ -520,7 +572,7 @@ void HitHorizWall (void)
 
 		ScalePost();
 		wallheight[pixx] = CalcHeight();
-		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
@@ -535,7 +587,7 @@ void HitHorizWall (void)
 	lastintercept=ytile;
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
-	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
 	postx = pixx;
 	FTexture *source = NULL;
@@ -1201,7 +1253,7 @@ void WallRefresh (void)
 	ypartialdown = viewy&(TILEGLOBAL-1);
 	ypartialup = TILEGLOBAL-ypartialdown;
 
-	min_wallheight = viewheight;
+	min_wallheight = TWallHeight{viewheight,viewheight,viewheight};
 	lastside = -1;                  // the first pixel is on a new wall
 	viewshift = FixedMul(focallengthy, finetangent[(ANGLE_180+players[ConsolePlayer].camera->pitch)>>ANGLETOFINESHIFT]);
 
@@ -1210,7 +1262,11 @@ void WallRefresh (void)
 	const fixed playerMovebob = players[ConsolePlayer].mo->GetClass()->Meta.GetMetaFixed(APMETA_MoveBob);
 	fixed curbob = gamestate.victoryflag ? 0 : FixedMul(FixedMul(players[ConsolePlayer].bob, playerMovebob)>>1, finesine[bobangle]);
 
-	viewz = curbob - players[ConsolePlayer].mo->viewheight;
+	fixed height = players[ConsolePlayer].mo->viewheight;
+	viewz = curbob - height;
+
+	viewcamz[0] = Camz (height - curbob, -1);
+	viewcamz[1] = Camz (height - curbob, 1);
 
 	AsmRefresh();
 	ScalePost ();                   // no more optimization on last post
