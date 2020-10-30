@@ -59,7 +59,7 @@ namespace Shading
 	int LightForIntercept (fixed xintercept, fixed yintercept);
 }
 
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight);
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight);
 
 const RatioInformation AspectCorrection[] =
 {
@@ -84,10 +84,10 @@ int		r_extralight;
 
 int fps_frames=0, fps_time=0, fps=0;
 
-TUniquePtr<int[]> wallheight;
-int min_wallheight;
+TUniquePtr<TWallHeight[]> wallheight;
+TWallHeight min_wallheight;
 
-TUniquePtr<int[]> skywallheight;
+TUniquePtr<TWallHeight[]> skywallheight;
 
 //
 // math tables
@@ -260,13 +260,20 @@ void TransformActor (AActor *ob)
 ====================
 */
 
-int CalcHeight()
+TWallHeight CalcHeight()
 {
 	fixed z = FixedMul(xintercept - viewx, viewcos)
 		- FixedMul(yintercept - viewy, viewsin);
 	if(z < MINDIST) z = MINDIST;
-	int height = (heightnumerator << 8) / z;
-	if(height < min_wallheight) min_wallheight = height;
+	TWallHeight height;
+	height[0] = (heightnumerator << 8) / z;
+	if(height[0] < min_wallheight[0]) min_wallheight[0] = height[0];
+	for(int i = 1; i < 3; i++)
+	{
+		const int bot = ((i-1)*2 - 1);
+		height[i] = WallMidY (height[0], bot);
+		if(height[i] < min_wallheight[i]) min_wallheight[i] = height[i];
+	}
 	return height;
 }
 
@@ -294,27 +301,28 @@ void ScalePost()
 	byte col;
 
 	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
-	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx]);
+	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx][0]);
 	const BYTE *curshades;
 	if(postbright)
 		curshades = NormalLight.Maps;
 	else
 		curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
-	ywcount = yd = wallheight[postx];
+	ywcount = yd = wallheight[postx][0];
 	if(yd <= 0)
 		yd = 100;
 
 	// Calculate starting and ending offsets
 	{
-		int ywcount2 = ywcount >> 3;
-		int midy = (viewheight / 2) - WallMidY(ywcount2, -1);
+		int ywcount = wallheight[postx][1]>>3;
+		int midy = (viewheight / 2) - ywcount;
 
 		yoffs = midy * vbufPitch;
 		if(yoffs < 0) yoffs = 0;
 		yoffs += postx;
 
-		yendoffs = (viewheight / 2) + WallMidY(ywcount2, 1);
+		ywcount = wallheight[postx][2]>>3;
+		yendoffs = (viewheight / 2) + ywcount;
 		yw=(texyscale>>2)-1;
 	}
 
@@ -335,7 +343,7 @@ void ScalePost()
 	yendoffs = yendoffs * vbufPitch + postx;
 	while(yoffs <= yendoffs)
 	{
-		vbuf[yendoffs] = 15;//col;
+		vbuf[yendoffs] = col;
 		ywcount -= texyscale;
 		if(ywcount <= 0)
 		{
@@ -363,8 +371,7 @@ void ScalePost()
 
 inline fixed Camz (fixed height, int bot)
 {
-	unsigned int depth = 128;
-	//unsigned int depth = map->GetPlane(0).depth;
+	unsigned int depth = map->GetPlane(0).depth;
 	if(bot < 0 && depth > 64)
 		height -= (fixed(depth-64)<<FRACBITS);
 	fixed camz = (height / 64) - (TILEGLOBAL / 2);
@@ -483,7 +490,7 @@ void HitVertWall (void)
 
 		ScalePost();
 		wallheight[pixx] = CalcHeight();
-		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
@@ -498,7 +505,7 @@ void HitVertWall (void)
 	lastintercept=xtile;
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
-	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
 	postx = pixx;
 	FTexture *source = NULL;
@@ -565,7 +572,7 @@ void HitHorizWall (void)
 
 		ScalePost();
 		wallheight[pixx] = CalcHeight();
-		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
@@ -580,7 +587,7 @@ void HitHorizWall (void)
 	lastintercept=ytile;
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
-	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
 	postx = pixx;
 	FTexture *source = NULL;
@@ -1246,7 +1253,7 @@ void WallRefresh (void)
 	ypartialdown = viewy&(TILEGLOBAL-1);
 	ypartialup = TILEGLOBAL-ypartialdown;
 
-	min_wallheight = viewheight;
+	min_wallheight = TWallHeight{viewheight,viewheight,viewheight};
 	lastside = -1;                  // the first pixel is on a new wall
 	viewshift = FixedMul(focallengthy, finetangent[(ANGLE_180+players[ConsolePlayer].camera->pitch)>>ANGLETOFINESHIFT]);
 

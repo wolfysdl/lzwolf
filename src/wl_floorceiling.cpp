@@ -238,9 +238,10 @@ namespace Shading
 		fixed gu, gv, du, dv;
 		fixed tex_step;
 
+		const int botind = 1+((bot+1)>>1);
 		const int vw = rx-lx;
 
-		dist = ((heightnumerator<<5) / InvWallMidY(y, bot));
+		dist = ((heightnumerator<<8) / InvWallMidY(y<<3, bot));
 		gu = viewx + FixedMul(dist, viewcos);
 		gv = viewy - FixedMul(dist, viewsin);
 		tex_step = dist / scale;
@@ -271,7 +272,7 @@ namespace Shading
 			MapSpot doorspot = NULL;
 			for (int x = lx; x < rx; x++)
 			{
-				if(y >= WallMidY(wallheight[x]>>3, bot))
+				if(y >= wallheight[x][botind]>>3)
 				{
 					unsigned int curx = (gu >> TILESHIFT);
 					unsigned int cury = (gv >> TILESHIFT);
@@ -515,7 +516,7 @@ static inline bool R_PixIsTrans(byte col, const std::pair<bool, byte> &trans)
 	return trans.first && col == trans.second;
 }
 
-static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
+static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight, int halfheight, fixed planeheight, std::pair<bool, byte> trans = std::make_pair(false, 0x00))
 {
 	fixed dist;                                // distance to row projection
 	fixed tex_step;                            // global step per one screen pixel
@@ -530,10 +531,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	if(planeheight == 0) // Eye level
 		return;
 	
-	int y0 = (min_wallheight>>3);
-	if(y0 > halfheight)
-		return; // view obscured by walls
-	if(y0 <= 0) y0 = 1; // don't let division by zero
+	TWallHeight y0 = TWallHeight{min_wallheight[0]>>3,min_wallheight[1]>>3,min_wallheight[2]>>3};
 
 	const unsigned int mapwidth = map->GetHeader().width;
 	const unsigned int mapheight = map->GetHeader().height;
@@ -543,14 +541,14 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 	int tex_offsetPitch;
 	if(floor)
 	{
-		unsigned bot_offset0 = vbufPitch * (halfheight + WallMidY(y0, 1));
+		unsigned bot_offset0 = vbufPitch * (halfheight + y0[2]);
 		tex_offset = vbuf + bot_offset0;
 		tex_offsetPitch = vbufPitch-viewwidth;
 		planenumerator *= -1;
 	}
 	else
 	{
-		unsigned top_offset0 = vbufPitch * (halfheight - WallMidY(y0, -1));
+		unsigned top_offset0 = vbufPitch * (halfheight - y0[1]);
 		tex_offset = vbuf + top_offset0;
 		tex_offsetPitch = -viewwidth-vbufPitch;
 	}
@@ -559,9 +557,14 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 	unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
 	const byte* curshades = NormalLight.Maps;
+
 	const int bot = (floor ? 1 : -1);
+	const int botind = 1+((bot+1)>>1);
+	int y0bot = y0[botind];
+	if(y0bot <= 0) y0bot = 1; // don't let division by zero
+
 	// draw horizontal lines
-	for(int y = WallMidY(y0, bot);y < halfheight; ++y, tex_offset += tex_offsetPitch)
+	for(int y = y0bot;y < halfheight; ++y, tex_offset += tex_offsetPitch)
 	{
 		if(y < 0)
 		{
@@ -570,7 +573,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 		}
 
 		// Shift in some extra bits so that we don't get spectacular round off.
-		dist = ((heightnumerator<<5) / InvWallMidY(y, bot))<<8;
+		dist = ((heightnumerator<<8) / InvWallMidY(y<<3, bot))<<8;
 		gu =  (viewx<<8) + FixedMul(dist, viewcos);
 		gv = -(viewy<<8) + FixedMul(dist, viewsin);
 		tex_step = dist / scale;
@@ -588,7 +591,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 
 		for(unsigned int x = 0;x < (unsigned)viewwidth; ++x, ++tex_offset)
 		{
-			if(y >= WallMidY(wallheight[x]>>3, bot))
+			if(y >= wallheight[x][botind]>>3)
 			{
 				unsigned int curx = (gu >> (TILESHIFT+8));
 				unsigned int cury = (-(gv >> (TILESHIFT+8)) - 1);
@@ -665,7 +668,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, int min_wallheight, int 
 // Textured Floor and Ceiling by DarkOne
 // With multi-textured floors and ceilings stored in lower and upper bytes of
 // according tile in third mapplane, respectively.
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight)
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight)
 {
 	const int halfheight = (viewheight >> 1) - viewshift;
 

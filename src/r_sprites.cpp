@@ -477,7 +477,7 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 	{
 		if(litfilter != NULL && Shading::LitForPix () != litfilter)
 			continue;
-		if(wallheight[i] > (signed)height)
+		if(wallheight[i][0] > (signed)height)
 			continue;
 
 		src = tex->GetColumn(flip ? texWidth - (x>>FRACBITS) - 1 : (x>>FRACBITS), NULL);
@@ -558,7 +558,7 @@ void Scale3DSpriter(AActor *actor, int x1, int x2, FTexture *tex, bool flip, con
 		scale = height>>3;
 		topoffset = (scale*(viewz+(actor->z<<6)+(32<<FRACBITS))/(32<<FRACBITS));
 
-		if(i < 0 || i >= viewwidth || wallheight[i] > (signed)height || scale == 0 || -(viewheight/2 - viewshift - topoffset) >= scale)
+		if(i < 0 || i >= viewwidth || wallheight[i][0] > (signed)height || scale == 0 || -(viewheight/2 - viewshift - topoffset) >= scale)
 			continue;
 		
 		dest = vbuf + i + (upperedge > 0 ? vbufPitch*upperedge : 0);
