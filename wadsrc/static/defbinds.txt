@@ -15,5 +15,6 @@ bind "u" "sendcmd btn.notify mic_mute press"
 
 bind "p" "sendcmd ping"
 
-bind "0" "conresize 1280 800"
-bind "9" "conresize 960 600"
+bind "0" "conresize 1280 800; notifystrings 64"
+bind "9" "conresize 960 600; notifystrings 32"
+bind "8" "conresize 640 400; notifystrings 12"

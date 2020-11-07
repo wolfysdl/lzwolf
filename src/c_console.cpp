@@ -73,6 +73,7 @@
 #include "c_event.h"
 #include "c_gui.h"
 #include "basicinlines.h"
+#include <vector>
 
 //#include "gi.h"
 
@@ -186,12 +187,14 @@ CVAR (String, con_ctrl_d, "", CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 #define NUMNOTIFIES 6
 #define NOTIFYFADETIME 6
 
-static struct NotifyText
+struct NotifyText
 {
 	int TimeOut;
 	int PrintLevel;
 	FString Text;
-} NotifyStrings[NUMNOTIFIES];
+};
+
+static std::vector<NotifyText> NotifyStrings(NUMNOTIFIES);
 
 static int NotifyTop, NotifyTopGoal;
 
@@ -509,9 +512,9 @@ void C_AddNotifyString (int printlevel, const char *source)
 
 	width = con_scaletext > 1 ? DisplayWidth/2 : con_scaletext == 1 ? DisplayWidth / CleanXfac : DisplayWidth;
 
-	if (addtype == APPENDLINE && NotifyStrings[NUMNOTIFIES-1].PrintLevel == printlevel)
+	if (addtype == APPENDLINE && NotifyStrings.back().PrintLevel == printlevel)
 	{
-		FString str = NotifyStrings[NUMNOTIFIES-1].Text + source;
+		FString str = NotifyStrings.back().Text + source;
 		lines = V_BreakLines (SmallFont, width, str);
 	}
 	else
@@ -527,14 +530,14 @@ void C_AddNotifyString (int printlevel, const char *source)
 	{
 		if (addtype == NEWLINE)
 		{
-			for (int j = 0; j < NUMNOTIFIES-1; ++j)
+			for (int j = 0; j < (int)NotifyStrings.size()-1; ++j)
 			{
 				NotifyStrings[j] = NotifyStrings[j+1];
 			}
 		}
-		NotifyStrings[NUMNOTIFIES-1].Text = lines[i].Text;
-		NotifyStrings[NUMNOTIFIES-1].TimeOut = gamestate.TimeCount + (int)(con_notifytime * TICRATE);
-		NotifyStrings[NUMNOTIFIES-1].PrintLevel = printlevel;
+		NotifyStrings.back().Text = lines[i].Text;
+		NotifyStrings.back().TimeOut = gamestate.TimeCount + (int)(con_notifytime * TICRATE);
+		NotifyStrings.back().PrintLevel = printlevel;
 		addtype = NEWLINE;
 	}
 
@@ -653,7 +656,7 @@ void C_FlushDisplay ()
 {
 	int i;
 
-	for (i = 0; i < NUMNOTIFIES; i++)
+	for (i = 0; i < (int)NotifyStrings.size(); i++)
 		NotifyStrings[i].TimeOut = 0;
 }
 
@@ -749,7 +752,7 @@ static void C_DrawNotifyText ()
 
 	//BorderTopRefresh = screen->GetPageCount ();
 
-	for (i = 0; i < NUMNOTIFIES; i++)
+	for (i = 0; i < (int)NotifyStrings.size(); i++)
 	{
 		if (NotifyStrings[i].TimeOut == 0)
 			continue;
@@ -1565,6 +1568,12 @@ CCMD (echo)
 CCMD (toggleconsole)
 {
 	C_ToggleConsole();
+}
+
+CCMD(notifystrings)
+{
+	NotifyStrings.clear();
+	NotifyStrings.resize(atoi(argv[1]));
 }
 
 /* Printing in the middle of the screen */
