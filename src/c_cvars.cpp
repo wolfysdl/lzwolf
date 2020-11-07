@@ -230,7 +230,7 @@ void ReadConfig(void)
 		controlScheme[i].keyboard = SDL2Convert(config.GetSetting(keySettingName)->GetInteger());
 		controlScheme[i].mouse = config.GetSetting(mseSettingName)->GetInteger();
 	}
-	viewsize = config.GetSetting("ViewSize")->GetInteger();
+	viewsize = 21;//config.GetSetting("ViewSize")->GetInteger();
 	mousexadjustment = config.GetSetting("MouseXAdjustment")->GetInteger();
 	mouseyadjustment = config.GetSetting("MouseYAdjustment")->GetInteger();
 	panxadjustment = config.GetSetting("PanXAdjustment")->GetInteger();
@@ -239,7 +239,7 @@ void ReadConfig(void)
 	alwaysrun = config.GetSetting("AlwaysRun")->GetInteger() != 0;
 	AdlibVolume = config.GetSetting("SoundVolume")->GetInteger();
 	SD_UpdatePCSpeakerVolume();
-	MusicVolume = config.GetSetting("MusicVolume")->GetInteger();
+	MusicVolume = 0;//config.GetSetting("MusicVolume")->GetInteger();
 	SoundVolume = config.GetSetting("DigitizedVolume")->GetInteger();
 	vid_fullscreen = config.GetSetting("Vid_FullScreen")->GetInteger() != 0;
 	vid_aspect = static_cast<Aspect>(config.GetSetting("Vid_Aspect")->GetInteger());

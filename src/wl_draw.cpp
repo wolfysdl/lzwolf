@@ -1261,7 +1261,7 @@ void R_RenderView()
 	if (levelInfo->Atmos[2])
 		DrawSnow(vbuf, vbufPitch);
 
-	DrawPlayerWeapon ();    // draw player's hands
+	//DrawPlayerWeapon ();    // draw player's hands
 
 	if((control[ConsolePlayer].buttonstate[bt_showstatusbar] || control[ConsolePlayer].buttonheld[bt_showstatusbar]) && viewsize == 21)
 	{

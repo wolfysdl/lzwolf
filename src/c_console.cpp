@@ -661,8 +661,8 @@ void C_AdjustBottom ()
 {
 	if (playstate == ex_fullconsole || playstate == ex_startup)
 		ConBottom = SCREENHEIGHT;
-	else if (ConBottom > SCREENHEIGHT / 2 || ConsoleState == c_down)
-		ConBottom = SCREENHEIGHT / 2;
+	else if (ConBottom > SCREENHEIGHT *3 / 4 || ConsoleState == c_down)
+		ConBottom = SCREENHEIGHT *3/ 4;
 }
 
 void C_NewModeAdjust ()
@@ -691,9 +691,9 @@ void C_Ticker ()
 		if (ConsoleState == c_falling)
 		{
 			ConBottom += (consoletic - lasttic) * (SCREENHEIGHT * 2 / 25);
-			if (ConBottom >= SCREENHEIGHT / 2)
+			if (ConBottom >= SCREENHEIGHT *3 / 4)
 			{
-				ConBottom = SCREENHEIGHT / 2;
+				ConBottom = SCREENHEIGHT *3 / 4;
 				ConsoleState = c_down;
 			}
 		}

@@ -14,3 +14,6 @@ bind "t" "sendcmd btn.notify action press"
 bind "u" "sendcmd btn.notify mic_mute press"
 
 bind "p" "sendcmd ping"
+
+bind "0" "conresize 1280 800"
+bind "9" "conresize 960 600"

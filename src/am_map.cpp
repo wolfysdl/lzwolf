@@ -622,6 +622,22 @@ CCMD(logred)
     ipc_handler_thread.AddMsg( msg );
 }
 
+CCMD(conresize)
+{
+	if(argv.argc() < 3)
+		return;
+
+	screenWidth = atoi(argv[1]);
+	screenHeight = atoi(argv[2]);
+	windowedScreenWidth = screenWidth;
+	windowedScreenHeight = screenHeight;
+	VH_Startup(); // Recalculate fizzlefade stuff.
+	screen->Unlock();
+	VL_SetVGAPlaneMode();
+	C_NewModeAdjust();
+	screen->Lock(false);
+}
+
 AutoMap::Color &AutoMap::Color::operator=(int rgb)
 {
 	color = rgb;
@@ -665,10 +681,10 @@ void AM_ChangeResolution()
 		return;
 	}
 
-	unsigned int y = statusbary1;
-	unsigned int height = statusbary2 - statusbary1;
+	//unsigned int y = statusbary1;
+	//unsigned int height = statusbary2 - statusbary1;
 
-	AM_Main.CalculateDimensions(0, y, screenWidth, height);
+	AM_Main.CalculateDimensions(0, 0, screenWidth, screenHeight);
 	AM_Overlay.CalculateDimensions(viewscreenx, viewscreeny, viewwidth, viewheight);
 }
 
