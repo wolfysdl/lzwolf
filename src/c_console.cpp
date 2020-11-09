@@ -110,6 +110,8 @@ extern bool		advancedemo;
 //extern FBaseCVar *CVars;
 extern FConsoleCommand *Commands[FConsoleCommand::HASH_SIZE];
 
+extern bool LogControlRejects(const std::string &msg);
+
 int			ConCols, PhysRows;
 int			ConWidth;
 bool		vidactive = false;
@@ -984,7 +986,20 @@ void C_DrawConsole (bool hw2d)
 		conbuffer->FormatText(ConFont, ConWidth);
 		unsigned int consolelines = conbuffer->GetFormattedLineCount();
 		FBrokenLines **blines = conbuffer->GetLines();
-		FBrokenLines **printline = blines + consolelines - 1 - RowAdjust;
+
+		std::pair<int,int> rowadj{0,0};
+		for(FBrokenLines **p = blines + consolelines - 1; p >= blines && rowadj.second < RowAdjust; p--)
+		{
+			rowadj.first++;
+			FBrokenLines *bl = *p;
+			if(!bl->Unbroken.IsEmpty() && LogControlRejects(bl->Unbroken.GetString()))
+			{
+				continue;
+			}
+			rowadj.second++;
+		}
+
+		FBrokenLines **printline = blines + consolelines - 1 - rowadj.first;
 
 		int bottomline = ConBottom - ConFont->GetHeight()*2 - 4;
 
@@ -992,6 +1007,13 @@ void C_DrawConsole (bool hw2d)
 
 		for(FBrokenLines **p = printline; p >= blines && lines > 0; p--, lines--)
 		{
+			FBrokenLines *bl = *p;
+			if(!bl->Unbroken.IsEmpty() && LogControlRejects(bl->Unbroken.GetString()))
+			{
+				++lines;
+				continue;
+			}
+
 			screen->DrawText(ConFont, CR_TAN, LEFTMARGIN, offset + lines * ConFont->GetHeight(), (*p)->Text, TAG_DONE);
 		}
 

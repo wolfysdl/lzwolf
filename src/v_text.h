@@ -42,6 +42,7 @@ struct FBrokenLines
 {
 	int			Width;
 	FString		Text;
+	FString		Unbroken;
 };
 
 #define TEXTCOLOR_ESCAPE		'\034'
@@ -79,9 +80,9 @@ struct FBrokenLines
 #define TEXTCOLOR_NONOTIFY_BEGIN	"\034("
 #define TEXTCOLOR_NONOTIFY_END		"\034)"
 
-FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *str, bool preservecolor = false);
+FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *str, bool preservecolor = false, FString unbroken = FString{});
 void V_FreeBrokenLines (FBrokenLines *lines);
 inline FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const char *str, bool preservecolor = false)
- { return V_BreakLines (font, maxwidth, (const BYTE *)str, preservecolor); }
+ { return V_BreakLines (font, maxwidth, (const BYTE *)str, preservecolor, FString(str, strlen(str))); }
 
 #endif //__V_TEXT_H__

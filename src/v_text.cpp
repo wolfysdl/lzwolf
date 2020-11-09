@@ -339,7 +339,7 @@ static void breakit (FBrokenLines *line, FFont *font, const BYTE *start, const B
 	line->Width = font->StringWidth (line->Text);
 }
 
-FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *string, bool preservecolor)
+FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *string, bool preservecolor, FString unbroken)
 {
 	FBrokenLines lines[128];	// Support up to 128 lines (should be plenty)
 
@@ -449,6 +449,7 @@ FBrokenLines *V_BreakLines (FFont *font, int maxwidth, const BYTE *string, bool 
 	for (ii = 0; ii < i; ++ii)
 	{
 		broken[ii] = lines[ii];
+		broken[ii].Unbroken = unbroken;
 	}
 	broken[ii].Width = -1;
 

@@ -203,6 +203,8 @@ public:
 	int CompareNoCase(const FString &other, int len) const { return strnicmp(CharsPtr->c_str(), other.CharsPtr->c_str(), len); }
 	int CompareNoCase(const char *other, int len) const { return strnicmp(CharsPtr->c_str(), other, len); }
 
+	const std::string& GetString() const { return *CharsPtr; }
+
 protected:
 	static int FormatHelper (void *data, const char *str, int len);
 

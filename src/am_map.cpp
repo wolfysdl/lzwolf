@@ -191,7 +191,7 @@ CCMD(clearledreader)
 class CLogControl
 {
 public:
-    bool Rejects( const std::string& msg )
+    bool Rejects( const std::string& msg, bool do_update_info = false )
     {
         auto extract_prefix = []( const std::string& msg ) {
             std::vector< std::string > res;
@@ -200,6 +200,19 @@ public:
                 res.push_back( std::string( "mach" ) + msg.substr( 1, 1 ) );
             }
             auto esc_ind = msg.find( TEXTCOLOR_ESCAPE );
+            while( esc_ind != std::string::npos )
+            {
+                const auto chars2 = msg.substr( esc_ind, 2 );
+                if( chars2 == TEXTCOLOR_NONOTIFY_BEGIN ||
+                    chars2 == TEXTCOLOR_NONOTIFY_END ||
+                    chars2 == TEXTCOLOR_TAN )
+                {
+                    esc_ind = msg.find( TEXTCOLOR_ESCAPE, esc_ind + 1 );
+                    continue;
+                }
+                break;
+            }
+            // search for a regular prefix
             if( esc_ind != std::string::npos &&
                 msg.find( TEXTCOLOR_NORMAL, esc_ind + 2 ) !=
                     std::string::npos &&
@@ -223,7 +236,10 @@ public:
 
         for( auto p: prefix )
         {
-            UpdateInfo( p );
+            if( do_update_info )
+            {
+                UpdateInfo( p );
+            }
 
             const auto& info = m_prefix_infos[ p ];
             if( !info.m_accept )
@@ -483,7 +499,7 @@ public:
         {
             auto msg = m_msg_queue.front();
             m_msg_queue.pop_front();
-            if( m_log_control.Rejects( msg ) )
+            if( m_log_control.Rejects( msg, true ) )
             {
                 return boost::none;
             }
@@ -506,6 +522,11 @@ public:
         m_log_control.ToggleInvertLogRejects();
     }
 
+    bool LogControlRejects( const std::string& msg )
+    {
+        return m_log_control.Rejects( msg );
+    }
+
 private:
     struct CClientInfo
     {
@@ -521,6 +542,11 @@ private:
     std::map< int, std::shared_ptr< CClientInfo > > m_client_infos;
 };
 CIPCHandlerThread ipc_handler_thread;
+
+bool LogControlRejects( const std::string& msg )
+{
+    return ipc_handler_thread.LogControlRejects( msg );
+}
 
 CVAR (String, ipc_command_host, "localhost", CVAR_ARCHIVE)
 
