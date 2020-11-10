@@ -846,9 +846,14 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 
 	NetDPrintf("%s %d points\n", __FUNCTION__, FixedMul(damage, gamestate.difficulty->PlayerDamageFactor));
 	ob->health -= FixedMul(damage, gamestate.difficulty->PlayerDamageFactor);
-	// Ensure that we're targetting a player for now.
-	if(attacker && attacker->player)
+
+	// Target the attacker
+	if(attacker && attacker != ob && 
+			(attacker->player || (attacker->flags & FL_SHOOTABLE)) &&
+			CheckIsEnemyByFaction(ob, attacker))
+	{
 		ob->target = attacker;
+	}
 
 	if (ob->health<=0)
 	{

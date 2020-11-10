@@ -529,7 +529,8 @@ ACTION_FUNCTION(A_Chase)
 	// target which loses FL_SHOOTABLE will go stale
 	bool	staletarget = (self->target != NULL && self->target->player == NULL && !(self->target->flags & FL_SHOOTABLE));
 
-	if(!pathing && (self->target == NULL || staletarget))
+	if(!pathing && (self->target == NULL || staletarget ||
+				self->GetEnemyFactionList() != NULL))
 	{
 		if (staletarget)
 			self->target = NULL; // lose the stale target
@@ -555,8 +556,8 @@ ACTION_FUNCTION(A_Chase)
 
 				if (iter != self &&
 					(iter->player || (iter->flags & FL_SHOOTABLE)) &&
-					CheckIsEnemyByFaction(self, iter) &&
-					(!mincheck || dist < mindist))
+					(!mincheck || dist < mindist) &&
+					CheckIsEnemyByFaction(self, iter))
 				{
 					mincheck = iter;
 					mindist = dist;
