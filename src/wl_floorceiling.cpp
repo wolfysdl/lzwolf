@@ -268,6 +268,11 @@ namespace Shading
 			unsigned int oldzone = INT_MAX;
 			int zonex = -1;
 			unsigned int curzone = INT_MAX;
+			unsigned int oldlightsector = INT_MAX;
+			const MapLightSector* p_oldlightsector = NULL;
+			int lightsectorx = -1;
+			unsigned int curlightsector = INT_MAX;
+			const MapLightSector* p_curlightsector = NULL;
 			MapTile::Side doordir = MapTile::East;
 			MapSpot doorspot = NULL;
 			for (int x = lx; x < rx; x++)
@@ -314,11 +319,21 @@ namespace Shading
 								}
 								if (spot && spot->zone != NULL)
 									curzone = spot->zone->index;
+								if (spot && spot->lightsector != NULL)
+								{
+									curlightsector = spot->lightsector->index;
+									p_curlightsector = spot->lightsector;
+								}
 							}
 							else
 							{
 								if (spot->zone != NULL)
 									curzone = spot->zone->index;
+								if (spot->lightsector != NULL)
+								{
+									curlightsector = spot->lightsector->index;
+									p_curlightsector = spot->lightsector;
+								}
 							}
 						}
 					}
@@ -331,6 +346,11 @@ namespace Shading
 							MapSpot spot = doorspot->GetAdjacent(doordir, !(curxdoor&1));
 							if (spot && spot->zone != NULL)
 								curzone = spot->zone->index;
+							if (spot && spot->lightsector != NULL)
+							{
+								curlightsector = spot->lightsector->index;
+								p_curlightsector = spot->lightsector;
+							}
 							oldmapxdoor = INT_MAX;
 						}
 					}
@@ -338,8 +358,21 @@ namespace Shading
 				else
 				{
 					curzone = INT_MAX;
+					curlightsector = INT_MAX;
+					p_curlightsector = NULL;
 				}
 
+				if (curlightsector != oldlightsector)
+				{
+					if (lightsectorx > -1 && oldlightsector != INT_MAX &&
+						p_oldlightsector != NULL)
+					{
+						InsertSpan (lightsectorx-lx, x-lx, spans, p_oldlightsector->light, NULL);
+					}
+					oldlightsector = curlightsector;
+					p_oldlightsector = p_curlightsector;
+					lightsectorx = x;
+				}
 				if (curzone != oldzone)
 				{
 					if (zonex > -1 && oldzone != INT_MAX &&
@@ -357,6 +390,11 @@ namespace Shading
 				gv += dv;
 			}
 
+			if (lightsectorx > -1 && INT_MAX != oldlightsector && lightsectorx<rx &&
+				p_oldlightsector != NULL)
+			{
+				InsertSpan (lightsectorx, rx, spans, p_oldlightsector->light, NULL);
+			}
 			if (zonex > -1 && INT_MAX != oldzone && zonex<rx &&
 				zoneLightMap.find((ZoneId)oldzone) != zoneLightMap.end())
 			{
@@ -506,6 +544,8 @@ namespace Shading
 		{
 			light += zoneLightMap.find(spot->zone->index)->second.light;
 		}
+		if (spot && spot->lightsector != NULL)
+			light += spot->lightsector->light;
 
 		return light;
 	}
