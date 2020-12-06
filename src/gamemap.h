@@ -165,6 +165,11 @@ class GameMap
 		{
 			unsigned short	index;
 		};
+		struct LightSector
+		{
+			unsigned int	index;
+			int				light;
+		};
 		struct Plane
 		{
 			const GameMap	*gm;
@@ -172,7 +177,8 @@ class GameMap
 			unsigned int	depth;
 			struct Map
 			{
-				Map() : tile(NULL), sector(NULL), zone(NULL), visible(false),
+				Map() : tile(NULL), sector(NULL), zone(NULL), lightsector(NULL),
+					visible(false),
 					amFlags(0), thinker(NULL), slideStyle(0),
 					pushDirection(Tile::East), pushAmount(0),
 					pushReceptor(NULL), tag(0), nexttag(NULL)
@@ -191,6 +197,7 @@ class GameMap
 				const Tile		*tile;
 				const Sector	*sector;
 				const Zone		*zone;
+				const LightSector		*lightsector;
 
 				// So that the textures can change.
 				FTextureID		texture[4];
@@ -278,6 +285,7 @@ class GameMap
 		TArray<Tile>	tilePalette;
 		TArray<Sector>	sectorPalette;
 		TArray<Zone>	zonePalette;
+		TArray<LightSector>	lightSectorPalette;
 		TArray<Thing>	things;
 		TArray<Plane>	planes;
 		TMap<unsigned int, Plane::Map *> tagMap;
@@ -306,6 +314,7 @@ typedef GameMap::Thing			MapThing;
 typedef GameMap::Tile			MapTile;
 typedef GameMap::Trigger		MapTrigger;
 typedef GameMap::Zone			MapZone;
+typedef GameMap::LightSector	MapLightSector;
 
 #include "farchive.h"
 FArchive &operator<< (FArchive &arc, GameMap *&gm);

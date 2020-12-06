@@ -963,7 +963,7 @@ void GameMap::ReadMacData()
 void GameMap::ReadPlanesData()
 {
 	static const unsigned short UNIT = 64;
-	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, NUM_USABLE_PLANES };
+	enum OldPlanes { Plane_Tiles, Plane_Object, Plane_Flats, Plane_Info, Plane_LightCells, NUM_USABLE_PLANES };
 
 	if(levelInfo->Translator.IsEmpty())
 		xlat.LoadXlat(gameinfo.Translator.str, gameinfo.Translator.Next());
@@ -972,6 +972,7 @@ void GameMap::ReadPlanesData()
 
 	Xlat::EFeatureFlags FeatureFlags = xlat.GetFeatureFlags();
 	sectorPalette.Clear();
+	lightSectorPalette.Clear();
 
 	// Old format maps always have a tile size of 64
 	header.tileSize = UNIT;
@@ -1035,6 +1036,9 @@ void GameMap::ReadPlanesData()
 	{
 		if(plane == 3) // Info plane is already read
 			continue;
+
+		lump->Seek(18+nameLength, SEEK_SET);
+		lump->Seek(size*2*plane, SEEK_CUR);
 
 		TUniquePtr<WORD[]> oldplane(new WORD[size]);
 		lump->Read(oldplane.Get(), size*2);
@@ -1371,6 +1375,37 @@ void GameMap::ReadPlanesData()
 				// Now link the sector data to map points!
 				for(unsigned int i = 0;i < size;++i)
 					mapPlane.map[i].sector = &sectorPalette[flatMap[oldplane[i]]];
+				break;
+			}
+
+			case Plane_LightCells:
+			{
+				// Look for all unique light values.
+				unsigned int type = lightSectorPalette.Size();
+				TMap<int, unsigned int> lightCellMap;
+				for(unsigned int i = 0;i < size;++i)
+				{
+					oldplane[i] = LittleShort(oldplane[i]);
+
+					int light = static_cast<SWORD>(oldplane[i]);
+					if(!lightCellMap.CheckKey(light))
+						lightCellMap[light] = type++;
+				}
+
+				// Build the palette.
+				lightSectorPalette.Resize(type);
+				TMap<int, unsigned int>::ConstIterator iter(lightCellMap);
+				TMap<int, unsigned int>::ConstPair *pair;
+				while(iter.NextPair(pair))
+				{
+					LightSector &lightsector = lightSectorPalette[pair->Value];
+					lightsector.light = pair->Key;
+					lightsector.index = pair->Value;
+				}
+
+				// Now link the lightsector data to map points!
+				for(unsigned int i = 0;i < size;++i)
+					mapPlane.map[i].lightsector = &lightSectorPalette[lightCellMap[oldplane[i]]];
 				break;
 			}
 		}
