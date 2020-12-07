@@ -143,7 +143,7 @@ void FinalReadConfig()
 	sm = static_cast<SMMode> (config.GetSetting("MusicDevice")->GetInteger());
 	sds = static_cast<SDSMode> (config.GetSetting("DigitalSoundDevice")->GetInteger());
 
-	if ((sd == sdm_AdLib || sm == smm_AdLib) && !AdLibPresent
+	if ((sd == sdm_AdLib || sm != smm_Off) && !AdLibPresent
 			&& !SoundBlasterPresent)
 	{
 		sd = sdm_PC;
@@ -156,6 +156,7 @@ void FinalReadConfig()
 	SD_SetMusicMode(sm);
 	SD_SetSoundMode(sd);
 	SD_SetDigiDevice(sds);
+	N3DTempoEmulation = config.GetSetting("N3DTempoEmulation")->GetInteger();
 
 	AM_UpdateFlags();
 
@@ -186,6 +187,7 @@ void ReadConfig(void)
 	config.CreateSetting("SoundDevice", sdm_AdLib);
 	config.CreateSetting("MusicDevice", smm_AdLib);
 	config.CreateSetting("DigitalSoundDevice", sds_SoundBlaster);
+	config.CreateSetting("N3DTempoEmulation", false);
 	config.CreateSetting("AlwaysRun", 0);
 	config.CreateSetting("MouseYAxisDisabled", 0);
 	config.CreateSetting("SoundVolume", MAX_VOLUME);
@@ -390,6 +392,7 @@ void WriteConfig(void)
 	config.GetSetting("SoundDevice")->SetValue(SoundMode);
 	config.GetSetting("MusicDevice")->SetValue(MusicMode);
 	config.GetSetting("DigitalSoundDevice")->SetValue(DigiMode);
+	config.GetSetting("N3DTempoEmulation")->SetValue(N3DTempoEmulation);
 	config.GetSetting("SoundVolume")->SetValue(AdlibVolume);
 	config.GetSetting("MusicVolume")->SetValue(MusicVolume);
 	config.GetSetting("DigitizedVolume")->SetValue(SoundVolume);
