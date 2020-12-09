@@ -42,6 +42,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "version.h"
 //#include "g_game.h"
@@ -1644,6 +1645,11 @@ CCMD (echo)
 		FString formatted = strbin1 (argv[i]);
 		Printf ("%s%s", formatted.GetChars(), i!=last ? " " : "\n");
 	}
+}
+
+CCMD (delay)
+{
+	usleep(atoi(argv[1]) * 1000);
 }
 
 CCMD (toggleconsole)
