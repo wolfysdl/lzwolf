@@ -1,6 +1,7 @@
 #ifndef __WL_DRAW_H__
 #define __WL_DRAW_H__
 
+#include <array>
 #include "tmemory.h"
 
 /*

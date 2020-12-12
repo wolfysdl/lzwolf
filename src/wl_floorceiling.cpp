@@ -571,7 +571,7 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 	if(planeheight == 0) // Eye level
 		return;
 	
-	TWallHeight y0 = TWallHeight{min_wallheight[0]>>3,min_wallheight[1]>>3,min_wallheight[2]>>3};
+	TWallHeight y0{{min_wallheight[0]>>3,min_wallheight[1]>>3,min_wallheight[2]>>3}};
 
 	const unsigned int mapwidth = map->GetHeader().width;
 	const unsigned int mapheight = map->GetHeader().height;
