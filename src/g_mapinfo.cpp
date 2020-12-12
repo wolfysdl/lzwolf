@@ -298,6 +298,7 @@ LevelInfo::LevelInfo() : ResetHealth(false), ResetInventory(false),
 	ForceTally = false;
 	HighScoresGraphic.SetInvalid();
 	NumParallaxTiles = 0;
+	ParallaxDecals = false;
 	ClearAtmos();
 }
 
@@ -577,6 +578,8 @@ protected:
 		}
 		else if(key.CompareNoCase("NumParallaxTiles") == 0)
 			ParseIntAssignment(mapInfo.NumParallaxTiles);
+		else if(key.CompareNoCase("ParallaxDecals") == 0)
+			ParseBoolAssignment(mapInfo.ParallaxDecals);
 		else if(key.CompareNoCase("AtmosStarSky") == 0)
 			ParseIntAssignment(mapInfo.Atmos[0]);
 		else if(key.CompareNoCase("AtmosRain") == 0)
