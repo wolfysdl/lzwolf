@@ -815,6 +815,8 @@ protected:
 			ParseColorAssignment(gameinfo.parallaxskyfloorcolor);
 		else if(key.CompareNoCase("parallaxskyceilcolor") == 0)
 			ParseColorAssignment(gameinfo.parallaxskyceilcolor);
+		else if(key.CompareNoCase("walldecalcolor") == 0)
+			ParseColorAssignment(gameinfo.walldecalcolor);
 		else
 			return false;
 		return true;

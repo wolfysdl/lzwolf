@@ -843,6 +843,9 @@ void AsmRefresh()
 	MapSpot focalspot = map->GetSpot(focaltx, focalty, 0);
 	bool playerInPushwallBackTile = focalspot->pushAmount != 0;
 
+	if(gameinfo.walldecalcolor >= 256)
+		postdecalcolor = (byte)(gameinfo.walldecalcolor&0xff);
+
 	for(pixx=0;pixx<viewwidth;pixx++)
 	{
 		short angl=midangle+pixelangle[pixx];

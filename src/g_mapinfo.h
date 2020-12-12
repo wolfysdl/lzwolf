@@ -159,6 +159,7 @@ public:
 	} automap;
 	int parallaxskyfloorcolor;
 	int parallaxskyceilcolor;
+	int walldecalcolor;
 } gameinfo;
 
 class LevelInfo
