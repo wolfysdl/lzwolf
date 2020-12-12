@@ -131,7 +131,8 @@ class GameMap
 		struct Tile
 		{
 			Tile() : offsetVertical(false), offsetHorizontal(false),
-				mapped(0), dontOverlay(false), showSky(false), bright(false)
+				mapped(0), dontOverlay(false), showSky(false),
+				bright(false), decal(false)
 			{
 				overhead.SetInvalid();
 				sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
@@ -149,6 +150,7 @@ class GameMap
 			bool			dontOverlay;
 			bool			showSky;
 			bool			bright;
+			bool			decal;
 		};
 		struct Sector
 		{

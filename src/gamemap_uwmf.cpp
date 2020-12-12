@@ -149,6 +149,11 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.bright = sc->boolean;
 	}
+	else CheckKey("decal")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.decal = sc->boolean;
+	}
 
 	EndParseBlock
 }

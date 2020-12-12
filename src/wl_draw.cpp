@@ -1,5 +1,6 @@
 // WL_DRAW.C
 
+#include <algorithm>
 #include "wl_def.h"
 #include "id_sd.h"
 #include "id_in.h"
@@ -290,9 +291,28 @@ TWallHeight CalcHeight()
 const byte *postsource;
 int postx;
 int32_t postshadex, postshadey;
-bool postbright;
+bool postbright, postdecal;
+byte postdecalcolor = 187; // slade will not set the right color for this; its annoying but its true
 
-void ScalePost()
+struct StandardScalePost
+{
+	static inline void WritePix(int yendoffs, byte col)
+	{
+		vbuf[yendoffs] = col;
+	}
+};
+
+struct DecalScalePost
+{
+	static inline void WritePix(int yendoffs, byte col)
+	{
+		if(col != postdecalcolor)
+			vbuf[yendoffs] = col;
+	}
+};
+
+template<typename Algo>
+void RunScalePost()
 {
 	if(postsource == NULL)
 		return;
@@ -343,7 +363,7 @@ void ScalePost()
 	yendoffs = yendoffs * vbufPitch + postx;
 	while(yoffs <= yendoffs)
 	{
-		vbuf[yendoffs] = col;
+		Algo::WritePix(yendoffs, col);
 		ywcount -= texyscale;
 		if(ywcount <= 0)
 		{
@@ -360,6 +380,17 @@ void ScalePost()
 	}
 }
 
+void ScalePost()
+{
+	if(postdecal)
+	{
+		RunScalePost<DecalScalePost>();
+	}
+	else
+	{
+		RunScalePost<StandardScalePost>();
+	}
+}
 
 /*
 ===================
@@ -494,6 +525,7 @@ void HitVertWall (void)
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
+		postdecal = tilehit->tile->decal;
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -507,6 +539,7 @@ void HitVertWall (void)
 	wallheight[pixx] = CalcHeight();
 	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
+	postdecal = tilehit->tile->decal;
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -576,6 +609,7 @@ void HitHorizWall (void)
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
+		postdecal = tilehit->tile->decal;
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -589,6 +623,7 @@ void HitHorizWall (void)
 	wallheight[pixx] = CalcHeight();
 	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
+	postdecal = tilehit->tile->decal;
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -1307,11 +1342,17 @@ void R_RenderView()
 	if (levelInfo->Atmos[3])
 		DrawHighQualityStarSky(vbuf, vbufPitch);
 
+	if (levelInfo->ParallaxDecals && levelInfo->ParallaxSky.Size() > 0)
+	{
+		std::fill(skywallheight.Get(), skywallheight.Get() + SCREENWIDTH, TWallHeight{});
+		DrawParallax(vbuf, vbufPitch);
+	}
+
 	Shading::PopulateHalos ();
 
 	WallRefresh ();
 
-	if (levelInfo->ParallaxSky.Size() > 0)
+	if (!levelInfo->ParallaxDecals && levelInfo->ParallaxSky.Size() > 0)
 		DrawParallax(vbuf, vbufPitch);
 #if defined(USE_FEATUREFLAGS) && defined(USE_CLOUDSKY)
 	if(GetFeatureFlags() & FF_CLOUDSKY)

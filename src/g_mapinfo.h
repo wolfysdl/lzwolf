@@ -196,6 +196,7 @@ public:
 	bool			ForceShowPsyched;
 	TArray<FTextureID>	ParallaxSky;
 	int             NumParallaxTiles;
+	bool			ParallaxDecals;
 	int             Atmos[4];
 	FString			Intermission;
 
