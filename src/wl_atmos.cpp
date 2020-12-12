@@ -458,7 +458,7 @@ fixed SnowWindAmplitude(uint32_t windtics)
 {
     fixed windamp = 0;
 
-    fixed t;
+    fixed t = 0;
     static const struct windparms
     {
         uint32_t Stics, Etics;
