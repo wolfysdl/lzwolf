@@ -298,6 +298,11 @@ struct StandardScalePost
 	{
 		vbuf[yendoffs] = col;
 	}
+
+	static inline byte ReadColor(const byte *curshades, int yw)
+	{
+		return curshades[postsource[yw]];
+	}
 };
 
 struct DecalScalePost
@@ -306,6 +311,12 @@ struct DecalScalePost
 	{
 		if(col != postdecalcolor)
 			vbuf[yendoffs] = col;
+	}
+
+	static inline byte ReadColor(const byte *curshades, int yw)
+	{
+		auto col = postsource[yw];
+		return (col == postdecalcolor ? postdecalcolor : curshades[col]);
 	}
 };
 
@@ -357,7 +368,7 @@ void RunScalePost()
 	if(yw < 0)
 		yw = (texyscale>>2) - ((-yw) % (texyscale>>2));
 
-	col = curshades[postsource[yw]];
+	col = Algo::ReadColor(curshades, yw);
 	yendoffs = yendoffs * vbufPitch + postx;
 	while(yoffs <= yendoffs)
 	{
@@ -372,7 +383,7 @@ void RunScalePost()
 			}
 			while(ywcount <= 0);
 			if(yw < 0) yw = (texyscale>>2)-1;
-			col = curshades[postsource[yw]];
+			col = Algo::ReadColor(curshades, yw);
 		}
 		yendoffs -= vbufPitch;
 	}
