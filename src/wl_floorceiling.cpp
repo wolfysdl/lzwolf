@@ -595,6 +595,11 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 
 	Shading::PrepareConstants (halfheight, planeheight);
 
+	const int viewxTile = viewx>>FRACBITS;
+	const int viewxFrac = (viewx&(FRACUNIT-1))<<8; // 8.24
+	const int viewyTile = viewy>>FRACBITS;
+	const int viewyFrac = (viewy&(FRACUNIT-1))<<8; // 8.24
+
 	unsigned int oldmapx = INT_MAX, oldmapy = INT_MAX;
 	const byte* curshades = NormalLight.Maps;
 
@@ -613,8 +618,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 
 		// Shift in some extra bits so that we don't get spectacular round off.
 		dist = ((heightnumerator<<8) / InvWallMidY(y<<3, bot))<<8;
-		gu =  (viewx<<8) + FixedMul(dist, viewcos);
-		gv = -(viewy<<8) + FixedMul(dist, viewsin);
+		gu =  viewxFrac + FixedMul(dist, viewcos);
+		gv = -viewyFrac + FixedMul(dist, viewsin);
 		tex_step = dist / scale;
 		du =  FixedMul(tex_step, viewsin);
 		dv = -FixedMul(tex_step, viewcos);
@@ -632,8 +637,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 		{
 			if(y >= wallheight[x][botind]>>3)
 			{
-				unsigned int curx = (gu >> (TILESHIFT+8));
-				unsigned int cury = (-(gv >> (TILESHIFT+8)) - 1);
+				unsigned int curx = viewxTile + (gu >> (TILESHIFT+8));
+				unsigned int cury = viewyTile + (-(gv >> (TILESHIFT+8)) - 1);
 
 				if(curx != oldmapx || cury != oldmapy)
 				{
@@ -686,8 +691,8 @@ static void R_DrawPlane(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheig
 					}
 					else
 					{
-						const int u = (FixedMul((gu>>8)-512, texxscale)) & (texwidth-1);
-						const int v = (FixedMul((gv>>8)+512, texyscale)) & (texheight-1);
+						const int u = (FixedMul((viewxTile<<16)+(gu>>8)-512, texxscale)) & (texwidth-1);
+						const int v = (FixedMul((viewyTile<<16)+(gv>>8)+512, texyscale)) & (texheight-1);
 						const unsigned texoffs = (u * texheight) + v;
 						if (!R_PixIsTrans(tex[texoffs], trans))
 							*tex_offset = curshades[tex[texoffs]];
