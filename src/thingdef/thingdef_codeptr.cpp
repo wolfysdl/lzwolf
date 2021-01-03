@@ -585,12 +585,30 @@ ACTION_FUNCTION(A_JumpIfCloser)
 
 ACTION_FUNCTION(A_JumpIfInventory)
 {
+	enum
+	{
+		OWNER_SELF = 0,
+		OWNER_TARGET = 1,
+		OWNER_PLAYER = 2,
+	};
 	ACTION_PARAM_STRING(className, 0);
 	ACTION_PARAM_INT(amount, 1);
 	ACTION_PARAM_STATE(frame, 2, NULL);
+	ACTION_PARAM_INT(owner, 3);
+
+	AActor *invowner = self;
+	switch(owner)
+	{
+		case OWNER_TARGET:
+			invowner = self->target;
+			break;
+		case OWNER_PLAYER:
+			invowner = players[0].mo;
+			break;
+	}
 
 	const ClassDef *cls = ClassDef::FindClass(className);
-	AInventory *inv = self->FindInventory(cls);
+	AInventory *inv = invowner->FindInventory(cls);
 
 	if(!inv)
 		return false;
