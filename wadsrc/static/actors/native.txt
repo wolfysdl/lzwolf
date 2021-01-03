@@ -61,6 +61,10 @@ const float ATTN_NORM = 1.0; // vanilla
 const float ATTN_IDLE = 1.001; // vanilla with added distance attenuation
 const float ATTN_STATIC = 3.0; // diminish very rapidly with distance
 
+const int OWNER_SELF = 0;
+const int OWNER_TARGET = 1;
+const int OWNER_PLAYER = 2;
+
 actor Actor native
 {
 	actionns "lz"
@@ -107,7 +111,7 @@ actor Actor native
 	action native A_Jump(int chance, state frame, ...);
 	action native A_JumpIf(bool expression, state frame);
 	action native A_JumpIfCloser(float distance, state frame);
-	action native A_JumpIfInventory(string type, int amount, state frame);
+	action native A_JumpIfInventory(string type, int amount, state frame, int owner = OWNER_SELF);
 	action native A_Look(int flags = 0, float minseedist = 0, float maxseedist = 0, float maxheardist = 0, float fov = 180, state frame = "*");
 	action native A_LookEx(int flags = 0, float minseedist = 0, float maxseedist = 0, float maxheardist = 0, float fov = 180, state frame = "*"); // Alias
 	action native A_MeleeAttack(int damage, float accuracy = 0.6275, string hitsound = "", string misssound = "*");
