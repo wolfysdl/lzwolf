@@ -141,10 +141,10 @@ MENU_LISTENER(SetDigitalSound)
 }
 MENU_LISTENER(SetMusic)
 {
-	if(MusicMode != (SMMode)which)
+	if(MusicMode != (which == 0 ? smm_Off : smm_AdLib))
 	{
-		SD_SetMusicMode((SMMode)which);
-		if(which != smm_Off)
+		SD_SetMusicMode((which == 0 ? smm_Off : smm_AdLib));
+		if(which != 0)
 			StartCPMusic(gameinfo.MenuMusic);
 	}
 	return true;
@@ -430,7 +430,7 @@ void CreateMenus()
 	// Collect options and defaults
 	const char* soundEffectsOptions[] = {language["STR_NONE"], language["STR_PC"], language["STR_ALSB"] };
 	const char* digitizedOptions[] = {language["STR_NONE"], language["STR_SB"] };
-	const char* musicOptions[] = { language["STR_NONE"], language["STR_ALSB"], language["STR_MIDI"] };
+	const char* musicOptions[] = { language["STR_NONE"], language["STR_ALSB"] };
 	if(!AdLibPresent && !SoundBlasterPresent)
 	{
 		soundEffectsOptions[2] = NULL;
@@ -456,7 +456,6 @@ void CreateMenus()
 	{
 		default: musicMode = 0; break;
 		case smm_AdLib: musicMode = 1; break;
-		case smm_Midi: musicMode = 2; break;
 	}
 	soundBase.setHeadText(language["STR_SOUNDCONFIG"]);
 	soundBase.addItem(new LabelMenuItem(language["STR_DIGITALDEVICE"]));
@@ -466,7 +465,7 @@ void CreateMenus()
 	soundBase.addItem(new MultipleChoiceMenuItem(SetSoundEffects, soundEffectsOptions, 3, soundEffectsMode));
 	soundBase.addItem(new SliderMenuItem(AdlibVolume, 150, MAX_VOLUME, language["STR_SOFT"], language["STR_LOUD"], SD_UpdatePCSpeakerVolume));
 	soundBase.addItem(new LabelMenuItem(language["STR_MUSICDEVICE"]));
-	soundBase.addItem(new MultipleChoiceMenuItem(SetMusic, musicOptions, 3, musicMode));
+	soundBase.addItem(new MultipleChoiceMenuItem(SetMusic, musicOptions, 2, musicMode));
 	soundBase.addItem(new SliderMenuItem(MusicVolume, 150, MAX_VOLUME, language["STR_SOFT"], language["STR_LOUD"], SD_UpdateMusicVolume));
 
 	controlBase.setHeadPicture("M_CONTRL");
