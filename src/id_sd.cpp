@@ -42,7 +42,7 @@
 #include "wl_game.h"
 
 #ifndef ECWOLF_MIXER
-#pragma message "Not using customized SDL_mixer. Features will be disabled. https://bitbucket.org/ecwolf/sdl_mixer-for-ecwolf"
+#pragma message "Not using customized SDL_mixer. Features will be disabled. https://bitbucket.org/Blzut3/sdl_mixer-for-ecwolf"
 #endif
 
 // For AdLib sounds & music:
@@ -73,15 +73,6 @@ int		AdlibVolume=MAX_VOLUME;
 int		MusicVolume=MAX_VOLUME;
 int		SoundVolume=MAX_VOLUME;
 
-// SDL_mixer values from Mix_QuerySpec
-static struct
-{
-	int frequency;
-	Uint16 format;
-	int channels;
-} AudioSpec;
-static SDL_AudioCVT AudioCVTStereo;
-
 //      Internal variables
 static  bool					SD_Started;
 static  bool					nextsoundpos;
@@ -95,8 +86,6 @@ static  bool                    LoopingPlay;
 static  double                  PlayVolume;
 
 static  bool					DigiPlaying;
-
-static int samplesPerMusicTick;
 
 //      PC Sound variables
 static  volatile byte           pcLastSample;
@@ -118,16 +107,6 @@ static  word                   *sqHackPtr;
 static  int                     sqHackLen;
 static  int                     sqHackSeqLen;
 static  longword                sqHackTime;
-
-
-//	Noah3D MIDI playback variables and functions
-extern  volatile bool			midiOn;
-extern	const byte			*midiData, *midiDataStart;
-static	TUniquePtr<const byte[]>	midiChunkFreeable;
-
-void MIDI_IRQService(void);
-bool MIDI_TryToStart(const byte *seqPtr, int dataLen);
-
 
 static int musicchunk=-1;
 Mix_Music *music=NULL;
@@ -163,7 +142,7 @@ static inline bool YM3812Init(int numChips, int clock, int rate)
 	return false;
 }
 
-void YM3812Write(DBOPL::Chip &which, Bit32u reg, Bit8u val, const int &volume)
+static inline void YM3812Write(DBOPL::Chip &which, Bit32u reg, Bit8u val, const int &volume)
 {
 	which.SetVolume(volume);
 	which.WriteReg(reg, val);
@@ -214,7 +193,7 @@ static inline void YM3812UpdateOne(DBOPL::Chip &which, int16_t *stream, int leng
 
 #else
 
-extern const int oplChip = 0;
+static const int oplChip = 0;
 
 #endif
 
@@ -281,7 +260,7 @@ inline void _SDL_turnOnPCSpeaker(byte pcSample)
 	// Note: You could use a lookup table to make this even faster. Only
 	// 256 table entries are required since the PC samples are just byte
 	// values.
-	pcPhaseLength = (pcSample*60*AudioSpec.frequency)/(2*PC_BASE_TIMER);
+	pcPhaseLength = (pcSample*60*param_samplerate)/(2*PC_BASE_TIMER);
 #ifdef PC_VIBRATO
 	//if(pcVolume<0) pcVolume = -pcVolume;
 	pcPhaseTick = 0;
@@ -501,7 +480,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos, int distance)
 {
 	if((leftpos < 0) || (leftpos > 15) || (rightpos < 0) || (rightpos > 15)
 			|| ((leftpos == 15) && (rightpos == 15)))
-		I_FatalError("SD_SetPosition: Illegal position");
+		Quit("SD_SetPosition: Illegal position");
 
 	switch (DigiMode)
 	{
@@ -804,7 +783,7 @@ SDL_ALPlaySound(AdLibSound *sound)
 
 	if (!(inst->mSus | inst->cSus))
 	{
-		I_FatalError("SDL_ALPlaySound() - Bad instrument");
+		Quit("SDL_ALPlaySound() - Bad instrument");
 	}
 
 	SDL_AlSetFXInst(inst);
@@ -885,6 +864,82 @@ SDL_StartDevice(void)
 	SoundPriority = 0;
 }
 
+//      Public routines
+
+///////////////////////////////////////////////////////////////////////////
+//
+//      SD_SetSoundMode() - Sets which sound hardware to use for sound effects
+//
+///////////////////////////////////////////////////////////////////////////
+bool SD_SetSoundMode(SDMode mode)
+{
+	bool result = false;
+
+	SD_StopSound();
+
+	if ((mode == sdm_AdLib) && !AdLibPresent)
+		mode = sdm_PC;
+
+	switch (mode)
+	{
+		case sdm_Off:
+		case sdm_PC:
+			result = true;
+			break;
+		case sdm_AdLib:
+			if (AdLibPresent)
+				result = true;
+			break;
+		default:
+			Quit("SD_SetSoundMode: Invalid sound mode %i", mode);
+			return false;
+	}
+
+	if (result && (mode != SoundMode))
+	{
+		SDL_ShutDevice();
+		SoundMode = mode;
+		SDL_StartDevice();
+	}
+
+	return(result);
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+//      SD_SetMusicMode() - sets the device to use for background music
+//
+///////////////////////////////////////////////////////////////////////////
+bool SD_SetMusicMode(SMMode mode)
+{
+	bool result = false;
+
+	SD_FadeOutMusic();
+	while (SD_MusicPlaying())
+		SDL_Delay(5);
+
+	switch (mode)
+	{
+		case smm_Off:
+			result = true;
+			break;
+		case smm_AdLib:
+			if (AdLibPresent)
+				result = true;
+			break;
+	}
+
+	if (result)
+		MusicMode = mode;
+
+//    SDL_SetTimerSpeed();
+
+	return(result);
+}
+
+int numreadysamples = 0;
+int soundTimeCounter = SOUND_TICKS;
+int samplesPerMusicTick;
 /*-----------------------------------------------------------------------------
 The variables below are not required unless you WANT to change the behavior of
 AdLib sound effects compared to the original Wolfenstein 3-D code.
@@ -909,10 +964,10 @@ gloabal variables that need to be accessed in SDL_IMFMusicPlayer().
 //byte *curAlSoundPtr = 0;
 //longword curAlLengthLeft = 0;
 
-static int numreadysamples = 0;
-static int soundTimeCounter = SOUND_TICKS;
-static void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int sampleslen)
+void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
 {
+	int stereolen = len>>1;
+	int sampleslen = stereolen>>1;
 	Sint16 *stream16 = (Sint16 *) (void *) stream;    // expect correct alignment
 
 	while(1)
@@ -921,7 +976,7 @@ static void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int sampleslen)
 		{
 			if(numreadysamples<sampleslen)
 			{
-				if(MusicMode != smm_Off || SoundMode == sdm_AdLib)
+				if(MusicMode == smm_AdLib || SoundMode == sdm_AdLib)
 					YM3812UpdateOne(oplChip, stream16, numreadysamples);
 
 				// Mix the emulated PC sounds into the AdLib buffer:
@@ -932,7 +987,7 @@ static void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int sampleslen)
 			}
 			else
 			{
-				if(MusicMode != smm_Off || SoundMode == sdm_AdLib)
+				if(MusicMode == smm_AdLib || SoundMode == sdm_AdLib)
 					YM3812UpdateOne(oplChip, stream16, sampleslen);
 
 				// Mix the emulated PC sounds into the AdLib buffer:
@@ -970,10 +1025,7 @@ static void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int sampleslen)
 				}
 			}
 		}
-
-		if (sqActive && midiOn)
-			MIDI_IRQService();
-		else if (sqActive)
+		if(sqActive)
 		{
 			do
 			{
@@ -993,189 +1045,11 @@ static void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int sampleslen)
 				alTimeCount = 0;
 			}
 		}
-
 		numreadysamples = samplesPerMusicTick;
 
 		SDL_UnlockMutex(audioMutex);
 	}
 }
-
-static void SDL_MixEmulators(void *udata, Uint8 *mixed_stream, int len)
-{
-	if(MusicMode == smm_Off && !(SoundMode == sdm_AdLib || SoundMode == sdm_PC))
-		return;
-
-	const int sampleslen = (len/AudioSpec.channels)>>1;
-
-	// Setup buffer that we can write emulator data to before mixing in
-	static Uint8 *stream;
-	static int stream_len = 0;
-	if(len > stream_len)
-	{
-		// If we're converting from stereo to surround then we need to ensure
-		// that this buffer is large enough to hold any intermediate conversions.
-		if(AudioCVTStereo.needed && AudioCVTStereo.len_mult > AudioCVTStereo.len_ratio)
-			stream_len = (sampleslen<<2)*AudioCVTStereo.len_mult;
-		else
-			stream_len = len;
-		stream = (Uint8*)realloc(stream, stream_len);
-	}
-
-	memset(stream, 0, len);
-	SDL_IMFMusicPlayer(udata, stream, sampleslen);
-
-	if(AudioCVTStereo.needed)
-	{
-		// Stereo 16-bit to whatever was opened
-		AudioCVTStereo.len = sampleslen<<2;
-		AudioCVTStereo.buf = stream;
-		SDL_ConvertAudio(&AudioCVTStereo);
-	}
-
-#if SDL_VERSION_ATLEAST(2,0,0)
-	SDL_MixAudioFormat(mixed_stream, stream, AUDIO_S16, len, SDL_MIX_MAXVOLUME);
-#else
-	SDL_MixAudio(mixed_stream, stream, len, SDL_MIX_MAXVOLUME);
-#endif
-}
-
-///////////////////////////////////////////////////////////////////////////
-//
-//	SDL_StartSB() - Turns on the SoundBlaster
-//
-///////////////////////////////////////////////////////////////////////////
-static void
-SDL_StartSB()
-{
-	if(SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
-	{
-		Printf("S_Init: Unable to initialize audio.\n");
-		return;
-	}
-
-	if(Mix_OpenAudio(AudioSpec.frequency, AudioSpec.format, AudioSpec.channels, param_audiobuffer))
-	{
-		printf("S_Init: Unable to open audio: %s\n", Mix_GetError());
-		return;
-	}
-	atterm(Mix_CloseAudio);
-
-	if(Mix_QuerySpec(&AudioSpec.frequency, &AudioSpec.format, &AudioSpec.channels) == 0)
-	{
-		printf("S_Init: Failed to query audio format!\n");
-	}
-	printf("S_Init: Opened audio: %dHz (%d channels)\n", AudioSpec.frequency, AudioSpec.channels);
-
-	if(SDL_BuildAudioCVT(&AudioCVTStereo, AUDIO_S16, 2, AudioSpec.frequency, AudioSpec.format, AudioSpec.channels, AudioSpec.frequency) < 0)
-	{
-		printf("S_Init: Failed to build stereo audio conversion: %s\n", SDL_GetError());
-	}
-
-	// reserve player and boss weapon channels
-	Mix_ReserveChannels(2);
-	// reserve 2 channels under group 2
-	Mix_GroupChannels(2, 3, 2);
-	// group remaining channels under group 1
-	Mix_GroupChannels(4, MIX_CHANNELS-1, 1);
-
-	// Init music
-	if(YM3812Init(1,3579545,AudioSpec.frequency))
-	{
-		printf("S_Init: Unable to create virtual OPL!!\n");
-	}
-
-	for(int i=1;i<0xf6;i++)
-		YM3812Write(oplChip,i,0,MAX_VOLUME);
-
-	YM3812Write(oplChip,1,0x20,MAX_VOLUME); // Set WSE=1
-
-	samplesPerMusicTick = AudioSpec.frequency / MUSIC_RATE; // SDL_t0FastAsmService played at 700Hz
-	Mix_SetPostMix(SDL_MixEmulators, 0);
-	Mix_ChannelFinished(SD_ChannelFinished);
-
-	Mix_VolumeMusic(static_cast<int> (ceil(128.0*MULTIPLY_VOLUME(MusicVolume))));
-
-	// Make sure that the musicFinished() function is called when the music stops playing
-	Mix_HookMusicFinished(musicFinished);
-
-	AdLibPresent = true;
-	SoundBlasterPresent = true;
-}
-
-//      Public routines
-
-///////////////////////////////////////////////////////////////////////////
-//
-//      SD_SetSoundMode() - Sets which sound hardware to use for sound effects
-//
-///////////////////////////////////////////////////////////////////////////
-bool SD_SetSoundMode(SDMode mode)
-{
-	bool result = false;
-
-	SD_StopSound();
-
-	if ((mode == sdm_AdLib) && !AdLibPresent)
-		mode = sdm_PC;
-
-	switch (mode)
-	{
-		case sdm_Off:
-		case sdm_PC:
-			result = true;
-			break;
-		case sdm_AdLib:
-			if (AdLibPresent)
-				result = true;
-			break;
-		default:
-			I_FatalError("SD_SetSoundMode: Invalid sound mode %i", mode);
-			return false;
-	}
-
-	if (result && (mode != SoundMode))
-	{
-		SDL_ShutDevice();
-		SoundMode = mode;
-		SDL_StartDevice();
-	}
-
-	return(result);
-}
-
-///////////////////////////////////////////////////////////////////////////
-//
-//      SD_SetMusicMode() - sets the device to use for background music
-//
-///////////////////////////////////////////////////////////////////////////
-bool SD_SetMusicMode(SMMode mode)
-{
-	bool result = false;
-
-	SD_FadeOutMusic();
-	while (SD_MusicPlaying())
-		SDL_Delay(5);
-
-	switch (mode)
-	{
-		case smm_Off:
-			result = true;
-			break;
-		case smm_AdLib:
-		case smm_Midi:
-			if (AdLibPresent)
-				result = true;
-			break;
-	}
-
-	if (result)
-		MusicMode = mode;
-
-//    SDL_SetTimerSpeed();
-
-	return(result);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -1186,12 +1060,20 @@ bool SD_SetMusicMode(SMMode mode)
 void
 SD_Startup(void)
 {
+	int     i;
+
 	if (SD_Started)
 		return;
 
+	if(SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
+	{
+		Printf("Unable to initialize audio.\n");
+		return;
+	}
+
 	if((audioMutex = SDL_CreateMutex()) == NULL)
 	{
-		I_Error("Unable to create audio mutex");
+		printf("Unable to create audio mutex\n");
 		return;
 	}
 
@@ -1202,21 +1084,53 @@ SD_Startup(void)
 	Mix_SetSoundFonts("/usr/share/sounds/sf2/FluidR3_GM.sf2");
 #endif
 
-	AudioSpec.frequency = param_samplerate;
-	AudioSpec.format = AUDIO_S16;
-	AudioSpec.channels = 2;
+	if(Mix_OpenAudio(param_samplerate, AUDIO_S16, 2, param_audiobuffer))
+	{
+		printf("Unable to open audio: %s\n", Mix_GetError());
+		return;
+	}
+	atterm(Mix_CloseAudio);
 
-	SDL_StartSB();
+	// reserve player and boss weapon channels
+	Mix_ReserveChannels(2);
+	// reserve 2 channels under group 2
+	Mix_GroupChannels(2, 3, 2);
+	// group remaining channels under group 1
+	Mix_GroupChannels(4, MIX_CHANNELS-1, 1);
+
+	// Init music
+	if(YM3812Init(1,3579545,param_samplerate))
+	{
+		printf("Unable to create virtual OPL!!\n");
+	}
+
+	for(i=1;i<0xf6;i++)
+		YM3812Write(oplChip,i,0,MAX_VOLUME);
+
+	YM3812Write(oplChip,1,0x20,MAX_VOLUME); // Set WSE=1
+//    YM3812Write(0,8,0); // Set CSM=0 & SEL=0		 // already set in for statement
+
+	samplesPerMusicTick = param_samplerate / MUSIC_RATE;    // SDL_t0FastAsmService played at 700Hz
+	Mix_HookMusic(SDL_IMFMusicPlayer, 0);
+	Mix_ChannelFinished(SD_ChannelFinished);
+
+	Mix_VolumeMusic(static_cast<int> (ceil(128.0*MULTIPLY_VOLUME(MusicVolume))));
+
+	// Make sure that the musicFinished() function is called when the music stops playing
+	Mix_HookMusicFinished(musicFinished);
+
+	AdLibPresent = true;
+	SoundBlasterPresent = true;
 
 	alTimeCount = 0;
 
 	SD_SetSoundMode(sdm_Off);
 	SD_SetMusicMode(smm_Off);
 
+	SD_Started = true;
+
 	SoundInfo.Init();
 	SoundSeq.Init();
-
-	SD_Started = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1354,6 +1268,8 @@ int SD_PlaySound(const char* sound, SoundChannel chan)
 	if (SoundMode == sdm_Off)
 		return -1;
 
+//    if (!s->length)
+//        Quit("SD_PlaySound() - Zero length sound");
 	if (sindex.GetPriority() < SoundPriority)
 		return -1;
 
@@ -1489,7 +1405,7 @@ SD_MusicOff(void)
 	SDL_LockMutex(audioMutex);
 
 	sqActive = false;
-	musoffs = (int) (midiOn ? midiData-midiDataStart : sqHackPtr-sqHack);
+	musoffs = (int) (sqHackPtr-sqHack);
 
 	SDL_UnlockMutex(audioMutex);
 
@@ -1498,7 +1414,6 @@ SD_MusicOff(void)
 		default:
 			break;
 		case smm_AdLib:
-		case smm_Midi:
 			if (music == NULL)
 			{
 				alOut(alEffects, 0);
@@ -1541,7 +1456,7 @@ SD_StartMusic(const char* chunk)
 
 	SD_MusicOff();
 
-	if (MusicMode != smm_Off)
+	if (MusicMode == smm_AdLib)
 	{
 		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
 		if(lumpNum == -1)
@@ -1551,26 +1466,10 @@ SD_StartMusic(const char* chunk)
 		chunkmem = new byte[Wads.LumpLength(lumpNum)];
 		FWadLump lump = Wads.OpenLumpNum(lumpNum);
 		lump.Read(chunkmem.Get(), Wads.LumpLength(lumpNum));
+		SDL_RWops *mus_cunk = SDL_RWFromMem(chunkmem.Get(), Wads.LumpLength(lumpNum));
 
 		if(music)
 			Mix_FreeMusic(music);
-		music = NULL;
-
-		// But first try to use the MIDI playback code from Noah3D
-		SDL_LockMutex(audioMutex);
-		midiOn = MIDI_TryToStart(chunkmem.Get(), Wads.LumpLength(lumpNum));
-		if (midiOn)
-			midiChunkFreeable = chunkmem.Release();
-		SDL_UnlockMutex(audioMutex);
-
-		if (midiOn)
-		{
-			SD_MusicOn();
-			return;
-		}
-
-		SDL_RWops *mus_cunk = SDL_RWFromMem(chunkmem.Get(), Wads.LumpLength(lumpNum));
-
 		// Technically an SDL_mixer 2 feature to free the source
 #if defined(ECWOLF_MIXER) || SDL_VERSION_ATLEAST(2,0,0)
 		music = Mix_LoadMUS_RW(mus_cunk, true);
@@ -1581,6 +1480,8 @@ SD_StartMusic(const char* chunk)
 		// We assume that when music equals to NULL, we've an IMF file to play
 		if (music == NULL)
 		{
+			Mix_HookMusic(SDL_IMFMusicPlayer, 0);
+
 			SDL_LockMutex(audioMutex);
 
 			for (int i = 0;i < OPL_CHANNELS;++i)
@@ -1600,6 +1501,8 @@ SD_StartMusic(const char* chunk)
 		}
 		else
 		{
+			Mix_HookMusic(0, 0);
+
 			SDL_LockMutex(audioMutex);
 
 			// Play the music
@@ -1619,7 +1522,7 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 {
 	SD_MusicOff();
 
-	if (MusicMode != smm_Off)
+	if (MusicMode == smm_AdLib)
 	{
 		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
 		if(lumpNum == -1)
@@ -1630,33 +1533,11 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 			SDL_LockMutex(audioMutex);
 			FWadLump lump = Wads.OpenLumpNum(lumpNum);
 			sqHackFreeable.Reset();
-			midiChunkFreeable.Reset();
 			musicchunk = -1;
 
 			// Load our music file from chunk
 			chunkmem = new byte[Wads.LumpLength(lumpNum)];
 			lump.Read(chunkmem.Get(), Wads.LumpLength(lumpNum));
-
-			if(music)
-				Mix_FreeMusic(music);
-			music = NULL;
-
-			// But first try to use the MIDI playback code from Noah3D
-			midiOn = MIDI_TryToStart(chunkmem.Get(), Wads.LumpLength(lumpNum));
-			if (midiOn)
-			{
-				midiChunkFreeable = chunkmem.Release();
-
-				// fast forward to correct position
-				// (needed to reconstruct the instruments)
-				// TODO: This isn't perfect.
-				while (midiData-midiDataStart < startoffs)
-					MIDI_IRQService();
-				SDL_UnlockMutex(audioMutex);
-				SD_MusicOn();
-				return;
-			}
-
 			SDL_RWops *mus_cunk = SDL_RWFromMem(chunkmem.Get(), Wads.LumpLength(lumpNum));
 #if defined(ECWOLF_MIXER) || SDL_VERSION_ATLEAST(2,0,0)
 			music = Mix_LoadMUS_RW(mus_cunk, true);
@@ -1678,7 +1559,7 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 			if(startoffs >= sqHackLen)
 			{
 				SDL_UnlockMutex(audioMutex);
-				I_FatalError("SD_StartMusic: Illegal startoffs provided!");
+				Quit("SD_StartMusic: Illegal startoffs provided!");
 			}
 
 			// fast forward to correct position
@@ -1700,11 +1581,15 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 
 			SDL_UnlockMutex(audioMutex);
 
+			Mix_HookMusic(SDL_IMFMusicPlayer, 0);
+
 			SD_MusicOn();
 		}
 		else
 		{
 			SDL_UnlockMutex(audioMutex);
+
+			Mix_HookMusic(0, 0);
 
 			if (Mix_PausedMusic() == 1 && musicchunk == lumpNum)
 			{
@@ -1738,7 +1623,6 @@ SD_FadeOutMusic(void)
 		default:
 			break;
 		case smm_AdLib:
-		case smm_Midi:
 			// DEBUG - quick hack to turn the music off
 			SD_MusicOff();
 			break;
@@ -1758,7 +1642,6 @@ bool SD_MusicPlaying(void)
 	switch (MusicMode)
 	{
 		case smm_AdLib:
-		case smm_Midi:
 			if (music == NULL)
 				result = sqActive;	// not really thread-safe, but a mutex would be overkill
 			else
