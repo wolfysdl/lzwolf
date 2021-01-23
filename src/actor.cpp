@@ -164,53 +164,21 @@ END_POINTERS
 
 namespace ActorSpawnID
 {
-	typedef std::map<unsigned int, AActor *> ActorMap;
-	ActorMap Actors;
-
-	std::set<unsigned int> AvailKeys;
+	unsigned int LastKey = 0;
 
 	void NewActor (AActor *actor)
 	{
-		unsigned int key = 0;
-
-		std::set<unsigned int>::iterator it = AvailKeys.begin();
-		if (it != AvailKeys.end())
-		{
-			key = *it;
-			AvailKeys.erase(it);
-		}
-		else
-		{
-			key = (unsigned int)(Actors.size() + 1);
-		}
-
-		actor->spawnid = key;
-		Actors[key] = actor;
+		actor->spawnid = LastKey++;
 	}
 
 	void UnlinkActor (AActor *actor)
 	{
-		unsigned int key = actor->spawnid;
-		if (key != Actors.size())
-			AvailKeys.insert(AvailKeys.begin(), key);
-		Actors.erase(key);
 		actor->spawnid = 0;
 	}
 
 	void Serialize(FArchive &arc)
 	{
-		arc << AvailKeys;
-
-		if (arc.IsLoading())
-		{
-			Actors.clear();
-
-			for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
-			{
-				AActor * const actor = iter;
-				Actors[actor->spawnid] = actor;
-			}
-		}
+		arc << LastKey;
 	}
 }
 
@@ -660,6 +628,15 @@ void AActor::Serialize(FArchive &arc)
 		arc << projectilepassheight;
 
 	arc << missileParent;
+	arc << PatrolFilterKey;
+	arc << PendingPatrolChange;
+	arc << PendingPatrolAngle;
+	dir = this->PendingPatrolDir;
+	arc << dir;
+	this->PendingPatrolDir = static_cast<dirtype>(dir);
+
+	arc << UseTriggerFilterKey;
+	arc << FlipSprite;
 
 	if(arc.IsLoading() && !hasActorRef)
 		actors.Remove(this);

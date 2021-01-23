@@ -61,6 +61,9 @@ const float ATTN_NORM = 1.0; // vanilla
 const float ATTN_IDLE = 1.001; // vanilla with added distance attenuation
 const float ATTN_STATIC = 3.0; // diminish very rapidly with distance
 
+const int TARGET_AUTO = 0;
+const int TARGET_PLAYER = 1;
+
 const int OWNER_SELF = 0;
 const int OWNER_TARGET = 1;
 const int OWNER_PLAYER = 2;
@@ -84,6 +87,8 @@ actor Actor native
 	singlespawn 0
 	loaded 0
 	zoneindex 0
+	patrolfilterkey 0
+	flipsprite 0
 
 	native angle_t angle;
 	native int health;
@@ -91,13 +96,13 @@ actor Actor native
 	native int zoneindex;
 
 	action native A_ActiveSound(int chance=256);
-	action native A_AlertMonsters();
+	action native A_AlertMonsters(int noise=1);
 	action native A_AmbientJumpState(state frame, bool enter);
 	action native A_BossDeath();
 	action native A_CallSpecial(int special, int arg1=0, int arg2=0, int arg3=0, int arg4=0, int arg5=0);
 	action native A_ChangeFlag(string flag, bool value);
 	action native A_ChangeVelocity(float x, float y, float z, int flags = 0);
-	action native A_Chase(state melee="*", state ranged="*", int flags = 0);
+	action native A_Chase(state melee="*", state ranged="*", int flags = 0, float minseedist = 0, float maxseedist = 0, float maxheardist = 0, float fov = 180);
 	action native A_CustomMissile(string missiletype, float spawnheight = 32, int spawnoffset = 0, float angle = 0, int aimflags = 0);
 	action native A_Dormant(state frame = "See", int flags = 0);
 	action native A_EnableHaloLight(int id, bool enabled);
@@ -106,16 +111,16 @@ actor Actor native
 	action native A_FaceTarget(float max_turn = 0, float max_pitch = 270);
 	action native A_Fall();
 	action native A_GiveExtraMan(int amount = 1);
-	action native A_GiveInventory(string type, int amount = 0);
+	action native A_GiveInventory(string type, int amount = 0, int owner = OWNER_SELF);
 	action native A_InertMove(float move, int dir);
 	action native A_Jump(int chance, state frame, ...);
 	action native A_JumpIf(bool expression, state frame);
-	action native A_JumpIfCloser(float distance, state frame);
+	action native A_JumpIfCloser(float distance, state frame, int target=TARGET_AUTO);
 	action native A_JumpIfInventory(string type, int amount, state frame, int owner = OWNER_SELF);
 	action native A_Look(int flags = 0, float minseedist = 0, float maxseedist = 0, float maxheardist = 0, float fov = 180, state frame = "*");
 	action native A_LookEx(int flags = 0, float minseedist = 0, float maxseedist = 0, float maxheardist = 0, float fov = 180, state frame = "*"); // Alias
 	action native A_MeleeAttack(int damage, float accuracy = 0.6275, string hitsound = "", string misssound = "*");
-	action native A_MirrorPosition(float mirx);
+	action native A_MirrorPosition(float mirx, int axis = 0);
 	action native A_MonsterRefire(int chance, state abort);
 	action native A_Pain();
 	action native A_PlaySound(string soundname, int slot = CHAN_BODY, float volume = 1.0, bool looping = false, float attenuation = ATTN_NORM);
@@ -130,6 +135,7 @@ actor Actor native
 	action native A_SetVolume(float volume);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
 	action native A_SpawnItemEx(string type, float xoffset = 0, float yoffset = 0, float zoffset = 0, float xvel = 0, float yvel = 0, float zvel = 0, float angle = 0, int flags = 0, int failchance = 0);
+	action native A_StartMusic(string song);
 	action native A_Stop();
 	action native A_StopSound(int slot = CHAN_VOICE);	// Bad default but that's what is originally was...
 	action native A_TakeInventory(string type, int amount);

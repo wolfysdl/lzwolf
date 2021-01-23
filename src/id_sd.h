@@ -133,12 +133,23 @@ extern	int				MusicVolume;
 extern	int				SoundVolume;
 extern bool SD_UpdatePCSpeakerVolume(int which=0);
 extern bool SD_UpdateMusicVolume(int which);
+static inline double VOLUME_TO_CHAN(double volume, int channel_volume)
+{
+	return ceil(128.0*volume*MULTIPLY_VOLUME(channel_volume));
+}
+// use music volume for scale when volume is negative; otherwise use sound
+// volume as normal
+static inline double VOLUME_TO_CHAN(double volume)
+{
+	return VOLUME_TO_CHAN(fabs(volume), (volume < 0 ? MusicVolume : SoundVolume));
+}
 
 enum SoundChannel
 {
 	SD_GENERIC = -1,
 	SD_WEAPONS,
 	SD_BOSSWEAPONS,
+	SD_ADLIB, // old adlib stuff runs on this channel
 };
 
 // Function prototypes
@@ -163,6 +174,7 @@ extern  bool	SD_MusicPlaying(void);
 extern  bool	SD_SetSoundMode(SDMode mode);
 extern  bool	SD_SetMusicMode(SMMode mode);
 extern  bool    SD_SoundPlaying(void);
+extern  bool    SD_ChannelPlaying(SoundChannel chan);
 
 extern  void    SD_SetDigiDevice(SDSMode);
 extern  struct Mix_Chunk *SD_PrepareSound(int which);

@@ -519,6 +519,14 @@ ACTION_FUNCTION(A_Chase)
 	ACTION_PARAM_STATE(melee, 0, self->MeleeState);
 	ACTION_PARAM_STATE(missile, 1, self->MissileState);
 	ACTION_PARAM_INT(flags, 2);
+	ACTION_PARAM_DOUBLE(minseedist, 3);
+	ACTION_PARAM_DOUBLE(maxseedist, 4);
+	ACTION_PARAM_DOUBLE(maxheardist, 5);
+	ACTION_PARAM_DOUBLE(fov, 6);
+
+	// FOV of 0 indicates default
+	if(fov < 0.00001)
+		fov = 180;
 
 	int32_t	move;
 	int		dx,dy,dist = INT_MAX,chance;
@@ -576,6 +584,16 @@ ACTION_FUNCTION(A_Chase)
 			}
 			assert(self->target);
 		}
+	}
+
+	if (pathing)
+	{
+		if(self->PendingPatrolChange)
+		{
+			self->angle = self->PendingPatrolAngle;
+			self->dir = self->PendingPatrolDir;
+		}
+		self->PendingPatrolChange = false;
 	}
 
 	if (self->dir == nodir)
@@ -661,7 +679,7 @@ ACTION_FUNCTION(A_Chase)
 	}
 	else
 	{
-		if (!(flags & CHF_NOSIGHTCHECK) && SightPlayer (self, 0, 0, 0, 180, self->SeeState))
+		if (!(flags & CHF_NOSIGHTCHECK) && SightPlayer (self, minseedist, maxseedist, maxheardist, fov, self->SeeState))
 			return true;
 	}
 

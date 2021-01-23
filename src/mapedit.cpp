@@ -44,6 +44,7 @@
 #include "c_dispatch.h"
 #include "v_text.h"
 #include "thingdef/thingdef.h"
+#include "lnspec.h"
 #include "am_map.h"
 #include "uwmfdoc.h"
 using namespace MapEdit;
@@ -190,6 +191,8 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 		tile.dontOverlay = mapTile.dontOverlay;
 		if (mapTile.mapped != 0)
 			tile.mapped.val() = mapTile.mapped;
+		tile.slideStyle = mapTile.slideStyle;
+		tile.textureFlip = mapTile.textureFlip;
 
 		if (mapTile.soundSequence.IsValidName() &&
 			mapTile.soundSequence != NAME_None)
@@ -269,7 +272,8 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 					trigger.x = x;
 					trigger.y = y;
 					trigger.z = z;
-					trigger.action = mapTrigger.action;
+					trigger.action = Specials::LookupFunctionName(
+							static_cast<Specials::LineSpecials>(mapTrigger.action));
 					trigger.arg0 = mapTrigger.arg[0];
 					trigger.arg1 = mapTrigger.arg[1];
 					trigger.arg2 = mapTrigger.arg[2];
@@ -303,6 +307,7 @@ void GameMapEditor::ConvertToDoc(const GameMap &map, UwmfDoc::Document &doc)
 		thing.z = static_cast<double>(mapThing.z) / FRACUNIT;
 		thing.angle = mapThing.angle;
 		thing.ambush = mapThing.ambush;
+		thing.patrol = mapThing.patrol;
 		thing.skill1 = mapThing.skill[0];
 		thing.skill2 = mapThing.skill[1];
 		thing.skill3 = mapThing.skill[2];

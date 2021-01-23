@@ -521,6 +521,8 @@ void HitVertWall (void)
 		texture = (FRACUNIT - texture)&(FRACUNIT-1);
 		xintercept += TILEGLOBAL;
 	}
+	if(tilehit->tile->textureFlip)
+		texture = (FRACUNIT - 1 - texture);
 
 	// nudge for zone lighting
 	postshadex = xintercept-(int32_t)xtilestep;
@@ -605,6 +607,8 @@ void HitHorizWall (void)
 		else
 			texture = (FRACUNIT - texture)&(FRACUNIT-1);
 	}
+	if(tilehit->tile->textureFlip)
+		texture = (FRACUNIT - 1 - texture);
 
 	// nudge for zone lighting
 	postshadex = xintercept;

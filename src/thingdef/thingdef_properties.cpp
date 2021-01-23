@@ -384,6 +384,12 @@ HANDLE_PROPERTY(filterposwrap)
 	AActor::filterposWraps[cls->Meta.GetMetaInt(AMETA_FilterposWraps)]->Push(filterposWrap);
 }
 
+HANDLE_PROPERTY(flipsprite)
+{
+	INT_PARAM(flip, 0);
+	defaults->FlipSprite = !!flip;
+}
+
 HANDLE_PROPERTY(forwardmove)
 {
 	FIXED_PARAM(forwardmove1, 0);
@@ -644,6 +650,24 @@ HANDLE_PROPERTY(painsound)
 	defaults->painsound = snd;
 }
 
+HANDLE_PROPERTY(patroldeferchange)
+{
+	INT_PARAM(defer, 0);
+	((APatrolPoint*)defaults)->DeferChange = !!defer;
+}
+
+HANDLE_PROPERTY(patrolfilterkey)
+{
+	INT_PARAM(key, 0);
+	defaults->PatrolFilterKey = key;
+}
+
+HANDLE_PROPERTY(patroltargetstate)
+{
+	STRING_PARAM(str, 0);
+	((APatrolPoint*)defaults)->TargetState = str;
+}
+
 HANDLE_PROPERTY(pickupmessage)
 {
 	STRING_PARAM(str, 0);
@@ -841,6 +865,12 @@ HANDLE_PROPERTY(startitem)
 	APlayerPawn::startInventory[cls->Meta.GetMetaInt(APMETA_StartInventory)]->Push(drop);
 }
 
+HANDLE_PROPERTY(usetriggerfilterkey)
+{
+	INT_PARAM(key, 0);
+	defaults->UseTriggerFilterKey = key;
+}
+
 HANDLE_PROPERTY(viewheight)
 {
 	FIXED_PARAM(height, 0);
@@ -956,6 +986,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(filterposthrust, Actor, II),
 	DEFINE_PROP(filterposwave, Actor, IFFI),
 	DEFINE_PROP(filterposwrap, Actor, FFI),
+	DEFINE_PROP(flipsprite, Actor, I),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(halolight, Actor, IFI_S),
@@ -985,6 +1016,9 @@ extern const PropDef properties[] =
 	DEFINE_PROP(overheadicon, Actor, S),
 	DEFINE_PROP(painchance, Actor, I),
 	DEFINE_PROP(painsound, Actor, S),
+	DEFINE_PROP(patroldeferchange, PatrolPoint, I),
+	DEFINE_PROP(patrolfilterkey, Actor, I),
+	DEFINE_PROP(patroltargetstate, PatrolPoint, S),
 	DEFINE_PROP(pickupmessage, Inventory, T),
 	DEFINE_PROP(pickupsound, Inventory, S),
 	DEFINE_PROP(points, Actor, I),
@@ -1006,6 +1040,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(speed, Actor, F_F),
 	DEFINE_PROP_PREFIX(startitem, PlayerPawn, Player, S_I),
 	DEFINE_PROP(STATUSBAR, Actor,),
+	DEFINE_PROP(usetriggerfilterkey, Actor, I),
 	DEFINE_PROP_PREFIX(viewheight, PlayerPawn, Player, F),
 	DEFINE_PROP_PREFIX(weaponslot, PlayerPawn, Player, IS_SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS),
 	DEFINE_PROP(xscale, Actor, F),

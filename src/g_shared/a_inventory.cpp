@@ -223,7 +223,7 @@ void AInventory::Touch(AActor *toucher)
 		GameMessage (message);
 	}
 
-	PlaySoundLocActor(pickupsound, toucher);
+	PlaySoundLocGlobal(pickupsound,toucher->x,toucher->y,SD_ADLIB);
 	if(toucher->player == &players[ConsolePlayer])
 		StartBonusFlash();
 }

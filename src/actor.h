@@ -363,6 +363,13 @@ class AActor : public Thinker,
 		player_t	*player;	// Only valid with APlayerPawn
 
 		TObjPtr<AActor> missileParent;
+		int		PatrolFilterKey;
+		bool	PendingPatrolChange;
+		angle_t	PendingPatrolAngle;
+		dirtype	PendingPatrolDir;
+
+		int		UseTriggerFilterKey;
+		bool	FlipSprite;
 
 		TObjPtr<AInventory>	inventory;
 
@@ -411,6 +418,18 @@ class ALit : public AActor
 
 	public:
 		const ClassDef	*GetLitType() const;
+};
+
+class APatrolPoint : public AActor
+{
+	DECLARE_NATIVE_CLASS(PatrolPoint, Actor)
+
+	public:
+		FNameNoInit		TargetState;
+		bool			DeferChange;
+
+		virtual void Serialize (FArchive &arc);
+		void Touch(AActor *toucher);
 };
 
 namespace ActorSpawnID
