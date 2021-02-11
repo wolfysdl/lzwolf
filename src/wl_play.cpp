@@ -47,7 +47,7 @@
 =============================================================================
 */
 
-bool madenoise;              // true when shooting or screaming
+int madenoise;              // true when shooting or screaming
 
 exit_t playstate;
 gameaction_t gameaction;
@@ -58,7 +58,8 @@ extern bool ShadowingEnabled;
 #endif
 
 bool noclip, ammocheat, mouselook = false;
-int godmode, singlestep;
+int singlestep;
+CVAR(Int, godmode, 0, CVAR_ARCHIVE)
 CVAR(Bool, notargetmode, false, CVAR_ARCHIVE)
 unsigned int extravbls = 0; // to remove flicker (gray stuff at the bottom)
 
@@ -1088,6 +1089,8 @@ void PlayLoop (void)
 	playstate = ex_stillplaying;
 	ResetTimeCount();
 	frameon = 0;
+	moveobj_frameon = 0;
+	projectile_frameon = 0;
 	funnyticount = 0;
 	memset (control[ConsolePlayer].buttonstate, 0, sizeof (control[ConsolePlayer].buttonstate));
 	ClearPaletteShifts ();
@@ -1116,7 +1119,7 @@ void PlayLoop (void)
 //
 // actor thinking
 //
-		madenoise = false;
+		madenoise = std::max(madenoise-1,0);
 
 		// Run tics
 		if(Paused & 2)
@@ -1134,6 +1137,7 @@ void PlayLoop (void)
 			{
 				PollControls(!i);
 
+				++frameon;
 				++gamestate.TimeCount;
 				thinkerList->Tick();
 				AActor::FinishSpawningActors();

@@ -34,21 +34,44 @@
 
 #include "thingdef/thingdef.h"
 
-class APatrolPoint : public AActor
+IMPLEMENT_CLASS(PatrolPoint)
+
+void APatrolPoint::Touch(AActor *toucher)
 {
-	DECLARE_NATIVE_CLASS(PatrolPoint, Actor)
+	if(!(toucher->flags & FL_PATHING))
+		return;
 
-	public:
-		void Touch(AActor *toucher)
+	if(toucher->distance <= toucher->speed && toucher->tilex == tilex &&
+			toucher->tiley == tiley &&
+			(PatrolFilterKey == 0 || toucher->PatrolFilterKey == PatrolFilterKey))
+	{
+		if(DeferChange && toucher->dir != nodir)
 		{
-			if(!(toucher->flags & FL_PATHING))
-				return;
+			toucher->PendingPatrolChange = true;
+			toucher->PendingPatrolAngle = angle;
+			toucher->PendingPatrolDir = dirtype(angle/ANGLE_45);
+		}
+		else
+		{
+			toucher->angle = angle;
+			toucher->dir = dirtype(angle/ANGLE_45);
+		}
 
-			if(toucher->distance <= toucher->speed && toucher->tilex == tilex && toucher->tiley == tiley)
+		// this patrol point may request the toucher to enter a new state
+		FString statestr(TargetState.GetChars());
+		if(statestr.IsNotEmpty())
+		{
+			const Frame* state = toucher->FindState(statestr);
+			if(state)
 			{
-				toucher->angle = angle;
-				toucher->dir = dirtype(angle/ANGLE_45);
+				toucher->SetState(state);
 			}
 		}
-};
-IMPLEMENT_CLASS(PatrolPoint)
+	}
+}
+
+void APatrolPoint::Serialize(FArchive &arc)
+{
+	Super::Serialize(arc);
+	arc << TargetState << DeferChange;
+}

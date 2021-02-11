@@ -74,6 +74,7 @@ const struct FlagDef
 	DEFINE_FLAG(WF, ALWAYSGRIN, Weapon, weaponFlags),
 	DEFINE_FLAG(IF, ALWAYSPICKUP, Inventory, itemFlags),
 	DEFINE_FLAG(FL, AMBUSH, Actor, flags),
+	DEFINE_FLAG(FL, ATTACKMODE, Actor, flags),
 	DEFINE_FLAG(IF, AUTOACTIVATE, Inventory, itemFlags),
 	DEFINE_FLAG(FL, BLAKEPATROL, Actor, extraflags),
 	DEFINE_FLAG(FL, BILLBOARD, Actor, flags),
@@ -88,6 +89,7 @@ const struct FlagDef
 	DEFINE_FLAG(FL, DROPBASEDONTARGET, Actor, flags),
 	DEFINE_FLAG(FL, ENEMYSOLID, Actor, extraflags),
 	DEFINE_FLAG(FL, FRIENDLY, Actor, extraflags),
+	DEFINE_FLAG(FL, IGNOREENEMYSOLID, Actor, extraflags),
 	DEFINE_FLAG(IF, INVBAR, Inventory, itemFlags),
 	DEFINE_FLAG(FL, ISMONSTER, Actor, flags),
 	DEFINE_FLAG(FL, MISSILE, Actor, flags),
@@ -850,6 +852,7 @@ void ClassDef::InstallStates(const TArray<StateDefinition> &stateDefs)
 			thisFrame->duration = thisStateDef.duration;
 			thisFrame->randDuration = thisStateDef.randDuration;
 			thisFrame->fullbright = thisStateDef.fullbright;
+			thisFrame->zonebright = thisStateDef.zonebright;
 			thisFrame->offsetX = thisStateDef.offsetX;
 			thisFrame->offsetY = thisStateDef.offsetY;
 			thisFrame->action = thisStateDef.functions[0];

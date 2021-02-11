@@ -117,6 +117,8 @@ namespace UwmfDoc
 		std::string comment;
 		OptionalProperty<std::string> soundSequence;
 		OptionalProperty<std::string> textureOverhead;
+		int slideStyle;
+		bool textureFlip;
 
 		Tile();
 	};
@@ -192,7 +194,7 @@ namespace UwmfDoc
 		int x;
 		int y;
 		int z;
-		int action;
+		std::string action;
 		int arg0;
 		int arg1;
 		int arg2;

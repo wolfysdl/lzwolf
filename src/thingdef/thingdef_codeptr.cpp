@@ -153,7 +153,8 @@ ACTION_FUNCTION(A_ActiveSound)
 
 ACTION_FUNCTION(A_AlertMonsters)
 {
-	madenoise = true;
+	ACTION_PARAM_INT(noise, 0);
+	madenoise += noise;
 	return true;
 }
 
@@ -376,7 +377,7 @@ ACTION_FUNCTION_NS(A_Explode, lz)
 	ACTION_PARAM_STRING(damagetype, 5);
 
 	if(alert)
-		madenoise = true;
+		madenoise = 1;
 
 	const double rolloff = 1.0/static_cast<double>(radius - fulldamageradius);
 	for(AActor::Iterator iter = AActor::GetIterator();iter.Next();)
@@ -432,17 +433,35 @@ ACTION_FUNCTION(A_GiveExtraMan)
 
 ACTION_FUNCTION(A_GiveInventory)
 {
+	enum
+	{
+		OWNER_SELF = 0,
+		OWNER_TARGET = 1,
+		OWNER_PLAYER = 2,
+	};
 	ACTION_PARAM_STRING(className, 0);
 	ACTION_PARAM_INT(amount, 1);
+	ACTION_PARAM_INT(owner, 2);
 
 	const ClassDef *cls = ClassDef::FindClass(className);
+
+	AActor *invowner = self;
+	switch(owner)
+	{
+		case OWNER_TARGET:
+			invowner = self->target;
+			break;
+		case OWNER_PLAYER:
+			invowner = players[0].mo;
+			break;
+	}
 
 	if(amount == 0)
 		amount = 1;
 
 	if(cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)))
 	{
-		return self->GiveInventory(cls, amount);
+		return invowner->GiveInventory(cls, amount);
 	}
 	return true;
 }
@@ -564,14 +583,22 @@ ACTION_FUNCTION(A_JumpIf)
 
 ACTION_FUNCTION(A_JumpIfCloser)
 {
+	enum
+	{
+		TARGET_AUTO = 0,
+		TARGET_PLAYER = 1,
+	};
 	ACTION_PARAM_DOUBLE(distance, 0);
 	ACTION_PARAM_STATE(frame, 1, NULL);
+	ACTION_PARAM_INT(target, 2);
 
 	AActor *check;
 	if(self->player)
 		check = self->player->FindTarget();
 	else
 		check = self->target;
+	if(target == TARGET_PLAYER)
+		check = players[0].mo;
 
 	// << 6 - Adjusts to Doom scale
 	if(check && P_AproxDistance((self->x-check->x)<<6, (self->y-check->y)<<6) < (fixed)(distance*FRACUNIT))
@@ -585,12 +612,30 @@ ACTION_FUNCTION(A_JumpIfCloser)
 
 ACTION_FUNCTION(A_JumpIfInventory)
 {
+	enum
+	{
+		OWNER_SELF = 0,
+		OWNER_TARGET = 1,
+		OWNER_PLAYER = 2,
+	};
 	ACTION_PARAM_STRING(className, 0);
 	ACTION_PARAM_INT(amount, 1);
 	ACTION_PARAM_STATE(frame, 2, NULL);
+	ACTION_PARAM_INT(owner, 3);
+
+	AActor *invowner = self;
+	switch(owner)
+	{
+		case OWNER_TARGET:
+			invowner = self->target;
+			break;
+		case OWNER_PLAYER:
+			invowner = players[0].mo;
+			break;
+	}
 
 	const ClassDef *cls = ClassDef::FindClass(className);
-	AInventory *inv = self->FindInventory(cls);
+	AInventory *inv = invowner->FindInventory(cls);
 
 	if(!inv)
 		return false;
@@ -652,9 +697,31 @@ ACTION_FUNCTION(A_MeleeAttack)
 ACTION_FUNCTION(A_MirrorPosition)
 {
 	ACTION_PARAM_DOUBLE(mirx, 0);
+	ACTION_PARAM_INT(axis, 1);
 
 	fixed_t mirxfixed = FLOAT2FIXED(mirx);
-	self->x = mirxfixed + (mirxfixed - players[0].camera->x);
+
+	self->x = players[0].camera->x;
+	self->y = players[0].camera->y;
+
+	int curang = (players[0].camera->angle>>ANGLETOFINESHIFT)*360/FINEANGLES;
+	if(axis == 0)
+	{
+		self->x = mirxfixed + (mirxfixed - players[0].camera->x);
+		self->angle = ((360 + 180 - curang) % 360)*ANGLE_1;
+	}
+	else if(axis == 1)
+	{
+		self->y = mirxfixed + (mirxfixed - players[0].camera->y);
+		self->angle = ((360 - curang) % 360)*ANGLE_1;
+	}
+
+	const unsigned int mapwidth = map->GetHeader().width;
+	const unsigned int mapheight = map->GetHeader().height;
+	if(self->x < 0 || (self->x >= FLOAT2FIXED(mapwidth)))
+		self->x = 0;
+	if(self->y < 0 || (self->y >= FLOAT2FIXED(mapheight)))
+		self->y = 0;
 
 	return false;
 }
@@ -895,6 +962,14 @@ ACTION_FUNCTION(A_SpawnItemEx)
 	//We divide by 128 here since Wolf is 70hz instead of 35.
 	newobj->velx = (fixed(xvel*finecosine[ang]) + fixed(yvel*finesine[ang]))/128;
 	newobj->vely = (-fixed(xvel*finesine[ang]) + fixed(yvel*finecosine[ang]))/128;
+	return true;
+}
+
+ACTION_FUNCTION(A_StartMusic)
+{
+	ACTION_PARAM_STRING(song, 0);
+	map->SetMusic(song);
+	SD_StartMusic(song);
 	return true;
 }
 

@@ -160,6 +160,7 @@ public:
 	} automap;
 	int parallaxskyfloorcolor;
 	int parallaxskyceilcolor;
+	int walldecalcolor;
 } gameinfo;
 
 class LevelInfo
@@ -197,6 +198,7 @@ public:
 	bool			ForceShowPsyched;
 	TArray<FTextureID>	ParallaxSky;
 	int             NumParallaxTiles;
+	bool			ParallaxDecals;
 	int             Atmos[4];
 	FString			Intermission;
 

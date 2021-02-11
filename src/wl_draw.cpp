@@ -1,5 +1,6 @@
 // WL_DRAW.C
 
+#include <algorithm>
 #include "wl_def.h"
 #include "id_sd.h"
 #include "id_in.h"
@@ -55,9 +56,11 @@
 namespace Shading
 {
 	void PopulateHalos (void);
+
+	int LightForIntercept (fixed xintercept, fixed yintercept);
 }
 
-void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, int min_wallheight);
+void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight);
 
 const RatioInformation AspectCorrection[] =
 {
@@ -75,15 +78,17 @@ unsigned vbufPitch = 0;
 
 int32_t	lasttimecount;
 int32_t	frameon;
+int32_t	moveobj_frameon;
+int32_t	projectile_frameon;
 bool	fpscounter;
 int		r_extralight;
 
 int fps_frames=0, fps_time=0, fps=0;
 
-TUniquePtr<int[]> wallheight;
-int min_wallheight;
+TUniquePtr<TWallHeight[]> wallheight;
+TWallHeight min_wallheight;
 
-TUniquePtr<int[]> skywallheight;
+TUniquePtr<TWallHeight[]> skywallheight;
 
 //
 // math tables
@@ -101,6 +106,7 @@ angle_t viewangle;
 fixed   viewsin,viewcos;
 int viewshift = 0;
 fixed viewz = 32;
+fixed viewcamz[2] = {0,0};
 
 fixed gLevelVisibility = VISIBILITY_DEFAULT;
 fixed gLevelMaxLightVis = MAXLIGHTVIS_DEFAULT;
@@ -255,13 +261,20 @@ void TransformActor (AActor *ob)
 ====================
 */
 
-int CalcHeight()
+TWallHeight CalcHeight()
 {
 	fixed z = FixedMul(xintercept - viewx, viewcos)
 		- FixedMul(yintercept - viewy, viewsin);
 	if(z < MINDIST) z = MINDIST;
-	int height = (heightnumerator << 8) / z;
-	if(height < min_wallheight) min_wallheight = height;
+	TWallHeight height;
+	height[0] = (heightnumerator << 8) / z;
+	if(height[0] < min_wallheight[0]) min_wallheight[0] = height[0];
+	for(int i = 1; i < 3; i++)
+	{
+		const int bot = ((i-1)*2 - 1);
+		height[i] = WallMidY (height[0], bot);
+		if(height[i] < min_wallheight[i]) min_wallheight[i] = height[i];
+	}
 	return height;
 }
 
@@ -278,14 +291,39 @@ int CalcHeight()
 const byte *postsource;
 int postx;
 int32_t postshadex, postshadey;
+bool postbright, postdecal;
+byte postdecalcolor = 187; // slade will not set the right color for this; its annoying but its true
 
-// from wl_floorceiling.cpp
-namespace Shading
+struct StandardScalePost
 {
-	int LightForIntercept (fixed xintercept, fixed yintercept);
-}
+	static inline void WritePix(int yendoffs, byte col)
+	{
+		vbuf[yendoffs] = col;
+	}
 
-void ScalePost()
+	static inline byte ReadColor(const byte *curshades, int yw)
+	{
+		return curshades[postsource[yw]];
+	}
+};
+
+struct DecalScalePost
+{
+	static inline void WritePix(int yendoffs, byte col)
+	{
+		if(col != postdecalcolor)
+			vbuf[yendoffs] = col;
+	}
+
+	static inline byte ReadColor(const byte *curshades, int yw)
+	{
+		auto col = postsource[yw];
+		return (col == postdecalcolor ? postdecalcolor : curshades[col]);
+	}
+};
+
+template<typename Algo>
+void RunScalePost()
 {
 	if(postsource == NULL)
 		return;
@@ -294,25 +332,28 @@ void ScalePost()
 	byte col;
 
 	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
-	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx]);
-	BYTE *curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
+	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx][0]);
+	const BYTE *curshades;
+	if(postbright)
+		curshades = NormalLight.Maps;
+	else
+		curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
-	ywcount = yd = wallheight[postx];
+	ywcount = yd = wallheight[postx][0];
 	if(yd <= 0)
 		yd = 100;
 
 	// Calculate starting and ending offsets
 	{
-		// ywcount can be large enough to cause an overflow if we don't reduce
-		// fixed point precision here
-		const int topoffset = ywcount*((viewz + fixed(map->GetPlane(0).depth<<FRACBITS))>>8)/(32<<(FRACBITS-5));
-		const int botoffset = ywcount*(viewz>>8)/(32<<(FRACBITS-5));
+		int ywcount = wallheight[postx][1]>>3;
+		int midy = (viewheight / 2) - ywcount;
 
-		yoffs = (viewheight / 2 - topoffset - viewshift) * vbufPitch;
+		yoffs = midy * vbufPitch;
 		if(yoffs < 0) yoffs = 0;
 		yoffs += postx;
 
-		yendoffs = viewheight / 2 - botoffset - 1 - viewshift;
+		ywcount = wallheight[postx][2]>>3;
+		yendoffs = (viewheight / 2) + ywcount;
 		yw=(texyscale>>2)-1;
 	}
 
@@ -329,11 +370,11 @@ void ScalePost()
 	if(yw < 0)
 		yw = (texyscale>>2) - ((-yw) % (texyscale>>2));
 
-	col = curshades[postsource[yw]];
+	col = Algo::ReadColor(curshades, yw);
 	yendoffs = yendoffs * vbufPitch + postx;
 	while(yoffs <= yendoffs)
 	{
-		vbuf[yendoffs] = col;
+		Algo::WritePix(yendoffs, col);
 		ywcount -= texyscale;
 		if(ywcount <= 0)
 		{
@@ -344,11 +385,71 @@ void ScalePost()
 			}
 			while(ywcount <= 0);
 			if(yw < 0) yw = (texyscale>>2)-1;
-			col = curshades[postsource[yw]];
+			col = Algo::ReadColor(curshades, yw);
 		}
 		yendoffs -= vbufPitch;
 	}
 }
+
+void ScalePost()
+{
+	if(postdecal)
+	{
+		RunScalePost<DecalScalePost>();
+	}
+	else
+	{
+		RunScalePost<StandardScalePost>();
+	}
+}
+
+/*
+===================
+=
+= Camz
+=
+===================
+*/
+
+inline fixed Camz (fixed height, int bot)
+{
+	unsigned int depth = map->GetPlane(0).depth;
+	if(bot < 0 && depth > 64)
+		height -= (fixed(depth-64)<<FRACBITS);
+	fixed camz = (height / 64) - (TILEGLOBAL / 2);
+	return camz;
+}
+
+
+/*
+===================
+=
+= WallMidY
+=
+===================
+*/
+
+int WallMidY (int ywcount, int bot)
+{
+	const fixed camz = viewcamz[(bot+1)>>1];
+	return ((TILEGLOBAL + (bot * camz * 2)) * ywcount)>>FRACBITS;
+}
+
+
+/*
+===================
+=
+= InvWallMidY
+=
+===================
+*/
+
+int InvWallMidY(int y, int bot)
+{
+	const fixed camz = viewcamz[(bot+1)>>1];
+	return ((FixedDiv((y<<FRACBITS), TILEGLOBAL + (bot * camz * 2)))>>FRACBITS) + 1;
+}
+
 
 void GlobalScalePost(byte *vidbuf, unsigned pitch)
 {
@@ -420,6 +521,8 @@ void HitVertWall (void)
 		texture = (FRACUNIT - texture)&(FRACUNIT-1);
 		xintercept += TILEGLOBAL;
 	}
+	if(tilehit->tile->textureFlip)
+		texture = (FRACUNIT - 1 - texture);
 
 	// nudge for zone lighting
 	postshadex = xintercept-(int32_t)xtilestep;
@@ -431,9 +534,11 @@ void HitVertWall (void)
 
 		ScalePost();
 		wallheight[pixx] = CalcHeight();
-		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
+		postbright = tilehit->tile->bright;
+		postdecal = tilehit->tile->decal;
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -445,7 +550,9 @@ void HitVertWall (void)
 	lastintercept=xtile;
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
-	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
+	postbright = tilehit->tile->bright;
+	postdecal = tilehit->tile->decal;
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -500,6 +607,8 @@ void HitHorizWall (void)
 		else
 			texture = (FRACUNIT - texture)&(FRACUNIT-1);
 	}
+	if(tilehit->tile->textureFlip)
+		texture = (FRACUNIT - 1 - texture);
 
 	// nudge for zone lighting
 	postshadex = xintercept;
@@ -511,9 +620,11 @@ void HitHorizWall (void)
 
 		ScalePost();
 		wallheight[pixx] = CalcHeight();
-		skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+		skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 		if(postsource)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
+		postbright = tilehit->tile->bright;
+		postdecal = tilehit->tile->decal;
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -525,7 +636,9 @@ void HitHorizWall (void)
 	lastintercept=ytile;
 	lasttilehit=tilehit;
 	wallheight[pixx] = CalcHeight();
-	skywallheight[pixx] = (tilehit->tile->showSky ? 0 : wallheight[pixx]);
+	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
+	postbright = tilehit->tile->bright;
+	postdecal = tilehit->tile->decal;
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -746,6 +859,9 @@ void AsmRefresh()
 	longword xpartial=0,ypartial=0;
 	MapSpot focalspot = map->GetSpot(focaltx, focalty, 0);
 	bool playerInPushwallBackTile = focalspot->pushAmount != 0;
+
+	if(gameinfo.walldecalcolor >= 256)
+		postdecalcolor = (byte)(gameinfo.walldecalcolor&0xff);
 
 	for(pixx=0;pixx<viewwidth;pixx++)
 	{
@@ -1190,7 +1306,7 @@ void WallRefresh (void)
 	ypartialdown = viewy&(TILEGLOBAL-1);
 	ypartialup = TILEGLOBAL-ypartialdown;
 
-	min_wallheight = viewheight;
+	min_wallheight = TWallHeight{viewheight,viewheight,viewheight};
 	lastside = -1;                  // the first pixel is on a new wall
 	viewshift = FixedMul(focallengthy, finetangent[(ANGLE_180+players[ConsolePlayer].camera->pitch)>>ANGLETOFINESHIFT]);
 
@@ -1199,7 +1315,11 @@ void WallRefresh (void)
 	const fixed playerMovebob = players[ConsolePlayer].mo->GetClass()->Meta.GetMetaFixed(APMETA_MoveBob);
 	fixed curbob = gamestate.victoryflag ? 0 : FixedMul(FixedMul(players[ConsolePlayer].bob, playerMovebob)>>1, finesine[bobangle]);
 
-	viewz = curbob - players[ConsolePlayer].mo->viewheight;
+	fixed height = players[ConsolePlayer].mo->viewheight;
+	viewz = curbob - height;
+
+	viewcamz[0] = Camz (height - curbob, -1);
+	viewcamz[1] = Camz (height - curbob, 1);
 
 	AsmRefresh();
 	ScalePost ();                   // no more optimization on last post
@@ -1240,11 +1360,17 @@ void R_RenderView()
 	if (levelInfo->Atmos[3])
 		DrawHighQualityStarSky(vbuf, vbufPitch);
 
+	if (levelInfo->ParallaxDecals && levelInfo->ParallaxSky.Size() > 0)
+	{
+		std::fill(skywallheight.Get(), skywallheight.Get() + SCREENWIDTH, TWallHeight{});
+		DrawParallax(vbuf, vbufPitch);
+	}
+
 	Shading::PopulateHalos ();
 
 	WallRefresh ();
 
-	if (levelInfo->ParallaxSky.Size() > 0)
+	if (!levelInfo->ParallaxDecals && levelInfo->ParallaxSky.Size() > 0)
 		DrawParallax(vbuf, vbufPitch);
 #if defined(USE_FEATUREFLAGS) && defined(USE_CLOUDSKY)
 	if(GetFeatureFlags() & FF_CLOUDSKY)

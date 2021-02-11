@@ -1210,6 +1210,7 @@ void ShowMenu(Menu &menu)
 	if(screenHeight % 200 != 0)
 		VL_ClearScreen(0);
 
+	LoopedAudio::stopActiveSounds(true);
 	lastgamemusicoffset = StartCPMusic (gameinfo.MenuMusic);
 	Menu::closeMenus(false);
 	menu.show();

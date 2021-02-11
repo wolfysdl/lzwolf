@@ -49,6 +49,7 @@ class TextMapParser
 		static void ParseTile(Scanner &sc, MapTile &tile);
 		static void ParseTrigger(Scanner &sc, MapTrigger &trigger);
 		static void ParseZone(Scanner &sc, MapZone &zone);
+		static void ParseLightSector(Scanner &sc, MapLightSector &lightsector);
 };
 
 #endif

@@ -355,7 +355,7 @@ void DrawRain(byte *vbuf, uint32_t vbufPitch, byte *zbuf, uint32_t zbufPitch)
             int upperedge;
 
             auto viewheight = (word)(heightnumerator/(nx>>8));
-            if(wallheight[xx]>viewheight)
+            if(wallheight[xx][0]>viewheight)
             {
                 bail=true;
                 return std::make_pair(0, 0);
@@ -458,7 +458,7 @@ fixed SnowWindAmplitude(uint32_t windtics)
 {
     fixed windamp = 0;
 
-    fixed t;
+    fixed t = 0;
     static const struct windparms
     {
         uint32_t Stics, Etics;
@@ -579,7 +579,7 @@ void DrawSnow(byte *vbuf, uint32_t vbufPitch, byte *zbuf, uint32_t zbufPitch)
             int upperedge;
 
             auto viewheight = (word)(heightnumerator/(nx>>8));
-            if(wallheight[xx]>viewheight)
+            if(wallheight[xx][0]>viewheight)
             {
                 bail=true;
                 return std::make_pair(0, 0);

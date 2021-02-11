@@ -13,7 +13,7 @@ $alias switches/exitbutn switches/normbutn
 switches/elevbutn		{ DSPLATFM ALSWITCH PCSWITCH }
 
 misc/1up				{ DSBNS1UP ALBNS1UP PCBNS1UP }
-misc/do_nothing			{ DSNOTIN ALNOTHIN PCNOTHIN }
+misc/do_nothing			{ DSNOTHIN ALNOTHIN PCNOTHIN }
 misc/ammo_pkup			{ DSAMMOUP ALAMMOUP PCAMMOUP }
 misc/ammobox_pkup		{ DSAMBXUP ALAMBXUP PCAMBXUP }
 misc/health_pkup		{ DSFOODUP ALFOODUP PCFOODUP }

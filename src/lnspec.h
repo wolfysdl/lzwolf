@@ -62,6 +62,7 @@ namespace Specials
 	{
 		return LookupFunction(LookupFunctionNum(function));
 	}
+	const char* LookupFunctionName(LineSpecials function);
 }
 
 #endif

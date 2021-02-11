@@ -759,6 +759,7 @@ bool FDecorateParser::ParseActorStateFlags(StateDefinition &thisState)
 {
 	bool negate = false;
 	thisState.fullbright = false;
+	thisState.zonebright = false;
 
 	do
 	{
@@ -769,6 +770,8 @@ bool FDecorateParser::ParseActorStateFlags(StateDefinition &thisState)
 
 		if(sc->str.CompareNoCase("bright") == 0)
 			thisState.fullbright = true;
+		else if(sc->str.CompareNoCase("zonebright") == 0)
+			thisState.zonebright = true;
 		else if(sc->str.CompareNoCase("offset") == 0)
 		{
 			sc.MustGetToken('(');

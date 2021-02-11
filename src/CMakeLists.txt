@@ -346,6 +346,7 @@ target_include_directories(lzwolf PRIVATE
 	${LZMA_INCLUDE_DIR}
 	${LZWolf_SOURCE_DIR}/deps/gdtoa
 	${CMAKE_BINARY_DIR}/deps/gdtoa
+	${LZWolf_SOURCE_DIR}/deps/eigen
 )
 
 set_target_properties(lzwolf PROPERTIES

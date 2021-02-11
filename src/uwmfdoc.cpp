@@ -61,7 +61,9 @@ Tile::Tile() :
 	mapped(),
 	comment(),
 	soundSequence(),
-	textureOverhead()
+	textureOverhead(),
+	slideStyle(0),
+	textureFlip(false)
 {
 }
 
@@ -119,7 +121,7 @@ Trigger::Trigger() :
 	x(0),
 	y(0),
 	z(0),
-	action(0),
+	action(""),
 	arg0(0),
 	arg1(0),
 	arg2(0),
@@ -282,6 +284,8 @@ namespace UwmfDocEmitter
 			os << MakeProperty("comment", tile.comment, dftTile.comment);
 			os << MakeProperty("soundSequence", tile.soundSequence, dftTile.soundSequence);
 			os << MakeProperty("textureOverhead", tile.textureOverhead, dftTile.textureOverhead);
+			os << MakeProperty("slideStyle", tile.slideStyle, dftTile.slideStyle);
+			os << MakeProperty("textureFlip", tile.textureFlip, dftTile.textureFlip);
 			os << '}' << std::endl;
 		}
 	};

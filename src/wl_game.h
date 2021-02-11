@@ -239,9 +239,11 @@ namespace LoopedAudio
 
 	void updateSoundPos (void);
 
-	void stopSoundFrom (ObjId objId);
+	void stopSoundFrom (ObjId objId, bool halt_only = false);
 
 	void setVolume (ObjId objId, double volume);
+
+	void stopActiveSounds (bool halt_only = false);
 }
 
 #endif

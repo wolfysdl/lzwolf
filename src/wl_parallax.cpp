@@ -74,9 +74,6 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 
 	const int tmask = h*(w-1);
 
-	fixed planeheight = viewz+(map->GetPlane(0).depth<<FRACBITS);
-	const fixed heightFactor = abs(planeheight)>>8;
-
 	startpage += numParallaxTiles - 1;
 
 	for(int x = 0; x < viewwidth; x++)
@@ -99,19 +96,24 @@ void DrawParallax(byte *vbuf, unsigned vbufPitch)
 			}
 		}
 		int texoffs = tmask - ((xtex & (w - 1)) << hbits);
-		int yend = skyheight - ((skywallheight[x]*heightFactor)>>FRACBITS);
-		if(yend <= 0) continue;
-
-		for(int y = 0, offs = x; y < yend; y++, offs += vbufPitch)
-			vbuf[offs] = skytex[texoffs + (y * h) / skyheight];
+		int yend = skyheight - (skywallheight[x][1]>>3);
+		if(yend > 0)
+		{
+			for(int y = 0, offs = x; y < yend; y++, offs += vbufPitch)
+				vbuf[offs] = skytex[texoffs + (y * h) / skyheight];
+		}
 
 		if (drawFloorSky)
 		{
-			yend = skyheight + (skywallheight[x]>>3);
-			if(yend >= viewheight) continue;
-
-			for(int y = yend, offs = x + yend*vbufPitch; y < viewheight; y++, offs += vbufPitch)
-				vbuf[offs] = floorskytex[texoffs + ((y - skyheight) * h) / skyheight];
+			yend = skyheight + (skywallheight[x][2]>>3);
+			if(yend < viewheight)
+			{
+				for(int y = yend, offs = x + yend*vbufPitch; y < viewheight;
+						y++, offs += vbufPitch)
+				{
+					vbuf[offs] = floorskytex[texoffs + ((y - skyheight) * h) / skyheight];
+				}
+			}
 		}
 	}
 }

@@ -657,7 +657,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	if(sample == NULL)
 		return -1;
 
-	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
+	Mix_Volume(channel, static_cast<int> (VOLUME_TO_CHAN(volume)));
 	if(Mix_PlayChannel(channel, sample, looping ? -1 : 0) == -1)
 	{
 		printf("Unable to play sound: %s\n", Mix_GetError());
@@ -669,7 +669,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 
 void SD_SetChannelVolume(int channel, double volume)
 {
-	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
+	Mix_Volume(channel, static_cast<int> (VOLUME_TO_CHAN(volume)));
 }
 
 void SD_ChannelFinished(int channel)
@@ -1091,12 +1091,12 @@ SD_Startup(void)
 	}
 	atterm(Mix_CloseAudio);
 
-	// reserve player and boss weapon channels
-	Mix_ReserveChannels(2);
+	// reserve player, boss weapon and adlib channels
+	Mix_ReserveChannels(3);
 	// reserve 2 channels under group 2
-	Mix_GroupChannels(2, 3, 2);
+	Mix_GroupChannels(3, 4, 2);
 	// group remaining channels under group 1
-	Mix_GroupChannels(4, MIX_CHANNELS-1, 1);
+	Mix_GroupChannels(5, MIX_CHANNELS-1, 1);
 
 	// Init music
 	if(YM3812Init(1,3579545,param_samplerate))
@@ -1339,6 +1339,11 @@ bool SD_SoundPlaying(void)
 		return false;
 }
 
+bool SD_ChannelPlaying(SoundChannel chan)
+{
+	return Mix_Playing(chan) > 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 //
 //      SD_StopSound() - if a sound is playing, stops it
@@ -1458,7 +1463,7 @@ SD_StartMusic(const char* chunk)
 
 	if (MusicMode == smm_AdLib)
 	{
-		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
+		int lumpNum = Wads.CheckNumForName(chunk, ns_music);
 		if(lumpNum == -1)
 			return;
 
@@ -1524,7 +1529,7 @@ SD_ContinueMusic(const char* chunk, int startoffs)
 
 	if (MusicMode == smm_AdLib)
 	{
-		int lumpNum = SoundInfo.GetMusicLumpNum(chunk);
+		int lumpNum = Wads.CheckNumForName(chunk, ns_music);
 		if(lumpNum == -1)
 			return;
 

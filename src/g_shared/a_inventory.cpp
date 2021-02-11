@@ -232,7 +232,7 @@ void AInventory::Touch(AActor *toucher)
 		StatusBar->InfoMessage(infomessage, {infomsg_texid});
 	}
 
-	PlaySoundLocActor(pickupsound, toucher);
+	PlaySoundLocGlobal(pickupsound,toucher->x,toucher->y,SD_ADLIB);
 	if(toucher->player == &players[ConsolePlayer])
 		StartBonusFlash();
 }
