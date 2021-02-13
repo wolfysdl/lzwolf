@@ -952,6 +952,15 @@ FUNC(Exit_Normal)
 		control[activator->player - players].buttonheld[bt_use] = true;
 	}
 
+	if(activator->player || (activator->flags & FL_REQUIREKEYS))
+	{
+		if(args[3] != 0)
+		{
+			if(!P_CheckKeys(activator, args[3], false))
+				return 0;
+		}
+	}
+
 	playstate = ex_completed;
 	SD_WaitSoundDone();
 	return 1;

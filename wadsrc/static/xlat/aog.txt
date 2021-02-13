@@ -32,6 +32,16 @@ tiles
 		onspawnaction = "OnSpawn_Concession";
 	}
 
+	// transporter tile
+	trigger 21
+	{
+		action = "Exit_Normal";
+		playeruse = true;
+		activatenorth = false;
+		activatesouth = false;
+		arg3 = 1;
+	}
+
 	// offswitch
 	trigger 45
 	{

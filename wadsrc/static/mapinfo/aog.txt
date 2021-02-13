@@ -150,6 +150,7 @@ map "MAP01" lookup "BLAKE_AREA_1"
 map "MAP02" lookup "BLAKE_AREA_2"
 {
 	music = "DRKHALLA"
+	next = "MAP03"
 	cluster = 1
 	DefaultLighting = 165
 	DefaultVisibility = 48.0
@@ -159,6 +160,7 @@ map "MAP02" lookup "BLAKE_AREA_2"
 map "MAP03" lookup "BLAKE_AREA_3"
 {
 	music = "JUNGLEA"
+	next = "MAP04"
 	cluster = 1
 	DefaultLighting = 124
 	DefaultVisibility = 24.0
@@ -168,6 +170,7 @@ map "MAP03" lookup "BLAKE_AREA_3"
 map "MAP04" lookup "BLAKE_AREA_4"
 {
 	music = "RACSHUFL"
+	next = "MAP05"
 	cluster = 1
 	DefaultLighting = 128
 	DefaultVisibility = 35.0
@@ -176,6 +179,7 @@ map "MAP04" lookup "BLAKE_AREA_4"
 
 map "MAP05" lookup "BLAKE_AREA_5"
 {
+	next = "MAP06"
 	music = "CIRCLES"
 	cluster = 1
 	DefaultLighting = 210
@@ -184,6 +188,7 @@ map "MAP05" lookup "BLAKE_AREA_5"
 
 map "MAP06" lookup "BLAKE_AREA_6"
 {
+	next = "MAP07"
 	music = "TIME"
 	cluster = 1
 	DefaultLighting = 140
@@ -194,6 +199,7 @@ map "MAP06" lookup "BLAKE_AREA_6"
 map "MAP07" lookup "BLAKE_AREA_7"
 {
 	music = "TOHELL"
+	next = "MAP08"
 	cluster = 1
 	DefaultLighting = 178
 	DefaultVisibility = 7.0
@@ -202,6 +208,7 @@ map "MAP07" lookup "BLAKE_AREA_7"
 map "MAP08" lookup "BLAKE_AREA_8"
 {
 	music = "FORTRESS"
+	next = "MAP09"
 	cluster = 1
 	DefaultLighting = 165
 	DefaultVisibility = 48.0
@@ -211,6 +218,7 @@ map "MAP08" lookup "BLAKE_AREA_8"
 map "MAP09" lookup "BLAKE_AREA_9"
 {
 	music = "GIVING"
+	next = "MAP10"
 	cluster = 1
 	DefaultLighting = 124
 	DefaultVisibility = 24.0
