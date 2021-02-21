@@ -795,6 +795,36 @@ ACTION_FUNCTION(A_SelectWeapon)
 	return true;
 }
 
+ACTION_FUNCTION(A_SetHealth)
+{
+	ACTION_PARAM_INT(health, 0);
+
+	AActor *mobj = self;
+
+	if (!mobj)
+	{
+		return false;
+	}
+
+	player_t *player = mobj->player;
+	if (player)
+	{
+		if (health <= 0)
+			player->mo->health = mobj->health = player->health = 1; //Copied from the buddha cheat.
+		else
+			player->mo->health = mobj->health = player->health = health;
+	}
+	else if (mobj)
+	{
+		if (health <= 0)
+			mobj->health = 1;
+		else
+			mobj->health = health;
+	}
+
+	return true;
+}
+
 ACTION_FUNCTION(A_SetPicXY)
 {
 	ACTION_PARAM_INT(picX, 0);

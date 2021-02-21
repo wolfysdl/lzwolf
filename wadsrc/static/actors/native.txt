@@ -124,6 +124,7 @@ actor Actor native
 	action native A_ScaleVelocity(float scale);
 	action native A_Scream();
 	action native A_SelectWeapon(int slot);
+	action native A_SetHealth(int health);
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetProperty(string propName, auto value);
 	action native A_SetTics(float duration);
