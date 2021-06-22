@@ -46,7 +46,7 @@
 =============================================================================
 */
 
-bool madenoise;              // true when shooting or screaming
+int madenoise;              // true when shooting or screaming
 
 exit_t playstate;
 
@@ -1114,7 +1114,7 @@ void PlayLoop (void)
 //
 // actor thinking
 //
-		madenoise = false;
+		madenoise = std::max(madenoise-1,0);
 
 		// Run tics
 		if(Paused & 2)

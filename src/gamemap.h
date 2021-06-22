@@ -101,7 +101,7 @@ class GameMap
 		{
 			Trigger() : x(0), y(0), z(0), active(true), action(0),
 				playerUse(false), playerCross(false), monsterUse(false),
-				isSecret(false), repeatable(false)
+				monsterUseFilter(0), isSecret(false), repeatable(false)
 			{
 				activate[0] = activate[1] = activate[2] = activate[3] = true;
 				arg[0] = arg[1] = arg[2] = arg[3] = arg[4] = 0;
@@ -120,6 +120,7 @@ class GameMap
 			bool			playerUse;
 			bool			playerCross;
 			bool			monsterUse;
+			int				monsterUseFilter;
 			bool			isSecret;
 			bool			repeatable;
 		};
@@ -127,7 +128,7 @@ class GameMap
 		{
 			Tile() : offsetVertical(false), offsetHorizontal(false),
 				mapped(0), dontOverlay(false), showSky(false),
-				bright(false), decal(false)
+				bright(false), decal(false), slideStyle(0), textureFlip(false)
 			{
 				overhead.SetInvalid();
 				sideSolid[0] = sideSolid[1] = sideSolid[2] = sideSolid[3] = true;
@@ -146,6 +147,8 @@ class GameMap
 			bool			showSky;
 			bool			bright;
 			bool			decal;
+			int				slideStyle;
+			bool			textureFlip;
 		};
 		struct Sector
 		{
@@ -226,6 +229,7 @@ class GameMap
 		unsigned int	NumPlanes() const { return planes.Size(); }
 		const Plane		&GetPlane(unsigned int index) const { return planes[index]; }
 		void			SpawnThings() const;
+		void			SetMusic(const FString& music) { header.music = music; }
 
 		// Sound functions
 		bool			CheckLink(const Zone *zone1, const Zone *zone2, bool recurse);

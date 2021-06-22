@@ -33,7 +33,7 @@ struct TicCmd_t
 extern unsigned int ConsolePlayer;
 extern TicCmd_t control[MAXPLAYERS];
 extern  exit_t      playstate;
-extern  bool        madenoise;
+extern  int         madenoise;
 extern  int         godmode;
 extern	bool		notargetmode;
 

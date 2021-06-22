@@ -154,6 +154,16 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.decal = sc->boolean;
 	}
+	else CheckKey("slidestyle")
+	{
+		sc.MustGetToken(TK_IntConst);
+		tile.slideStyle = sc->number;
+	}
+	else CheckKey("textureflip")
+	{
+		sc.MustGetToken(TK_BoolConst);
+		tile.textureFlip = sc->boolean;
+	}
 
 	EndParseBlock
 }
@@ -259,6 +269,10 @@ void TextMapParser::ParseTrigger(Scanner &sc, MapTrigger &trigger)
 	{
 		sc.MustGetToken(TK_BoolConst);
 		trigger.monsterUse = sc->boolean;
+	}
+	else CheckKey("monsterusefilter")
+	{
+		trigger.monsterUseFilter = MustGetSignedInteger(sc);
 	}
 	else CheckKey("repeatable")
 	{

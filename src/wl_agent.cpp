@@ -605,7 +605,7 @@ void ClipMove (AActor *ob, int32_t xmove, int32_t ymove)
 	}
 
 	if (!SD_SoundPlaying())
-		SD_PlaySound ("world/hitwall");
+		SD_PlaySound ("world/hitwall", SD_BOSSWEAPONS);
 
 	ob->x = basex+xmove;
 	ob->y = basey;
@@ -734,7 +734,7 @@ void APlayerPawn::Cmd_Use()
 	}
 
 	if(doNothing)
-		SD_PlaySound ("misc/do_nothing");
+		SD_PlaySound ("misc/do_nothing", SD_ADLIB);
 	else
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
 }
@@ -1232,7 +1232,7 @@ ACTION_FUNCTION(A_CustomPunch)
 		range = 64;
 
 	if(!(player->ReadyWeapon->weaponFlags & WF_NOALERT))
-		madenoise = true;
+		madenoise = 1;
 
 	// actually fire
 	int dist = 0x7fffffff;
@@ -1321,7 +1321,7 @@ ACTION_FUNCTION(A_GunAttack)
 		self->SetState(self->MeleeState);
 
 	if(!(player->ReadyWeapon->weaponFlags & WF_NOALERT))
-		madenoise = true;
+		madenoise = 1;
 
 	AActor *closest = player->FindTarget();
 	if(!closest)
@@ -1362,7 +1362,7 @@ ACTION_FUNCTION(A_FireCustomMissile)
 		return false;
 
 	if(!(self->player->ReadyWeapon->weaponFlags & WF_NOALERT))
-		madenoise = true;
+		madenoise = 1;
 
 	if(self->MeleeState)
 		self->SetState(self->MeleeState);

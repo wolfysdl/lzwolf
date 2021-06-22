@@ -668,7 +668,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 	if(sample == NULL)
 		return -1;
 
-	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
+	Mix_Volume(channel, static_cast<int> (VOLUME_TO_CHAN(volume)));
 	if(Mix_PlayChannel(channel, sample, looping ? -1 : 0) == -1)
 	{
 		printf("Unable to play sound: %s\n", Mix_GetError());
@@ -680,7 +680,7 @@ int SD_PlayDigitized(const SoundData &which,int leftpos,int rightpos,SoundChanne
 
 void SD_SetChannelVolume(int channel, double volume)
 {
-	Mix_Volume(channel, static_cast<int> (ceil(128.0*volume*MULTIPLY_VOLUME(SoundVolume))));
+	Mix_Volume(channel, static_cast<int> (VOLUME_TO_CHAN(volume)));
 }
 
 void SD_ChannelFinished(int channel)
@@ -1057,12 +1057,12 @@ SDL_StartSB()
 		printf("S_Init: Failed to build stereo audio conversion: %s\n", SDL_GetError());
 	}
 
-	// reserve player and boss weapon channels
-	Mix_ReserveChannels(2);
+	// reserve player, boss weapon and adlib channels
+	Mix_ReserveChannels(3);
 	// reserve 2 channels under group 2
-	Mix_GroupChannels(2, 3, 2);
+	Mix_GroupChannels(3, 4, 2);
 	// group remaining channels under group 1
-	Mix_GroupChannels(4, MIX_CHANNELS-1, 1);
+	Mix_GroupChannels(5, MIX_CHANNELS-1, 1);
 
 	// Init music
 	if(YM3812Init(1,3579545,AudioSpec.frequency))
@@ -1406,6 +1406,11 @@ bool SD_SoundPlaying(void)
 		return SoundPlaying.IsNotEmpty();
 	else
 		return false;
+}
+
+bool SD_ChannelPlaying(SoundChannel chan)
+{
+	return Mix_Playing(chan) > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////

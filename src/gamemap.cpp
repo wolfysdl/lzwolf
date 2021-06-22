@@ -648,7 +648,8 @@ FArchive &operator<< (FArchive &arc, GameMap *&gm)
 	arc << gm->header.name
 		<< gm->header.width
 		<< gm->header.height
-		<< gm->header.tileSize;
+		<< gm->header.tileSize
+		<< gm->header.music;
 
 	// zoneLinks
 	if(GameSave::SaveVersion >= 1383348286)
@@ -873,6 +874,7 @@ FArchive &operator<< (FArchive &arc, MapTrigger &trigger)
 		<< trigger.playerUse
 		<< trigger.playerCross
 		<< trigger.monsterUse
+		<< trigger.monsterUseFilter
 		<< trigger.isSecret
 		<< trigger.repeatable;
 

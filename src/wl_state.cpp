@@ -96,7 +96,8 @@ bool TrySpot(AActor *ob, MapSpot spot)
 
 		// Players need not be checked
 		if(iter != ob && !iter->player && ( (iter->flags & FL_SOLID) ||
-			(iter->extraflags & FL_ENEMYSOLID) ) &&
+			( !(ob->extraflags & FL_IGNOREENEMYSOLID) &&
+			  (iter->extraflags & FL_ENEMYSOLID) ) ) &&
 			static_cast<unsigned int>(iter->tilex+dirdeltax[offsetDir]) == x &&
 			static_cast<unsigned int>(iter->tiley+dirdeltay[offsetDir]) == y)
 			return false;
@@ -136,9 +137,13 @@ static inline short CheckSide(AActor *ob, unsigned int x, unsigned int y, MapTri
 			bool used = false;
 			for(unsigned int i = 0;i < spot->triggers.Size();++i)
 			{
-				if(spot->triggers[i].monsterUse && spot->triggers[i].activate[dir])
+				MapTrigger &trigger = spot->triggers[i];
+				if(trigger.monsterUse &&
+						(trigger.monsterUseFilter == 0 ||
+						 trigger.monsterUseFilter == ob->UseTriggerFilterKey) && 
+						trigger.activate[dir])
 				{
-					if(map->ActivateTrigger(spot->triggers[i], dir, ob))
+					if(map->ActivateTrigger(trigger, dir, ob))
 						used = true;
 				}
 			}
@@ -819,7 +824,7 @@ void DamageActor (AActor *ob, AActor *attacker, unsigned damage, const ClassDef 
 	}
 
 	if (!damageinv || !damageinv->silent)
-		madenoise = true;
+		madenoise = 1;
 
 	//
 	// do double damage if shooting a non attack mode actor
@@ -1140,10 +1145,16 @@ bool CheckLine (AActor *ob, AActor *ob2)
 
 static bool CheckSightTo (AActor *ob, AActor *target, double minseedist, double maxseedist, double maxheardist, double fov)
 {
-	bool heardnoise = madenoise;
+	bool heardnoise = (madenoise > 0);
+	bool forcenoise = (madenoise >= 2);
 
 	// Check if we can hear the player's noise
 	if (heardnoise && !map->CheckLink(ob->GetZone(), target->GetZone(), true))
+		heardnoise = false;
+
+	// Disregard noise if not connected to player
+	AActor *playerob = players[0].mo;
+	if (heardnoise && target != playerob && !map->CheckLink(ob->GetZone(), playerob->GetZone(), true))
 		heardnoise = false;
 
 	//
@@ -1154,15 +1165,15 @@ static bool CheckSightTo (AActor *ob, AActor *target, double minseedist, double 
 	uint32_t distance = MAX(abs(deltax), abs(deltay))*64;
 
 	if (!(ob->flags & FL_AMBUSH) && heardnoise &&
-		(maxheardist < 0.00001 ||
-		distance < maxheardist))
+		(forcenoise || maxheardist < 0.00001 ||
+		FIXED2FLOAT(distance/64) < maxheardist))
 		return true;
 
 	if (minseedist > 0.00001 &&
-		distance < minseedist)
+		FIXED2FLOAT(distance/64) < minseedist)
 		return false;
 	if (maxseedist > 0.00001 &&
-		distance > maxseedist)
+		FIXED2FLOAT(distance/64) > maxseedist)
 		return false;
 
 	if (distance < MINSIGHT)

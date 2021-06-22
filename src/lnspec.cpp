@@ -101,6 +101,17 @@ LineSpecialFunction Specials::LookupFunction(LineSpecials function)
 
 	return lnspecFunctions[function];
 }
+const char* Specials::LookupFunctionName(LineSpecials function)
+{
+	const LineSpecialMeta *func = lnspecMeta;
+	do
+	{
+		if(func->num == function)
+			return func->name;
+	}
+	while((++func)->name != NULL);
+	return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -124,6 +135,8 @@ class EVDoor : public Thinker
 			sndseq = NULL;
 
 			spot->slideStyle = style;
+			if(spot->tile->slideStyle != 0)
+				spot->slideStyle = spot->tile->slideStyle;
 			if(spot->slideAmount[direction] == 0 && spot->slideAmount[direction+2] == 0)
 				ChangeState(Opening);
 			else
@@ -1147,6 +1160,7 @@ FUNC(Teleport_Relative)
 		TELEPORT_Center = 4, // Center onto destination tile
 		TELEPORT_AbsoluteAngle = 8, // Set absolute angle instead of relative
 		TELEPORT_ActivationAngle = 0x10, // Face the activation point (typically used with AbsoluteAngle)
+		TELEPORT_InvertYFrac = 0x20, // Invert yfrac
 	};
 
 	if(!spot)
@@ -1176,6 +1190,10 @@ FUNC(Teleport_Relative)
 	{
 		x = (activator->x&0xFFFF0000)|0x8000;
 		y = (activator->y&0xFFFF0000)|0x8000;
+	}
+	if((args[2] & TELEPORT_InvertYFrac))
+	{
+		y = (y&0xFFFF0000)|(0xFFFF-(y&0xFFFF));
 	}
 
 	angle_t angle = (args[1]<<24) +
