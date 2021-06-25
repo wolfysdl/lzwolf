@@ -32,6 +32,7 @@
 **
 */
 
+#include <functional>
 #include "c_cvars.h"
 #include "thingdef/thingdef.h"
 #include "wl_agent.h"

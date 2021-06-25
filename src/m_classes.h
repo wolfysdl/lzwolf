@@ -1,6 +1,7 @@
 #ifndef __M_CLASSES_H__
 #define __M_CLASSES_H__
 
+#include <functional>
 #include "tarray.h"
 #include "wl_def.h"
 #include "v_font.h"

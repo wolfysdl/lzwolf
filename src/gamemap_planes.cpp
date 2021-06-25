@@ -32,6 +32,7 @@
 **
 */
 
+#include <functional>
 #include <climits>
 
 #include "doomerrors.h"
