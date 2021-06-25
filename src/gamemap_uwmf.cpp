@@ -144,6 +144,11 @@ void TextMapParser::ParseTile(Scanner &sc, MapTile &tile)
 		sc.MustGetToken(TK_BoolConst);
 		tile.showSky = sc->boolean;
 	}
+	else CheckKey("switchtextureeast")
+	{
+		sc.MustGetToken(TK_StringConst);
+		tile.switchTextureEast = sc->str;
+	}
 	else CheckKey("bright")
 	{
 		sc.MustGetToken(TK_BoolConst);
@@ -279,10 +284,20 @@ void TextMapParser::ParseTrigger(Scanner &sc, MapTrigger &trigger)
 		sc.MustGetToken(TK_BoolConst);
 		trigger.repeatable = sc->boolean;
 	}
+	else CheckKey("infoMessage")
+	{
+		sc.MustGetToken(TK_StringConst);
+		trigger.infoMessage = sc->str;
+	}
 	else CheckKey("secret")
 	{
 		sc.MustGetToken(TK_BoolConst);
 		trigger.isSecret = sc->boolean;
+	}
+	else CheckKey("onspawnaction")
+	{
+		sc.MustGetToken(TK_StringConst);
+		trigger.onSpawnAction = sc->str;
 	}
 
 	EndParseBlock
@@ -291,7 +306,11 @@ void TextMapParser::ParseTrigger(Scanner &sc, MapTrigger &trigger)
 void TextMapParser::ParseZone(Scanner &sc, MapZone &zone)
 {
 	StartParseBlock
-	if(false);
+	CheckKey("hintareanum")
+	{
+		sc.MustGetToken(TK_IntConst);
+		zone.hintareanum = sc->number;
+	}
 	EndParseBlock
 }
 

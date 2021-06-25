@@ -32,6 +32,7 @@
 **
 */
 
+#include <functional>
 #include <climits>
 
 #include "doomerrors.h"
@@ -46,6 +47,13 @@
 #include "w_wad.h"
 #include "wl_game.h"
 #include "wl_shade.h"
+#include "m_random.h"
+
+#include <vector>
+#include "wl_agent.h"
+#include "wl_play.h"
+#include "id_sd.h"
+#include "a_inventory.h"
 
 static const char* const FeatureFlagNames[] = {
 	"globalmeta",
@@ -974,6 +982,11 @@ void GameMap::ReadPlanesData()
 	sectorPalette.Clear();
 	lightSectorPalette.Clear();
 
+	if(FeatureFlags & Xlat::FF_GLOBALMETA)
+	{
+		ResetHints();
+	}
+
 	// Old format maps always have a tile size of 64
 	header.tileSize = UNIT;
 
@@ -1032,6 +1045,62 @@ void GameMap::ReadPlanesData()
 	FTextureID defaultCeiling = levelInfo->DefaultTexture[Sector::Ceiling];
 	FTextureID defaultFloor = levelInfo->DefaultTexture[Sector::Floor];
 
+	auto onspawn_concession = [this](MapTrigger &trigger, WORD &oldnum, WORD &oldnum2)
+	{
+		const auto machinetype = trigger.arg[1];
+		trigger.arg[1] = this->SpawnConcession(oldnum, machinetype);
+		oldnum = 0;
+	};
+	auto onspawn_wallswitch = [this](MapTrigger &trigger, WORD &oldnum, WORD &oldnum2)
+	{
+		//const auto onOff = trigger.arg[1];
+		if ((oldnum & 0xFF00) == 0xF800)
+		{
+			const auto barrier_code = this->SpawnWallSwitch(oldnum, oldnum2,
+					trigger.x, trigger.y);
+			trigger.arg[1] = barrier_code;
+			oldnum = oldnum2 = 0;
+		}
+	};
+
+	using TOnSpawnAction = std::function<void(MapTrigger &, WORD &, WORD &)>;
+	const std::map<std::string, TOnSpawnAction> onSpawnActions =
+	{
+		{ "OnSpawn_Concession", onspawn_concession },
+		{ "OnSpawn_WallSwitch", onspawn_wallswitch },
+	};
+
+	auto init_switch_dest = [](TArray<Tile>& tilePalette) {
+		std::map<std::string, const MapTile*> tileByEastTexture;
+
+		for(unsigned int i = 0; i < tilePalette.Size(); ++i)
+		{
+			const auto &tile = tilePalette[i];
+			auto texture = tile.texture[MapTile::East];
+			if(texture.isValid() && TexMan[texture] != nullptr)
+			{
+				tileByEastTexture[TexMan[texture]->Name.GetChars()] = &tile;
+				printf("%s %p\n", TexMan[texture]->Name.GetChars(), &tile);
+			}
+		}
+
+		for(unsigned int i = 0; i < tilePalette.Size(); ++i)
+		{
+			auto &tile = tilePalette[i];
+			if(!tile.switchTextureEast.IsEmpty())
+			{
+				auto it = tileByEastTexture.find(
+						tile.switchTextureEast.GetChars());
+				if(it != std::end(tileByEastTexture))
+				{
+					tile.switchDestTile = it->second;
+				}
+			}
+		}
+	};
+
+	std::vector<WORD> oldnums(size);
+
 	for(int plane = 0;plane < numPlanes && plane < NUM_USABLE_PLANES;++plane)
 	{
 		if(plane == 3) // Info plane is already read
@@ -1041,7 +1110,13 @@ void GameMap::ReadPlanesData()
 		lump->Seek(size*2*plane, SEEK_CUR);
 
 		TUniquePtr<WORD[]> oldplane(new WORD[size]);
-		lump->Read(oldplane.Get(), size*2);
+		if(plane == Plane_Object)
+		{
+			memcpy(oldplane.Get(), &oldnums[0], size*2);
+			oldnums.clear();
+		}
+		else
+			lump->Read(oldplane.Get(), size*2);
 
 		switch(plane)
 		{
@@ -1051,11 +1126,15 @@ void GameMap::ReadPlanesData()
 			case Plane_Tiles:
 			{
 				WORD tileStart = xlat.GetTilePalette(tilePalette);
+				init_switch_dest(tilePalette);
+
 				xlat.GetZonePalette(zonePalette);
 
 				TArray<WORD> fillSpots;
 				TMap<WORD, Xlat::ModZone> changeTriggerSpots;
-				
+
+				// read out the object plane early
+				lump->Read(&oldnums[0], size*2);
 
 				for(unsigned int i = 0;i < size;++i)
 				{
@@ -1089,6 +1168,14 @@ void GameMap::ReadPlanesData()
 						templateTrigger.x = i%header.width;
 						templateTrigger.y = i/header.width;
 						templateTrigger.z = 0;
+
+						auto spawnActionName = std::string{templateTrigger.onSpawnAction};
+						auto it = onSpawnActions.find(spawnActionName);
+						if(it != std::end(onSpawnActions))
+						{
+							auto cb = it->second;
+							cb(templateTrigger, oldnums[i], oldnums[i+1]);
+						}
 
 						triggers.Push(templateTrigger);
 					}
@@ -1242,7 +1329,19 @@ void GameMap::ReadPlanesData()
 							default: break;
 							case 0xF1: // Informant messages
 							case 0xF2: // Scientist messages
-							case 0xF3: // Men scientist messages
+							case 0xF3: // Mean scientist messages
+								{
+									auto zone = mapPlane.map[i].zone;
+									auto areanumber = 0xff;
+									if(zone != NULL)
+									{
+										areanumber = (zone->hintareanum != -1 ?
+												zone->hintareanum : zone->index);
+									}
+									ProcessHintTile(oldplane[i]>>8, oldplane[i]&0xff,
+											static_cast<uint8_t>(areanumber));
+								}
+								continue;
 							case 0xF5: // Intralevel warp coordinate
 								continue;
 							case 0xFB:
@@ -1560,6 +1659,11 @@ void GameMap::ReadPlanesData()
 				}
 			}
 		}
+	}
+
+	if(FeatureFlags & Xlat::FF_GLOBALMETA)
+	{
+		InitInformantMessageState();
 	}
 }
 

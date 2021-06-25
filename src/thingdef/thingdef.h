@@ -318,6 +318,7 @@ class ClassDef
 		const FName				&GetName() const { return name; }
 		const ClassDef			*GetParent() const { return parent; }
 		const ClassDef			*GetReplacement(bool respectMapinfo=true) const;
+		int						GetReplacementPrb() const { return replacementPrb; }
 		size_t					GetSize() const { return size; }
 		const Frame				*GetState(unsigned int index) const { return &frameList[index]; }
 		static void				LoadActors();
@@ -361,6 +362,7 @@ class ClassDef
 
 		const ClassDef	*replacement;
 		const ClassDef	*replacee;
+		int             replacementPrb;
 
 		TMap<FName, unsigned int> stateList;
 		TArray<Frame> frameList;

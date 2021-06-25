@@ -417,6 +417,14 @@ bool FDecorateParser::ParseActorReplacements()
 			replacee->replacement = newClass;
 			newClass->replacee = replacee;
 
+			replacee->replacementPrb = 0;
+			if(sc.CheckToken('-'))
+			{
+				sc.MustGetToken(TK_IntConst);
+				if(sc->number > 256)
+					sc.ScriptMessage(Scanner::ERROR, "Replacement chance out of range.");
+				replacee->replacementPrb = sc->number;
+			}
 			return true;
 		}
 		else

@@ -64,7 +64,7 @@ enum ESSType
 	SS_BGRA
 };
 
-void Quit(const char *errorStr, ...);
+[[noreturn]] void Quit(const char *errorStr, ...);
 void NetDPrintf(const char *format, ...);
 
 #define FIXED2FLOAT(fixed) ((double)(fixed)/65536.0)
@@ -210,8 +210,12 @@ enum ActorFlag
 enum ExtraActorFlag
 {
 	FL_ENEMYSOLID       = 0x00000001,
-	FL_PROJHITENEMY     = 0x00000002,
-	FL_IGNOREENEMYSOLID = 0x00000004,
+	FL_FRIENDLY         = 0x00000002,
+	FL_RANDOMTURN       = 0x00000004,
+	FL_BLAKEPATROL      = 0x00000008,
+	FL_MUSTATTACK       = 0x00000010,
+	FL_PROJHITENEMY     = 0x00000020,
+	FL_IGNOREENEMYSOLID = 0x00000040,
 };
 
 enum ItemFlag

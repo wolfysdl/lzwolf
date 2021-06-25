@@ -466,6 +466,12 @@ HANDLE_PROPERTY(height)
 	// For forwards compatibility solid actors should have a height of 64
 }
 
+HANDLE_PROPERTY(hitobituary)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString (AMETA_HitObituary, str);
+}
+
 HANDLE_PROPERTY(icon)
 {
 	STRING_PARAM(icon, 0);
@@ -479,10 +485,56 @@ HANDLE_PROPERTY(ignorearmor)
 	((ADamage *)defaults)->ignorearmor = ignorearmor?true:false;
 }
 
+HANDLE_PROPERTY(infomessage)
+{
+	STRING_PARAM(str, 0);
+	cls->Meta.SetMetaString(AMETA_InfoMessage, str);
+}
+
 HANDLE_PROPERTY(interhubamount)
 {
 	INT_PARAM(amt, 0);
 	((AInventory *)defaults)->interhubamount = amt;
+}
+
+HANDLE_PROPERTY(interrogate)
+{
+	STRING_PARAM(infoMessage, 0);
+	STRING_PARAM(dropItem, 1);
+	INT_PARAM(prb, 2);
+
+	int amtmin, amtmax;
+	INT_PARAM(minAmount, 3);
+	amtmin = minAmount;
+
+	if(PARAM_COUNT == 5)
+	{
+		INT_PARAM(maxAmount, 4);
+		amtmax = maxAmount;
+	}
+	else
+	{
+		amtmax = amtmin;
+	}
+
+	if(cls->Meta.GetMetaInt(AMETA_InterrogateItems, -1) == -1 || cls->Meta.IsInherited(AMETA_InterrogateItems))
+		cls->Meta.SetMetaInt(AMETA_InterrogateItems, AActor::interrogateItems.Push(new AActor::InterrogateItemList()));
+
+	AActor::InterrogateItem interrogateItem;
+	interrogateItem.infoMessage = infoMessage;
+	interrogateItem.dropItem = dropItem;
+
+	if(prb > 255)
+		prb = 255;
+	else if(prb < 0)
+		prb = 0;
+	interrogateItem.probability = prb;
+	interrogateItem.minAmount = amtmin;
+	interrogateItem.maxAmount = amtmax;
+
+	auto pit = AActor::interrogateItems[cls->Meta.GetMetaInt(AMETA_InterrogateItems)];
+	interrogateItem.id = pit->Size();
+	pit->Push(interrogateItem);
 }
 
 HANDLE_PROPERTY(litfilter)
@@ -630,12 +682,6 @@ HANDLE_PROPERTY(obituary)
 {
 	STRING_PARAM(str, 0);
 	cls->Meta.SetMetaString (AMETA_Obituary, str);
-}
-
-HANDLE_PROPERTY(hitobituary)
-{
-	STRING_PARAM(str, 0);
-	cls->Meta.SetMetaString (AMETA_HitObituary, str);
 }
 
 HANDLE_PROPERTY(overheadicon)
@@ -995,7 +1041,9 @@ extern const PropDef properties[] =
 	DEFINE_PROP(hitobituary, Actor, T),
 	DEFINE_PROP(icon, Inventory, S),
 	DEFINE_PROP(ignorearmor, Damage, I),
+	DEFINE_PROP(infomessage, Actor, T),
 	DEFINE_PROP(interhubamount, Inventory, I),
+	DEFINE_PROP(interrogate, Actor, TSII_I),
 	DEFINE_PROP(litfilter, Actor, S),
 	DEFINE_PROP(loaded, Actor, I),
 	DEFINE_PROP(maxabsorb, Armor, I),

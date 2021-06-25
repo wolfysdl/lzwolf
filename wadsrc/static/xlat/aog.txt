@@ -2,6 +2,74 @@ enable globalmeta;
 
 tiles
 {
+	// soda
+	trigger 15
+	{
+		action = "Operate_Concession";
+		arg1 = 0;
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_Concession";
+	}
+
+	// food
+	trigger 18
+	{
+		action = "Operate_Concession";
+		arg1 = 1;
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_Concession";
+	}
+
+	// transporter tile
+	trigger 21
+	{
+		action = "Exit_Normal";
+		playeruse = true;
+		activatenorth = false;
+		activatesouth = false;
+		arg3 = 1;
+	}
+
+	// offswitch
+	trigger 45
+	{
+		action = "Operate_WallSwitch";
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_WallSwitch";
+	}
+
+	// onswitch
+	trigger 57
+	{
+		action = "Operate_WallSwitch";
+		playeruse = true;
+		monsteruse = false;
+		repeatable = true;
+		activatenorth = true;
+		activatesouth = true;
+		activateeast = true;
+		activatewest = true;
+		onspawnaction = "OnSpawn_WallSwitch";
+	}
+
 	trigger 88
 	{
 		action = "Door_Open";
@@ -13,6 +81,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 89
 	{
@@ -25,6 +94,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 90
 	{
@@ -37,6 +107,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 91
 	{
@@ -49,6 +120,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 92
 	{
@@ -61,6 +133,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 93
 	{
@@ -73,6 +146,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 94
 	{
@@ -85,6 +159,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 95
 	{
@@ -97,6 +172,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 96
 	{
@@ -109,6 +185,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 97
 	{
@@ -121,6 +198,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 98
 	{
@@ -134,6 +212,7 @@ tiles
 		activatenorth = false;
 		activatesouth = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 99
 	{
@@ -147,6 +226,7 @@ tiles
 		activateeast = false;
 		activatewest = false;
 		activatenorth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 100
 	{
@@ -160,6 +240,7 @@ tiles
 		activatenorth = false;
 		activatesouth = false;
 		activateeast = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 101
 	{
@@ -173,6 +254,7 @@ tiles
 		activateeast = false;
 		activatewest = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 102
 	{
@@ -185,6 +267,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 103
 	{
@@ -197,6 +280,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 104
 	{
@@ -209,6 +293,7 @@ tiles
 		repeatable = true;
 		activatenorth = false;
 		activatesouth = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 	trigger 105
 	{
@@ -221,6 +306,7 @@ tiles
 		repeatable = true;
 		activateeast = false;
 		activatewest = false;
+		infoMessage = "$BLAKE_OPERATING_DOOR";
 	}
 
 	tile 1
@@ -537,6 +623,7 @@ tiles
 		texturesouth = "SWITCHA1";
 		textureeast = "SWITCHA2";
 		texturewest = "SWITCHA2";
+		switchtextureeast = "SWITCHI2";
 	}
 	tile 46
 	{
@@ -621,6 +708,7 @@ tiles
 		texturesouth = "SWITCHI1";
 		textureeast = "SWITCHI2";
 		texturewest = "SWITCHI2";
+		switchtextureeast = "SWITCHA2";
 	}
 	tile 58
 	{
@@ -821,6 +909,7 @@ tiles
 
 	modzone 106 fillzone ambush;
 
+	// area codes
 	zone 108 {}
 	zone 109 {}
 	zone 110 {}
@@ -866,6 +955,53 @@ tiles
 	zone 150 {}
 	zone 151 {}
 	zone 152 {}
+
+	// hidden area codes
+	zone 162 { hintareanum = 0; }
+	zone 163 { hintareanum = 1; }
+	zone 164 { hintareanum = 2; }
+	zone 165 { hintareanum = 3; }
+	zone 166 { hintareanum = 4; }
+	zone 167 { hintareanum = 5; }
+	zone 168 { hintareanum = 6; }
+	zone 169 { hintareanum = 7; }
+	zone 170 { hintareanum = 8; }
+	zone 171 { hintareanum = 9; }
+	zone 172 { hintareanum = 10; }
+	zone 173 { hintareanum = 11; }
+	zone 174 { hintareanum = 12; }
+	zone 175 { hintareanum = 13; }
+	zone 176 { hintareanum = 14; }
+	zone 177 { hintareanum = 15; }
+	zone 178 { hintareanum = 16; }
+	zone 179 { hintareanum = 17; }
+	zone 180 { hintareanum = 18; }
+	zone 181 { hintareanum = 19; }
+	zone 182 { hintareanum = 20; }
+	zone 183 { hintareanum = 21; }
+	zone 184 { hintareanum = 22; }
+	zone 185 { hintareanum = 23; }
+	zone 186 { hintareanum = 24; }
+	zone 187 { hintareanum = 25; }
+	zone 188 { hintareanum = 26; }
+	zone 189 { hintareanum = 27; }
+	zone 190 { hintareanum = 28; }
+	zone 191 { hintareanum = 29; }
+	zone 192 { hintareanum = 30; }
+	zone 193 { hintareanum = 31; }
+	zone 194 { hintareanum = 32; }
+	zone 195 { hintareanum = 33; }
+	zone 196 { hintareanum = 34; }
+	zone 197 { hintareanum = 35; }
+	zone 198 { hintareanum = 36; }
+	zone 199 { hintareanum = 37; }
+	zone 200 { hintareanum = 38; }
+	zone 201 { hintareanum = 39; }
+	zone 202 { hintareanum = 40; }
+	zone 203 { hintareanum = 41; }
+	zone 204 { hintareanum = 42; }
+	zone 205 { hintareanum = 43; }
+	zone 206 { hintareanum = 44; }
 }
 
 things
@@ -916,9 +1052,9 @@ things
 	{54,  ChargePack,               0, 0, 0}
 	{55,  RedAccessKey,             0, 0, 0}
 	{56,  YellowAccessKey,          0, 0, 0}
-	{57,  AntiPlasmaCannon,         0, 0, 0}
+	{57,  GreenAccessKey,           0, 0, 0}
 	{58,  BlueAccessKey,            0, 0, 0}
-	{59,  YellowBox,                0, 0, 0}
+	{59,  GoldAccessKey,            0, 0, 0}
 	{60,  OfficeDesk,               0, 0, 0}
 	{61,  OfficeChair,              0, 0, 0}
 	{62,  SecurityDesk,             0, 0, 0}
@@ -962,14 +1098,14 @@ things
 	{120, GeneralScientist,         4, PATHING, 0}
 	// TODO: 124 -> Goldfire Spawn Site
 	{125, MutantHuman,              0, 0, 3}
-	{126, TechWarrior,              4, 0, 0}
-	{130, TechWarrior,              4, PATHING, 0}
+	{126, ProGuard,                 4, 0, 0}
+	{130, ProGuard,                 4, PATHING, 0}
 	{134, SmallAlienCanister,       0, 0, 0}
 	{135, SmallAlienCanister,       0, 0, 2} // TODO: Replace with SmallAlienCanisterStatic when below skill
 	{136, SmallAlienCanister,       0, 0, 3} // TODO: Replace with SmallAlienCanisterStatic when below skill
 	{137, SmallAlienCanisterEmpty,  0, 0, 0}
-	{138, ElectricArcBarrierOff,    0, 0, 0}
-	{139, ElectricArcBarrier,       0, 0, 0}
+	//{138, ElectricArcBarrierOff,    0, 0, 0}
+	//{139, ElectricArcBarrier,       0, 0, 0}
 	// No 140
 	// TODO: 141 -> Goldfire Spawn immediately
 	{142, GeneticGuard,             0, 0, 2}
@@ -980,14 +1116,14 @@ things
 	{156, GeneralScientist,         4, PATHING, 2}
 	{160, SecurityLight,            0, 0, 0}
 	{161, GurneyMutantSleep,        0, 0, 3} // TODO: Replace with GurneyMutantStatic when below skill
-	{162, TechWarrior,              4, 0, 2}
-	{166, TechWarrior,              4, PATHING, 2}
+	{162, ProGuard,                 4, 0, 2}
+	{166, ProGuard,                 4, PATHING, 2}
 	{170, LargeAlienCanister,       0, 0, 0}
 	{171, LargeAlienCanister,       0, 0, 2} // TODO: Replace with LargeAlienCanisterStatic when below skill
 	{172, LargeAlienCanister,       0, 0, 3} // TODO: Replace with LargeAlienCanisterStatic when below skill
 	{173, GurneyMutantSleep,        0, 0, 2} // TODO: Replace with GurneyMutantStatic when below skill
-	{174, ElectricPostBarrierOff,   0, 0, 0}
-	//{175, ElectricPostBarrier,      0, 0, 0}
+	{174, ElectricArcBarrier,   0, 0, 0}
+	{175, ElectricPostBarrier,      0, 0, 0}
 	// No 176
 	{177, SecurityCube,             0, 0, 0}
 	{178, SteamGrate,               0, 0, 0}
@@ -997,8 +1133,8 @@ things
 	{188, GeneralScientist,         4, 0, 3}
 	{192, GeneralScientist,         4, PATHING, 3}
 	// No 196-197
-	{198, TechWarrior,              4, 0, 3}
-	{202, TechWarrior,              4, PATHING, 3}
+	{198, ProGuard,                 4, 0, 3}
+	{202, ProGuard,                 4, PATHING, 3}
 	{206, GreenOoze,                0, 0, 0}
 	{207, GreenOoze,                0, 0, 2}
 	{208, GreenOoze,                0, 0, 3}
@@ -1167,7 +1303,7 @@ things
 	{548, VolatileTransport,        4, PATHING, 3}
 	{552, SectorGuard,              4, PATHING, 3}
 	// No 556-557
-	{558, TechWarrior,              4, PATHING, 0}
+	{558, ProGuard,                 4, PATHING, 0}
 	{562, VerticalPostInactive,     0, 0, 0}
 	{563, VerticalPostActive,       0, 0, 0}
 	// No 564
@@ -1175,7 +1311,7 @@ things
 	{566, VerticalPostInactive,     0, 0, 2}
 	{567, VerticalPostInactive,     0, 0, 3}
 	// No 568-575
-	{576, TechWarrior,              4, PATHING, 2}
+	{576, ProGuard,                 4, PATHING, 2}
 	// No 580-582
 	{583, SpiderMutant,             0, 0, 2}
 	{584, BreatherBeast,            0, 0, 2}
@@ -1188,7 +1324,7 @@ things
 	{591, ReptilianWarriorMorphed,  0, 0, 2} // TODO: Replace with GreekPost2 when below skill
 	{592, ReptilianWarriorMorphed,  0, 0, 3} // TODO: Replace with GreekPost2 when below skill
 	// No 593
-	{594, TechWarrior,              4, PATHING, 3}
+	{594, ProGuard,                 4, PATHING, 3}
 	// No 598-600
 	{601, SpiderMutant,             0, 0, 3}
 	{602, BreatherBeast,            0, 0, 3}

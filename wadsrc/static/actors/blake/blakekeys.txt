@@ -1,5 +1,6 @@
 actor RedAccessKey : Key
 {
+	infomessage "$BLAKE_REDACCESSKEY"
 	+INVENTORY.ALWAYSPICKUP
 	states
 	{
@@ -11,6 +12,7 @@ actor RedAccessKey : Key
 
 actor YellowAccessKey : Key
 {
+	infomessage "$BLAKE_YELLOWACCESSKEY"
 	+INVENTORY.ALWAYSPICKUP
 	states
 	{
@@ -22,11 +24,36 @@ actor YellowAccessKey : Key
 
 actor BlueAccessKey : Key
 {
+	infomessage "$BLAKE_BLUEACCESSKEY"
 	+INVENTORY.ALWAYSPICKUP
 	states
 	{
 		Spawn:
 			BACS A -1
+			stop
+	}
+}
+
+actor GreenAccessKey : Key
+{
+	infomessage "$BLAKE_GREENACCESSKEY"
+	+INVENTORY.ALWAYSPICKUP
+	states
+	{
+		Spawn:
+			GACS A -1
+			stop
+	}
+}
+
+actor GoldAccessKey : Key
+{
+	infomessage "$BLAKE_GOLDACCESSKEY"
+	+INVENTORY.ALWAYSPICKUP
+	states
+	{
+		Spawn:
+			OACS A -1
 			stop
 	}
 }

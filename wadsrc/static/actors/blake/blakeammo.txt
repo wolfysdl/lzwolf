@@ -3,6 +3,7 @@ actor ChargeUnit : Ammo
 	inventory.pickupsound "misc/ammo_pickup"
 	inventory.amount 8
 	inventory.maxamount 100
+	infomessage "$BLAKE_CHARGEUNIT"
 	states
 	{
 		Spawn:
@@ -13,6 +14,7 @@ actor ChargeUnit : Ammo
 
 actor ChargePack : ChargeUnit
 {
+	infomessage "$BLAKE_CHARGEPACK"
 	states
 	{
 		Spawn:
@@ -24,11 +26,10 @@ actor ChargePack : ChargeUnit
 // OK, so concession coins aren't really ammo, but for our purposes we need a
 // way to pool two different pickups into one counter. Sounds like ammo to me?
 
-actor ConcessionCoin : Ammo
+actor ConcessionCoin : CoinItem
 {
 	inventory.pickupsound "misc/coin_pickup"
-	inventory.amount 1
-	inventory.maxamount 25
+	infomessage "$BLAKE_FOODTOKEN"
 	states
 	{
 		Spawn:
@@ -37,9 +38,11 @@ actor ConcessionCoin : Ammo
 	}
 }
 
-actor ConcessionCoin5 : ConcessionCoin
+actor ConcessionCoin5 : CoinItem
 {
+	inventory.pickupsound "misc/coin_pickup"
 	inventory.amount 5
+	infomessage "$BLAKE_FOODTOKEN5"
 	states
 	{
 		Spawn:

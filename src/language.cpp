@@ -52,6 +52,11 @@ void Language::SetupStrings(const char* language)
 	}
 }
 
+void Language::SetGameLanguage(FString str)
+{
+	gamelanguage = str;
+}
+
 void Language::ReadLump(int lump, const char* language)
 {
 	Scanner sc(lump);
@@ -152,6 +157,16 @@ void Language::SetupBlakeStrings(const char* lumpname, const char* prefix)
 
 const char* Language::operator[] (const char* index) const
 {
+	if(gamelanguage.IsNotEmpty())
+	{
+		FString str;
+		str.Format("%s_%s", gamelanguage.GetChars(), index);
+		auto index = str.GetChars();
+		const FString *it = strings.CheckKey(index);
+		if(it != NULL)
+			return it->GetChars();
+	}
+
 	const FString *it = strings.CheckKey(index);
 	if(it != NULL)
 		return it->GetChars();

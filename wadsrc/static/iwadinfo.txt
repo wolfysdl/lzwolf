@@ -7,13 +7,21 @@ IWad
 	Game = "Noah"
 }
 
+//IWad
+//{
+//	Name = "Planet Strike"
+//	Mapinfo = "mapinfo/planet.txt"
+//	MustContain = "APCPA0"
+//	Flags = Preview
+//	Game = "Blake"
+//}
+
 IWad
 {
-	Name = "Planet Strike"
-	Mapinfo = "mapinfo/planet.txt"
-	MustContain = "APCPA0"
-	Flags = Preview
-	Game = "Blake"
+	Name = "Aliens of Gold"
+	Mapinfo = "mapinfo/aog.txt"
+	MustContain = "TELEBACK"
+	Game = "BlakeAOG"
 }
 
 IWad

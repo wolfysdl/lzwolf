@@ -38,6 +38,7 @@
 #include "templates.h"
 #include "thinker.h"
 #include "thingdef/thingdef.h"
+#include "r_sprites.h"
 #include "wl_def.h"
 #include "wl_agent.h"
 #include "wl_game.h"
@@ -199,6 +200,8 @@ void AInventory::Touch(AActor *toucher)
 	if(!(toucher->flags & FL_PICKUP))
 		return;
 
+	auto infomsg_texid = R_GetCurActorFrame(this);
+
 	if(!CallTryPickup(toucher))
 		return;
 
@@ -221,6 +224,12 @@ void AInventory::Touch(AActor *toucher)
 	{
 		Printf (/*PRINT_LOW, */"%s\n", message);
 		GameMessage (message);
+	}
+
+	const char *infomessage = InfoMessage ();
+	if(infomessage != NULL)
+	{
+		StatusBar->InfoMessage(infomessage, {infomsg_texid});
 	}
 
 	PlaySoundLocGlobal(pickupsound,toucher->x,toucher->y,SD_ADLIB);
@@ -315,6 +324,35 @@ bool AHealth::TryPickup(AActor *toucher)
 
 	Destroy();
 	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_CLASS(CoinItem)
+
+bool ACoinItem::HandlePickup(AInventory *item, bool &good)
+{
+	auto nativecls = NATIVE_CLASS(CoinItem);
+	auto itemcls = item->GetClass();
+	if(itemcls == nativecls || itemcls->GetParent() == nativecls)
+	{
+		if(amount < maxamount)
+		{
+			amount += item->amount;
+			if(amount > maxamount)
+				amount = maxamount;
+			good = true;
+		}
+		else
+			good = false;
+		return true;
+	}
+	return Super::HandlePickup(item, good);
+}
+
+bool ACoinItem::Use()
+{
+	return (amount > 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

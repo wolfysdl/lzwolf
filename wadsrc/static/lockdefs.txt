@@ -75,3 +75,39 @@ Lock 101 Blake
 	YellowAccessKey
 	BlueAccessKey
 }
+
+// Blake Stone AOG
+
+Lock 1 BlakeAOG
+{
+	RedAccessKey
+}
+
+Lock 2 BlakeAOG
+{
+	YellowAccessKey
+}
+
+Lock 3 BlakeAOG
+{
+	GreenAccessKey
+}
+
+Lock 4 BlakeAOG
+{
+	BlueAccessKey
+}
+
+Lock 5 BlakeAOG
+{
+	GoldAccessKey
+}
+
+Lock 101 BlakeAOG
+{
+	RedAccessKey
+	YellowAccessKey
+	GreenAccessKey
+	BlueAccessKey
+	GoldAccessKey
+}

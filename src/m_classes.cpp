@@ -45,7 +45,7 @@ void MenuItem::draw()
 	if(picture)
 		VWB_DrawGraphic(picture, pictureX == -1 ? menu->getX() + 32 : pictureX, pictureY == -1 ? PrintY : pictureY, MENU_CENTER);
 
-	US_Print(BigFont, getString(), getTextColor());
+	US_Print(menu->makeFont(), getString(), getTextColor());
 	PrintX = menu->getX() + menu->getIndent();
 }
 
@@ -554,11 +554,11 @@ void Menu::eraseGun(int x, int y)
 	}
 }
 
-Menu::Menu(int x, int y, int w, int indent, MENU_LISTENER_PROTOTYPE(entryListener)) :
+Menu::Menu(int x, int y, int w, int indent, CMenuPropertyProvider propProvider, MENU_LISTENER_PROTOTYPE(entryListener)) :
 	entryListener(entryListener), animating(false), controlHeaders(false),
 	curPos(0), headPicture(NULL), headTextInStripes(false),
-	headPictureIsAlternate(false), height(0), indent(indent), x(x), y(y), w(w),
-	itemOffset(0)
+	headPictureIsAlternate(false), height(0), indent(indent), x0(x), y0(y), w(w),
+	itemOffset(0), propProvider(propProvider)
 {
 	for(unsigned int i = 0;i < 36;i++)
 		headText[i] = '\0';
@@ -750,7 +750,7 @@ void Menu::draw() const
 	drawMenu();
 
 	if(cursor && !isAnimating() && countItems() > 0)
-		VWB_DrawGraphic (cursor, x - 4, y + getHeight(curPos) - 2, MENU_CENTER);
+		VWB_DrawGraphic (cursor, getX() - 4, getY() + getHeight(curPos) - 2, MENU_CENTER);
 	VW_UpdateScreen ();
 }
 
@@ -1111,6 +1111,15 @@ void Menu::show()
 
 	if(!Menu::areMenusClosed())
 		MenuFadeOut ();
+}
+
+FFont *Menu::makeFont() const
+{
+	if( propProvider.fontFactory )
+	{
+		return propProvider.fontFactory();
+	}
+	return BigFont;
 }
 
 void Menu::validateCurPos()

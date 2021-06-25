@@ -148,6 +148,17 @@ class AHealth : public AInventory
 		bool	TryPickup(AActor *toucher);
 };
 
+class ACoinItem : public AInventory
+{
+	DECLARE_NATIVE_CLASS(CoinItem, Inventory)
+
+    public:
+		bool	Use() override;
+
+	protected:
+		bool    HandlePickup(AInventory *item, bool &good) override;
+};
+
 enum
 {
 	AWMETA_Start = 0x01000,

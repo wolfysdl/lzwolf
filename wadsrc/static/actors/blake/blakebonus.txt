@@ -2,6 +2,7 @@ actor MoneyBag : ScoreItem
 {
 	inventory.amount 100
 	inventory.pickupsound "treasure/moneybag/pickup"
+	infomessage "$BLAKE_MONEYBAG"
 	states
 	{
 		Spawn:
@@ -14,6 +15,7 @@ actor Loot : ScoreItem
 {
 	inventory.amount 500
 	inventory.pickupsound "treasure/loot/pickup"
+	infomessage "$BLAKE_LOOT"
 	states
 	{
 		Spawn:
@@ -26,6 +28,7 @@ actor Gold5Bars : ScoreItem
 {
 	inventory.amount 1000
 	inventory.pickupsound "treasure/goldbars/pickup"
+	infomessage "$BLAKE_GOLDBARS"
 	states
 	{
 		Spawn:
@@ -38,6 +41,7 @@ actor XylanOrb : ScoreItem
 {
 	inventory.amount 5000
 	inventory.pickupsound "treasure/xylanorb/pickup"
+	infomessage "$BLAKE_XYLANORB"
 	states
 	{
 		Spawn:
@@ -50,6 +54,7 @@ actor Gold3Bars : ScoreItem
 {
 	inventory.amount 750
 	inventory.pickupsound "treasure/goldbars/pickup"
+	infomessage "$BLAKE_GOLDBARS"
 	states
 	{
 		Spawn:
@@ -62,6 +67,7 @@ actor Gold2Bars : ScoreItem
 {
 	inventory.amount 500
 	inventory.pickupsound "treasure/goldbars/pickup"
+	infomessage "$BLAKE_GOLDBARS"
 	states
 	{
 		Spawn:
@@ -74,6 +80,7 @@ actor Gold1Bar : ScoreItem
 {
 	inventory.amount 250
 	inventory.pickupsound "treasure/goldbars/pickup"
+	infomessage "$BLAKE_GOLDBARS"
 	states
 	{
 		Spawn:

@@ -2,6 +2,7 @@ actor BlakeWaterPuddle : Health
 {
 	inventory.amount 5
 	inventory.maxamount 16
+	infomessage "$BLAKE_WATERPUDDLE"
 	states
 	{
 		Spawn:
@@ -13,6 +14,7 @@ actor BlakeWaterPuddle : Health
 actor FirstAidKit : Health
 {
 	inventory.amount 30
+	infomessage "$BLAKE_FIRSTAIDKIT"
 	states
 	{
 		Spawn:
@@ -24,6 +26,7 @@ actor FirstAidKit : Health
 actor HamMeat : Health
 {
 	inventory.amount 20
+	infomessage "$BLAKE_RAWMEAT"
 	states
 	{
 		Spawn:
@@ -38,6 +41,7 @@ actor HamMeat : Health
 actor ChickenLeg : Health
 {
 	inventory.amount 15
+	infomessage "$BLAKE_RAWMEAT"
 	states
 	{
 		Spawn:
@@ -52,6 +56,7 @@ actor ChickenLeg : Health
 actor CandyBar : Health
 {
 	inventory.amount 8
+	infomessage "$BLAKE_CANDYBAR"
 	states
 	{
 		Spawn:
@@ -66,6 +71,7 @@ actor CandyBar : Health
 actor Sandwich : Health
 {
 	inventory.amount 10
+	infomessage "$BLAKE_SANDWICH"
 	states
 	{
 		Spawn:
@@ -80,6 +86,7 @@ actor Sandwich : Health
 actor FullWaterBowl : Health
 {
 	inventory.amount 5
+	infomessage "$BLAKE_FRESHWATER"
 	states
 	{
 		Spawn:

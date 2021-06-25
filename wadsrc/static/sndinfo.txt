@@ -389,6 +389,13 @@ $ifblake
 misc/health_pkup			{ DSHEAL1 ALHEAL1 PCHEAL1 }
 $endif
 
+$ifblakeaog
+misc/health_pkup			{ DSHEAL1 ALHEAL1 PCHEAL1 }
+$endif
+
+misc/heartbeat			{ DSHEART ALHEART PCHEART }
+misc/foodtoken			{ DSGETTKN ALGETTKN PCGETTKN }
+
 doors/heavy_open		{ DSDR2OPN ALDR2OPN PCDR2OPN }
 doors/heavy_close		{ DSDR2CLS ALDR2CLS PCDR2CLS }
 
@@ -465,6 +472,7 @@ scientist/inform_death2 { DSINFDT2 ALINFDT2 PCINFDT2 }
 scientist/inform_death3 { DSINFDT3 ALINFDT3 PCINFDT3 }
 $random scientist/death { scientist/death1 scientist/death2 scientist/death3 }
 $random scientist/inform_death { scientist/inform_death1 scientist/inform_death2 scientist/inform_death3 }
+scientist/interrogate	{ DSINTERR ALINTERR PCINTERR }
 
 floatingbomb/sight		{ DSSCTSIT ALSCTSIT PCSCTSIT }
 $random floatingbomb/death { misc/blake/explosion1 misc/blake/explosion2 }
