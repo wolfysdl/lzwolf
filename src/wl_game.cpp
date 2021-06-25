@@ -307,6 +307,8 @@ void SetupGameLevel (void)
 
 	gamestate.faceframe.SetInvalid();
 
+	bibendovsky::level_initialize();
+
 //
 // load the level
 //
@@ -704,6 +706,7 @@ void Died (void)
 	}
 
 	SD_PlaySound ("player/death");
+	StatusBar->ClearInfoMessages();
 
 	//
 	// swing around to face attacker

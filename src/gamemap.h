@@ -42,6 +42,7 @@
 
 class Thinker;
 class UWMFParser;
+class FRandom;
 
 namespace MapEdit
 {
@@ -128,11 +129,13 @@ class GameMap
 			int				monsterUseFilter;
 			bool			isSecret;
 			bool			repeatable;
+			FString			infoMessage;
+			FString			onSpawnAction;
 		};
 		struct Tile
 		{
 			Tile() : offsetVertical(false), offsetHorizontal(false),
-				mapped(0), dontOverlay(false), showSky(false),
+				mapped(0), dontOverlay(false), showSky(false), switchDestTile(NULL),
 				bright(false), decal(false), slideStyle(0), textureFlip(false)
 			{
 				overhead.SetInvalid();
@@ -150,6 +153,8 @@ class GameMap
 			unsigned int	mapped; // filter level for always visible
 			bool			dontOverlay;
 			bool			showSky;
+			FString			switchTextureEast;
+			const Tile		*switchDestTile;
 			bool			bright;
 			bool			decal;
 			int				slideStyle;
@@ -169,6 +174,7 @@ class GameMap
 		struct Zone
 		{
 			unsigned short	index;
+			int				hintareanum = -1;
 		};
 		struct LightSector
 		{
@@ -240,6 +246,10 @@ class GameMap
 		unsigned int	NumPlanes() const { return planes.Size(); }
 		const Plane		&GetPlane(unsigned int index) const { return planes[index]; }
 		void			SpawnThings() const;
+		const char		*GetInformantMessage(AActor *ob, FRandom &rng);
+		const char		*GetScientistMessage(AActor *ob, FRandom &rng);
+		void			OperateConcession(std::uint16_t concession);
+		void			ActivateWallSwitch(int barrier_code);
 		void			SetMusic(const FString& music) { header.music = music; }
 
 		// Sound functions
@@ -274,6 +284,11 @@ class GameMap
 		void	ScanTiles();
 		bool	TraverseLink(const Zone *src, const Zone *dest);
 		void	UnloadLinks();
+		void	ResetHints();
+		void	ProcessHintTile(uint8_t tilehi, uint8_t tilelo, uint8_t areanumber);
+		void	InitInformantMessageState();
+		int		SpawnConcession(std::uint16_t credits, std::uint16_t machinetype);
+		int		SpawnWallSwitch(std::uint16_t oldnum, std::uint16_t oldnum2, int x, int y);
 
 		FString	map;
 
@@ -329,5 +344,12 @@ FArchive &operator<< (FArchive &arc, const MapSector *&tile);
 FArchive &operator<< (FArchive &arc, const MapTile *&tile);
 FArchive &operator<< (FArchive &arc, const MapZone *&zone);
 FArchive &operator<< (FArchive &arc, MapTrigger &trigger);
+
+namespace bibendovsky
+{
+	void newgame_initialize();
+
+	void level_initialize();
+} // namespace bibendovsky
 
 #endif

@@ -157,6 +157,7 @@ PointerIndexTable<AActor::FilterposWrapList> AActor::filterposWraps;
 PointerIndexTable<AActor::FilterposThrustList> AActor::filterposThrusts;
 PointerIndexTable<AActor::FilterposWaveList> AActor::filterposWaves;
 PointerIndexTable<AActor::EnemyFactionList> AActor::enemyFactions;
+PointerIndexTable<AActor::InterrogateItemList> AActor::interrogateItems;
 IMPLEMENT_POINTY_CLASS(Actor)
 	DECLARE_POINTER(inventory)
 	DECLARE_POINTER(target)
@@ -307,6 +308,7 @@ void AActor::Die()
 					AActor * const actor = AActor::Spawn(cls, (x&TILEMASK)+TILEGLOBAL/2, (y&TILEMASK)+TILEGLOBAL/2, 0, SPAWN_AllowReplacement);
 					actor->angle = angle;
 					actor->dir = dir;
+					actor->trydir = nodir;
 
 					if(cls->IsDescendantOf(NATIVE_CLASS(Inventory)))
 					{
@@ -462,6 +464,14 @@ AActor::EnemyFactionList *AActor::GetEnemyFactionList() const
 	return enemyFactions[enemyfactionsIndex];
 }
 
+AActor::InterrogateItemList *AActor::GetInterrogateItemList() const
+{
+	int interrogateitemsIndex = GetClass()->Meta.GetMetaInt(AMETA_InterrogateItems, -1);
+	if(interrogateitemsIndex == -1)
+		return NULL;
+	return interrogateItems[interrogateitemsIndex];
+}
+
 const AActor *AActor::GetDefault() const
 {
 	return GetClass()->GetDefault();
@@ -478,6 +488,8 @@ bool AActor::GiveInventory(const ClassDef *cls, int amount, bool allowreplacemen
 		else
 			inv->amount = amount;
 	}
+
+	PlaySoundLocActor(inv->pickupsound, this);
 
 	inv->ClearCounters();
 	inv->RemoveFromWorld();
@@ -497,6 +509,7 @@ void AActor::Init()
 
 	distance = 0;
 	dir = nodir;
+	trydir = nodir;
 	soundZone = NULL;
 	inventory = NULL;
 
@@ -564,6 +577,10 @@ void AActor::Serialize(FArchive &arc)
 	arc << dir;
 	this->dir = static_cast<dirtype>(dir);
 
+	BYTE trydir = this->trydir;
+	arc << trydir;
+	this->trydir = static_cast<dirtype>(trydir);
+
 	arc << spawnid
 		<< flags
 		<< extraflags
@@ -621,6 +638,10 @@ void AActor::Serialize(FArchive &arc)
 	arc << zoneLightMask;
 	arc << litfilter;
 	arc << singlespawn;
+	arc << interrogateItemsUsed;
+	arc << informant.ammo;
+	arc << informant.s_tilex;
+	arc << informant.s_tiley;
 	arc << DamageFactor;
 	arc << filterposwaveLastMoves;
 
@@ -991,7 +1012,12 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	}
 
 	if(flags & SPAWN_AllowReplacement)
-		type = type->GetReplacement();
+	{
+		if(type->GetReplacementPrb() == 0 || pr_spawnmobj() < type->GetReplacementPrb())
+		{
+			type = type->GetReplacement();
+		}
+	}
 
 	if (type->GetDefault()->singlespawn)
 	{
@@ -1010,6 +1036,9 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 	actor->velx = 0;
 	actor->vely = 0;
 	actor->health = actor->SpawnHealth();
+	actor->informant.ammo = 0;
+	actor->informant.s_tilex = 0xff;
+	actor->informant.s_tiley = 0xff;
 
 	MapSpot spot = map->GetSpot(actor->tilex, actor->tiley, 0);
 	actor->EnterZone(spot->zone);
@@ -1074,6 +1103,11 @@ AActor *AActor::Spawn(const ClassDef *type, fixed x, fixed y, fixed z, int flags
 int32_t AActor::SpawnHealth() const
 {
 	return GetClass()->Meta.GetMetaInt(AMETA_DefaultHealth1 + gamestate.difficulty->SpawnFilter, health);
+}
+
+const char *AActor::InfoMessage ()
+{
+	return GetClass()->Meta.GetMetaString (AMETA_InfoMessage);
 }
 
 DEFINE_SYMBOL(Actor, angle)

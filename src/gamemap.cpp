@@ -552,6 +552,7 @@ void GameMap::SpawnThings() const
 			// This forumla helps us to avoid errors in roundoffs.
 			actor->angle = (thing.angle/45)*ANGLE_45 + (thing.angle%45)*ANGLE_1;
 			actor->dir = nodir;
+			actor->trydir = nodir;
 			if(thing.ambush)
 				actor->flags |= FL_AMBUSH;
 			if(thing.patrol)

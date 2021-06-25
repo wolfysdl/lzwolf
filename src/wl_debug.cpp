@@ -760,3 +760,16 @@ CCMD (map)
 	gamestate.mapname[8] = 0;
 	playstate = ex_warped;
 }
+
+CCMD (givepoints)
+{
+	if (argv.argc() < 2)
+	{
+		Printf ("Usage: givepoints <points>\n");
+		return;
+	}
+
+	int points = atoi(argv[1]);
+	players[0].GivePoints (points);
+	StatusBar->DrawStatusBar();
+}

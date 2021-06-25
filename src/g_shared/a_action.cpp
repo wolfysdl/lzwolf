@@ -73,4 +73,3 @@ public:
 };
 
 IMPLEMENT_CLASS (SwitchingDecoration)
-

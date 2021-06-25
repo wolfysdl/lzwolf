@@ -19,6 +19,7 @@
 #include "m_random.h"
 #include "g_mapinfo.h"
 #include "thinker.h"
+#include "r_sprites.h"
 #include "wl_draw.h"
 #include "wl_game.h"
 #include "wl_iwad.h"
@@ -83,6 +84,7 @@ EXTERN_CVAR (Int, godmode)
 DBaseStatusBar *StatusBar;
 
 DBaseStatusBar *CreateStatusBar_Blake();
+DBaseStatusBar *CreateStatusBar_BlakeAOG();
 DBaseStatusBar *CreateStatusBar_Wolf3D();
 
 void DestroyStatusBar() { delete StatusBar; }
@@ -90,6 +92,8 @@ void CreateStatusBar()
 {
 	if(IWad::CheckGameFilter("Blake"))
 		StatusBar = CreateStatusBar_Blake();
+	else if(IWad::CheckGameFilter("BlakeAOG"))
+		StatusBar = CreateStatusBar_BlakeAOG();
 	else
 		StatusBar = CreateStatusBar_Wolf3D();
 	atterm(DestroyStatusBar);
@@ -389,6 +393,16 @@ void player_t::TakeDamage (int points, AActor *attacker, const ClassDef  *damage
 		mo->inventory->AbsorbDamage(points,
 			damagetype ? damagetype->GetName() : FName(), newdam);
 		points = newdam;
+	}
+
+	if (attacker)
+	{
+		auto infomessage = attacker->InfoMessage();
+		if (infomessage != NULL)
+		{
+			auto infomsg_texids = R_GetAttackingFrames(attacker);
+			StatusBar->InfoMessage(infomessage, infomsg_texids);
+		}
 	}
 
 	if (!godmode)
@@ -722,6 +736,7 @@ void APlayerPawn::Cmd_Use()
 	bool doNothing = true;
 	bool isRepeatable = false;
 	BYTE lastTrigger = 0;
+	FString infoMessage;
 	MapSpot spot = map->GetSpot(checkx, checky, 0);
 	for(unsigned int i = 0;i < spot->triggers.Size();++i)
 	{
@@ -732,15 +747,159 @@ void APlayerPawn::Cmd_Use()
 			{
 				isRepeatable |= trig.repeatable;
 				lastTrigger = trig.action;
+				infoMessage = trig.infoMessage;
 				doNothing = false;
 			}
 		}
 	}
 
-	if(doNothing)
+	TicCmd_t &cmd = control[player - players];
+	if(doNothing && (!cmd.buttonheld[bt_use] && Interrogate()))
+	{
+		SD_PlaySound ("scientist/interrogate");
+		cmd.buttonheld[bt_use] = true;
+	}
+	else if(doNothing)
 		SD_PlaySound ("misc/do_nothing", SD_ADLIB);
 	else
+	{
+		if(!infoMessage.IsEmpty())
+			StatusBar->InfoMessage(infoMessage);
 		P_ChangeSwitchTexture(spot, static_cast<MapTile::Side>(direction), isRepeatable, lastTrigger);
+	}
+}
+
+/*
+===============
+=
+= Interrogate
+=
+===============
+*/
+
+static FRandom pr_interrogateitem("InterrogateItem");
+bool APlayerPawn::Interrogate()
+{
+	const double range = 64;
+
+	int dist = 0x7fffffff;
+	AActor *closest = NULL;
+	for(AActor::Iterator check = AActor::GetIterator();check.Next();)
+	{
+		if(check == this)
+			continue;
+
+		if ( (check->flags & FL_SHOOTABLE) && (check->flags & FL_VISABLE)
+			&& abs(check->viewx-centerx) < shootdelta &&
+			(check->extraflags & FL_FRIENDLY) != 0)
+		{
+			if (check->transx < dist)
+			{
+				dist = check->transx;
+				closest = check;
+			}
+		}
+	}
+
+	if (!closest || dist-(FRACUNIT/2) > (range/64)*FRACUNIT)
+	{
+		// missed
+		return false;
+	}
+	// hit something
+
+	// prioritise one of the interrogation items above the others at random
+	std::vector<InterrogateItem> prbItems;
+	bool chosenRandom = false;
+	auto rndval = pr_interrogateitem();
+
+	typedef AActor::InterrogateItemList Li;
+	Li *li = closest->GetInterrogateItemList();
+	if (li)
+	{
+		Li::Iterator item = li->Head();
+		do
+		{
+			Li::Iterator interrogateItem = item;
+
+			if(rndval >= 0 && rndval <= interrogateItem->probability)
+			{
+				rndval = -1;
+				prbItems.insert(std::begin(prbItems), interrogateItem);
+			}
+			else
+			{
+				prbItems.push_back(interrogateItem);
+			}
+		}
+		while(item.Next());
+	}
+
+	// first try to get an item which gives inventory
+	for(auto interrogateItem: prbItems)
+	{
+		const auto usedMask = (1 << interrogateItem.id);
+
+		const auto amtmin = interrogateItem.minAmount;
+		const auto amtmax = interrogateItem.maxAmount;
+		const auto amount = amtmin + (amtmax > amtmin ?
+				pr_interrogateitem(amtmax - amtmin) : 0);
+
+		const ClassDef *cls = ClassDef::FindClass(interrogateItem.dropItem);
+		if((closest->interrogateItemsUsed & usedMask) == 0 &&
+				cls && cls->IsDescendantOf(NATIVE_CLASS(Inventory)) &&
+				GiveInventory(cls, amount))
+		{
+			closest->interrogateItemsUsed |= usedMask;
+			StatusBar->InfoMessage(interrogateItem.infoMessage);
+			return true;
+		}
+	}
+
+	// now try to get an item which does not give inventory
+	for(auto interrogateItem: prbItems)
+	{
+		const auto usedMask = (1 << interrogateItem.id);
+		const auto amount = interrogateItem.minAmount;
+
+		const ClassDef *cls = ClassDef::FindClass(interrogateItem.dropItem);
+		if((closest->interrogateItemsUsed & usedMask) == 0 && !cls &&
+				interrogateItem.minAmount == 0 && interrogateItem.maxAmount == 0)
+		{
+			const char *msgptr = nullptr;
+
+			std::string msg = interrogateItem.infoMessage.GetChars();
+			auto informantKey = "${INFMSG}";
+			auto scientistKey = "${SCIMSG}";
+			auto key = std::string{};
+
+			if(msg.find(informantKey) != std::string::npos)
+			{
+				key = informantKey;
+				msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
+			}
+			else if(msg.find(scientistKey) != std::string::npos)
+			{
+				key = scientistKey;
+				msgptr = map->GetScientistMessage(closest, pr_interrogateitem);
+			}
+
+			if(msgptr != nullptr)
+			{
+				closest->interrogateItemsUsed |= usedMask;
+
+				auto n = msg.find(key);
+				assert(n != std::string::npos);
+				msg.erase(n, key.length());
+				msg.insert(n, msgptr);
+
+				StatusBar->InfoMessage(msg.c_str());
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 /*

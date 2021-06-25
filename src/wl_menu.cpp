@@ -50,19 +50,43 @@ EMenuStyle MenuStyle = MENUSTYLE_Wolf;
 
 MENU_LISTENER(EnterControlBase);
 
-Menu mainMenu(MENU_X, MENU_Y, MENU_W, 24);
-Menu optionsMenu(80, 80, 190, 28);
-Menu soundBase(24, 45, 284, 24);
-Menu controlBase(CTL_X, CTL_Y, CTL_W, 56, EnterControlBase);
-Menu displayMenu(20, 75, 285, 56);
-Menu automapMenu(40, 55, 260, 56);
-Menu mouseSensitivity(20, 50, 300, 24);
-Menu joySensitivity(20, 30, 300, 24);
-Menu playerClasses(NM_X, NM_Y, NM_W, 24);
-Menu episodes(NE_X+4, NE_Y-1, NE_W+7, 83);
-Menu skills(NM_X, NM_Y, NM_W, 24);
-Menu controls(15, 70, 310, 24);
-Menu resolutionMenu(90, 25, 150, 24);
+FFont *MenuFontFactory()
+{
+	if(MenuStyle == MENUSTYLE_Blake)
+	{
+		return SmallFont;
+	}
+	return BigFont;
+}
+
+Menu::TPropertyProvider MenuPropertyProvider(MenuFontFactory, nullptr, nullptr);
+
+static Menu MakeSkillsMenu()
+{
+	auto posx = [] {
+		return (MenuStyle == MENUSTYLE_Blake ? 30 : NM_X);
+	};
+	auto posy = [] {
+		return (MenuStyle == MENUSTYLE_Blake ? 56 : NM_Y);
+	};
+	auto propProvider = Menu::TPropertyProvider(MenuFontFactory, posx, posy);
+	Menu skills(NM_X, NM_Y, NM_W, 24, propProvider);
+	return skills;
+}
+
+Menu mainMenu(MENU_X, MENU_Y, MENU_W, 24, MenuPropertyProvider);
+Menu optionsMenu(80, 80, 190, 28, MenuPropertyProvider);
+Menu soundBase(24, 45, 284, 24, MenuPropertyProvider);
+Menu controlBase(CTL_X, CTL_Y, CTL_W, 56, MenuPropertyProvider, EnterControlBase);
+Menu displayMenu(20, 75, 285, 56, MenuPropertyProvider);
+Menu automapMenu(40, 55, 260, 56, MenuPropertyProvider);
+Menu mouseSensitivity(20, 50, 300, 24, MenuPropertyProvider);
+Menu joySensitivity(20, 30, 300, 24, MenuPropertyProvider);
+Menu playerClasses(NM_X, NM_Y, NM_W, 24, MenuPropertyProvider);
+Menu episodes(NE_X+4, NE_Y-1, NE_W+7, 83, MenuPropertyProvider);
+Menu skills = MakeSkillsMenu();
+Menu controls(15, 70, 310, 24, MenuPropertyProvider);
+Menu resolutionMenu(90, 25, 150, 24, MenuPropertyProvider);
 
 MENU_LISTENER(PlayDemosOrReturnToGame)
 {
@@ -345,7 +369,7 @@ MENU_LISTENER(AdjustViewSize)
 void CreateMenus()
 {
 	// HACK: Determine menu style by IWAD
-	if(IWad::CheckGameFilter("Blake"))
+	if(IWad::CheckGameFilter("Blake") || IWad::CheckGameFilter("BlakeAOG"))
 		MenuStyle = MENUSTYLE_Blake;
 
 	// Extract the palette
@@ -410,13 +434,14 @@ void CreateMenus()
 	}
 
 	skills.setHeadText(language["STR_HOWTOUGH"]);
+	skills.setHeadPicture("M_OPTION");
 	skills.setHeadPicture("M_HOWTGH", true);
 	for(unsigned int i = 0;i < SkillInfo::GetNumSkills();++i)
 	{
 		SkillInfo &skill = SkillInfo::GetSkill(i);
 		MenuItem *tmp = new MenuItem(skill.Name, StartNewGame);
 		if(!skill.SkillPicture.IsEmpty())
-			tmp->setPicture(skill.SkillPicture, NM_X + 185, NM_Y + 7);
+			tmp->setPicture(skill.SkillPicture, skills.getX() + 185, skills.getY() + 7);
 		skills.addItem(tmp);
 	}
 	skills.setCurrentPosition(2);

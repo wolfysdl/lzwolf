@@ -80,6 +80,7 @@ public:
 	FString FinaleFlat;
 	FString GameOverPic;
 	FString VictoryPic;
+	FString GameLanguage;
 	FString PageIndexText;
 	// Special stack for strings like the default translator.
 	// This will allow the previous default to be included.

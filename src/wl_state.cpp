@@ -54,7 +54,6 @@ static const dirtype diagonal[9][9] =
 				{nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir,nodir}
 };
 
-bool TryWalk (AActor *ob);
 bool MoveObj (AActor *ob, int32_t move);
 
 static void FirstSighting (AActor *ob, const Frame *state);
@@ -167,7 +166,7 @@ static inline short CheckSide(AActor *ob, unsigned int x, unsigned int y, MapTri
 #define CHECKSIDE(x,y,dir) \
 { \
 	short _cs; \
-	if((_cs = CheckSide(ob, x, y, dir, !!(ob->flags & FL_CANUSEWALLS))) >= 0) \
+	if((_cs = CheckSide(ob, x, y, dir, !!(ob->flags & FL_CANUSEWALLS) && canuse)) >= 0) \
 		return _cs != 0; \
 }
 #define CHECKDIAG(x,y,dir) \
@@ -179,7 +178,7 @@ static inline short CheckSide(AActor *ob, unsigned int x, unsigned int y, MapTri
 
 
 
-bool TryWalk (AActor *ob)
+bool TryWalk (AActor *ob, bool canuse)
 {
 	word zonex = ob->tilex;
 	word zoney = ob->tiley;
@@ -1171,6 +1170,8 @@ static bool CheckSightTo (AActor *ob, AActor *target, double minseedist, double 
 		FIXED2FLOAT(distance/64) < maxheardist))
 		return true;
 
+	if((ob->extraflags & FL_FRIENDLY) != 0)
+		return false;
 	if (minseedist > 0.00001 &&
 		FIXED2FLOAT(distance/64) < minseedist)
 		return false;
@@ -1231,7 +1232,9 @@ static AActor *CheckSight (AActor *ob, double minseedist, double maxseedist, dou
 		for(unsigned int i = 0;i < Net::InitVars.numPlayers;++i)
 		{
 			if(CheckSightTo(ob, players[i].mo, minseedist, maxseedist, maxheardist, fov))
+            {
 				return players[i].mo;
+            }
 		}
 	}
 	else
@@ -1341,6 +1344,7 @@ bool SightPlayer (AActor *ob, double minseedist, double maxseedist, double maxhe
 		{
 			ob->target = target;
 			ob->flags &= ~FL_AMBUSH;
+			ob->extraflags &= ~FL_FRIENDLY;
 
 			--ob->sighttime; // We need to somehow mark we started.
 			ob->sightrandom = 1; // Account for tic.

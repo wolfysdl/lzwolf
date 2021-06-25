@@ -837,3 +837,43 @@ void R_DrawSpriteAsGraphic (AActor *actor)
 
 	VWB_DrawGraphic(tex, actor->picX, actor->picY);
 }
+
+FTextureID R_GetCurActorFrame (AActor *actor)
+{
+	if(actor->sprite == SPR_NONE ||
+			loadedSprites[actor->sprite].numFrames == 0)
+	{
+		return FTextureID();
+	}
+	const auto &spr = spriteFrames[loadedSprites[actor->sprite].frames +
+		actor->state->frame];
+	return spr.texture[0];
+};
+
+std::vector<FTextureID> R_GetAttackingFrames (AActor *actor)
+{
+	if(actor->PathState == NULL && actor->SeeState == NULL)
+	{
+		return std::vector<FTextureID>(1, R_GetCurActorFrame(actor));
+	}
+
+	std::vector<FTextureID> texids;
+
+	auto frame = (actor->PathState != NULL ? actor->PathState : actor->SeeState);
+	auto start_frame = frame;
+	do
+	{
+		if(loadedSprites[frame->spriteInf].numFrames > 0)
+		{
+			const auto &spr = spriteFrames[loadedSprites[
+				frame->spriteInf].frames + frame->frame];
+			auto texid = spr.texture[spr.rotations == 8 ? 7 : 0];
+			if(texids.empty() || texid != texids.back())
+				texids.push_back(texid);
+		}
+		frame = frame->next;
+	}
+	while (frame != NULL && frame != start_frame);
+
+	return texids;
+};

@@ -499,10 +499,86 @@ bool CheckMeleeRange(AActor *inflictor, AActor *inflictee, fixed range)
 ===============
 */
 
+FRandom pr_pathing("Pathing");
 void SelectPathDir (AActor *ob)
 {
-	if (!TryWalk (ob))
-		ob->dir = nodir;
+	if(!(ob->extraflags & FL_BLAKEPATROL))
+	{
+		if (!TryWalk(ob))
+		{
+			ob->dir = nodir;
+		}
+		return;
+	}
+
+	bool CantWalk = false;
+	bool RandomTurn = false;
+
+	// Reset move distance and try to walk/turn.
+	//
+	ob->distance = TILEGLOBAL;
+	if (ob->extraflags & FL_RANDOMTURN)
+	{
+		RandomTurn = pr_pathing() > 180;
+	}
+	else
+	{
+		RandomTurn = false;
+	}
+	CantWalk = !TryWalk(ob, false);
+
+	// Handle random turns and hitting walls
+	//
+	if (RandomTurn || CantWalk)
+	{
+		// Either: path is blocked   OR   actor is randomly turning.
+		//
+		if (ob->trydir == nodir)
+		{
+			ob->trydir |= pr_pathing() & 128;
+		}
+		else
+		{
+			ob->dir = static_cast<dirtype>(ob->trydir & 127);
+		}
+
+		// Turn this actor
+		//
+		if (ob->trydir & 128)
+		{
+			int8_t dir = ob->dir;
+			dir--; // turn clockwise
+			if (dir < east)
+			{
+				dir = static_cast<dirtype>(nodir - 1);
+			}
+			ob->dir = static_cast<dirtype>(dir);
+		}
+		else
+		{
+			uint8_t dir = ob->dir;
+			dir++; // turn counter-clockwise
+			if (dir >= nodir)
+			{
+				dir = east;
+			}
+			ob->dir = static_cast<dirtype>(dir);
+		}
+		ob->trydir = static_cast<dirtype>((ob->trydir & 128) | ob->dir);
+
+		// Walk into new direction?
+		//
+		if (!TryWalk(ob, false))
+		{
+			ob->dir = nodir;
+		}
+	}
+
+	if (ob->dir != nodir)
+	{
+		TryWalk(ob, true);
+		ob->trydir = nodir;
+	}
 }
 
 FRandom pr_chase("Chase");

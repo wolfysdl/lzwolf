@@ -952,6 +952,15 @@ FUNC(Exit_Normal)
 		control[activator->player - players].buttonheld[bt_use] = true;
 	}
 
+	if(activator->player || (activator->flags & FL_REQUIREKEYS))
+	{
+		if(args[3] != 0)
+		{
+			if(!P_CheckKeys(activator, args[3], false))
+				return 0;
+		}
+	}
+
 	playstate = ex_completed;
 	SD_WaitSoundDone();
 	return 1;
@@ -1249,4 +1258,26 @@ FUNC(Trigger_ThingSpecial)
 	}
 
 	return ret;
+}
+
+FUNC(Operate_Concession)
+{
+	TicCmd_t &cmd = control[ConsolePlayer];
+	if(!cmd.buttonheld[bt_use])
+	{
+		map->OperateConcession(args[1]);
+		return 1;
+	}
+	return 0;
+}
+
+FUNC(Operate_WallSwitch)
+{
+	TicCmd_t &cmd = control[ConsolePlayer];
+	if(!cmd.buttonheld[bt_use])
+	{
+		map->ActivateWallSwitch(args[1]);
+		return 1;
+	}
+	return 0;
 }

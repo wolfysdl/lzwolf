@@ -108,7 +108,7 @@ fixed    yaspect;
 int32_t  heightnumerator;
 
 
-void    Quit (const char *error,...);
+[[noreturn]] void    Quit (const char *error,...);
 
 bool	startgame;
 bool	loadedgame;
@@ -153,6 +153,8 @@ void NewGame (int difficulty, const FString &map, bool displayBriefing, const Cl
 	gamestate.mapname[8] = 0;
 	gamestate.playerClass = playerClass;
 	levelInfo = &LevelInfo::Find(map);
+
+	bibendovsky::newgame_initialize();
 
 	if(displayBriefing)
 		EnterText(levelInfo->Cluster);
@@ -410,6 +412,11 @@ static void InitGame()
 	G_ParseMapInfo(true);
 
 	//
+	// Gameinfo provides game language for the language system
+	//
+	language.SetGameLanguage(gameinfo.GameLanguage);
+
+	//
 	// Init texture manager
 	//
 
@@ -631,7 +638,7 @@ void NewViewSize (int width, unsigned int scrWidth, unsigned int scrHeight)
 ==========================
 */
 
-void Quit (const char *errorStr, ...)
+[[noreturn]] void Quit (const char *errorStr, ...)
 {
 #ifdef NOTYET
 	byte *screen;

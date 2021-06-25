@@ -69,7 +69,9 @@ enum
 	AMETA_FilterposThrusts,
 	AMETA_FilterposWaves,
 	AMETA_EnemyFactions,
+	AMETA_InterrogateItems,
 	AMETA_PickupMessage,
+	AMETA_InfoMessage,
 	AMETA_Obituary,			// string (player was killed by this actor)
 	AMETA_HitObituary,		// string (player was killed by this actor in melee)
 };
@@ -200,6 +202,18 @@ class AActor : public Thinker,
 		};
 		typedef LinkedList<EnemyFaction> EnemyFactionList;
 
+		struct InterrogateItem
+		{
+			public:
+				unsigned int    id;
+				FString			infoMessage;
+				FName           dropItem;
+				int             probability;
+				int             minAmount;
+				int             maxAmount;
+		};
+		typedef LinkedList<InterrogateItem> InterrogateItemList;
+
 		void			AddInventory(AInventory *item);
 		virtual void	BeginPlay() {}
 		void			ClearCounters();
@@ -225,6 +239,7 @@ class AActor : public Thinker,
 		FilterposThrustList		*GetFilterposThrustList() const;
 		FilterposWaveList		*GetFilterposWaveList() const;
 		EnemyFactionList		*GetEnemyFactionList() const;
+		InterrogateItemList		*GetInterrogateItemList() const;
 		const MapZone	*GetZone() const { return soundZone; }
 		bool			GiveInventory(const ClassDef *cls, int amount=0, bool allowreplacement=true);
 		bool			InStateSequence(const Frame *basestate) const;
@@ -244,6 +259,8 @@ class AActor : public Thinker,
 
 		virtual void	Tick();
 		virtual void	Touch(AActor *toucher) {}
+		virtual const char *InfoMessage ();
+
 		void            ApplyFilterpos (FilterposWrap wrap);
 		void            ApplyFilterpos (FilterposThrust thrust);
 		void            ApplyFilterpos (FilterposWave wave);
@@ -262,6 +279,7 @@ class AActor : public Thinker,
 		static PointerIndexTable<FilterposThrustList> filterposThrusts;
 		static PointerIndexTable<FilterposWaveList> filterposWaves;
 		static PointerIndexTable<EnemyFactionList> enemyFactions;
+		static PointerIndexTable<InterrogateItemList> interrogateItems;
 
 		// Spawned actor ID
 		unsigned int spawnid;
@@ -274,6 +292,7 @@ class AActor : public Thinker,
 
 		int32_t	distance; // if negative, wait for that door to open
 		dirtype	dir;
+		uint8_t	trydir;
 
 #pragma pack(push, 1)
 // MSVC and older versions of GCC don't support constant union parts
@@ -347,6 +366,13 @@ class AActor : public Thinker,
 		int         zoneLightMask;
 		const ClassDef  *litfilter;
 		int         singlespawn;
+		int         interrogateItemsUsed;
+		struct
+		{
+			uint8_t ammo;
+			uint8_t s_tilex;
+			uint8_t s_tiley;
+		} informant;
 		fixed       DamageFactor;
 
 		struct FilterposWaveLastMove
