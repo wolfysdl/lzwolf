@@ -982,10 +982,12 @@ void GameMap::ReadPlanesData()
 	sectorPalette.Clear();
 	lightSectorPalette.Clear();
 
+#ifdef USE_GPL
 	if(FeatureFlags & Xlat::FF_GLOBALMETA)
 	{
 		ResetHints();
 	}
+#endif
 
 	// Old format maps always have a tile size of 64
 	header.tileSize = UNIT;
@@ -1045,6 +1047,7 @@ void GameMap::ReadPlanesData()
 	FTextureID defaultCeiling = levelInfo->DefaultTexture[Sector::Ceiling];
 	FTextureID defaultFloor = levelInfo->DefaultTexture[Sector::Floor];
 
+#ifdef USE_GPL
 	auto onspawn_concession = [this](MapTrigger &trigger, WORD &oldnum, WORD &oldnum2)
 	{
 		const auto machinetype = trigger.arg[1];
@@ -1069,6 +1072,7 @@ void GameMap::ReadPlanesData()
 		{ "OnSpawn_Concession", onspawn_concession },
 		{ "OnSpawn_WallSwitch", onspawn_wallswitch },
 	};
+#endif
 
 	auto init_switch_dest = [](TArray<Tile>& tilePalette) {
 		std::map<std::string, const MapTile*> tileByEastTexture;
@@ -1169,6 +1173,7 @@ void GameMap::ReadPlanesData()
 						templateTrigger.y = i/header.width;
 						templateTrigger.z = 0;
 
+#ifdef USE_GPL
 						auto spawnActionName = std::string{templateTrigger.onSpawnAction};
 						auto it = onSpawnActions.find(spawnActionName);
 						if(it != std::end(onSpawnActions))
@@ -1176,6 +1181,7 @@ void GameMap::ReadPlanesData()
 							auto cb = it->second;
 							cb(templateTrigger, oldnums[i], oldnums[i+1]);
 						}
+#endif
 
 						triggers.Push(templateTrigger);
 					}
@@ -1327,6 +1333,7 @@ void GameMap::ReadPlanesData()
 						switch(oldplane[i]>>8)
 						{
 							default: break;
+#ifdef USE_GPL
 							case 0xF1: // Informant messages
 							case 0xF2: // Scientist messages
 							case 0xF3: // Mean scientist messages
@@ -1342,6 +1349,7 @@ void GameMap::ReadPlanesData()
 											static_cast<uint8_t>(areanumber));
 								}
 								continue;
+#endif
 							case 0xF5: // Intralevel warp coordinate
 								continue;
 							case 0xFB:
@@ -1661,10 +1669,12 @@ void GameMap::ReadPlanesData()
 		}
 	}
 
+#ifdef USE_GPL
 	if(FeatureFlags & Xlat::FF_GLOBALMETA)
 	{
 		InitInformantMessageState();
 	}
+#endif
 }
 
 void GameMap::ChangeMusic(int selection)

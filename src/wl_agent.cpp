@@ -84,7 +84,9 @@ EXTERN_CVAR (Int, godmode)
 DBaseStatusBar *StatusBar;
 
 DBaseStatusBar *CreateStatusBar_Blake();
+#ifdef USE_GPL
 DBaseStatusBar *CreateStatusBar_BlakeAOG();
+#endif
 DBaseStatusBar *CreateStatusBar_Wolf3D();
 
 void DestroyStatusBar() { delete StatusBar; }
@@ -92,8 +94,10 @@ void CreateStatusBar()
 {
 	if(IWad::CheckGameFilter("Blake"))
 		StatusBar = CreateStatusBar_Blake();
+#ifdef USE_GPL
 	else if(IWad::CheckGameFilter("BlakeAOG"))
 		StatusBar = CreateStatusBar_BlakeAOG();
+#endif
 	else
 		StatusBar = CreateStatusBar_Wolf3D();
 	atterm(DestroyStatusBar);
@@ -876,12 +880,16 @@ bool APlayerPawn::Interrogate()
 			if(msg.find(informantKey) != std::string::npos)
 			{
 				key = informantKey;
+#ifdef USE_GPL
 				msgptr = map->GetInformantMessage(closest, pr_interrogateitem);
+#endif
 			}
 			else if(msg.find(scientistKey) != std::string::npos)
 			{
 				key = scientistKey;
+#ifdef USE_GPL
 				msgptr = map->GetScientistMessage(closest, pr_interrogateitem);
+#endif
 			}
 
 			if(msgptr != nullptr)

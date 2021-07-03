@@ -154,7 +154,9 @@ void NewGame (int difficulty, const FString &map, bool displayBriefing, const Cl
 	gamestate.playerClass = playerClass;
 	levelInfo = &LevelInfo::Find(map);
 
+#ifdef USE_GPL
 	bibendovsky::newgame_initialize();
+#endif
 
 	if(displayBriefing)
 		EnterText(levelInfo->Cluster);

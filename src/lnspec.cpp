@@ -1265,7 +1265,9 @@ FUNC(Operate_Concession)
 	TicCmd_t &cmd = control[ConsolePlayer];
 	if(!cmd.buttonheld[bt_use])
 	{
+#ifdef USE_GPL
 		map->OperateConcession(args[1]);
+#endif
 		return 1;
 	}
 	return 0;
@@ -1276,7 +1278,9 @@ FUNC(Operate_WallSwitch)
 	TicCmd_t &cmd = control[ConsolePlayer];
 	if(!cmd.buttonheld[bt_use])
 	{
+#ifdef USE_GPL
 		map->ActivateWallSwitch(args[1]);
+#endif
 		return 1;
 	}
 	return 0;

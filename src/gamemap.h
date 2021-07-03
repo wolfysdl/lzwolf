@@ -246,10 +246,12 @@ class GameMap
 		unsigned int	NumPlanes() const { return planes.Size(); }
 		const Plane		&GetPlane(unsigned int index) const { return planes[index]; }
 		void			SpawnThings() const;
+#ifdef USE_GPL
 		const char		*GetInformantMessage(AActor *ob, FRandom &rng);
 		const char		*GetScientistMessage(AActor *ob, FRandom &rng);
 		void			OperateConcession(std::uint16_t concession);
 		void			ActivateWallSwitch(int barrier_code);
+#endif
 		void			SetMusic(const FString& music) { header.music = music; }
 
 		// Sound functions
