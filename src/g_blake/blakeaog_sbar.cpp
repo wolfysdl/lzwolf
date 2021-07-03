@@ -24,6 +24,8 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
+#ifdef USE_GPL
+
 #include <algorithm>
 #include <deque>
 #include <vector>
@@ -1087,3 +1089,5 @@ void BlakeAOGStatusBar::ScaleSprite2D(FTexture *tex, int xcenter, int topoffset,
 		}
 	}
 }
+
+#endif

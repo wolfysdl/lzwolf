@@ -21,6 +21,8 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
+#ifdef USE_GPL
+
 #include <climits>
 
 #include "doomerrors.h"
@@ -1112,3 +1114,5 @@ void GameMap::ActivateWallSwitch(int barrier_code)
 {
 	bibendovsky::ActivateWallSwitch(barrier_code);
 }
+
+#endif

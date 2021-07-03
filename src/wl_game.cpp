@@ -307,7 +307,9 @@ void SetupGameLevel (void)
 
 	gamestate.faceframe.SetInvalid();
 
+#ifdef USE_GPL
 	bibendovsky::level_initialize();
+#endif
 
 //
 // load the level
