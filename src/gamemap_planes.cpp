@@ -1084,7 +1084,7 @@ void GameMap::ReadPlanesData()
 			if(texture.isValid() && TexMan[texture] != nullptr)
 			{
 				tileByEastTexture[TexMan[texture]->Name.GetChars()] = &tile;
-				printf("%s %p\n", TexMan[texture]->Name.GetChars(), &tile);
+				//printf("%s %p\n", TexMan[texture]->Name.GetChars(), &tile);
 			}
 		}
 
