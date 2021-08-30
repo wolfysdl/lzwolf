@@ -347,7 +347,7 @@ actor HamBone
 	states
 	{
 		Spawn:
-			HAMB A -1
+			HAMM B -1
 			stop
 	}
 }
