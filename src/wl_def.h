@@ -483,4 +483,74 @@ static inline longword READLONGWORD(byte *&ptr)
 	void Scale3DShape(byte *vbuf, unsigned vbufPitch, statobj_t *ob);
 #endif
 
+#ifdef USE_GPL
+
+/*
+=============================================================================
+
+						FEATURE DEFINITIONS
+
+=============================================================================
+*/
+
+namespace bibendovsky
+{
+
+class AssetsInfo
+{
+public:
+	bool is_ps() const
+	{
+		return false;
+	}
+
+	bool is_aog() const
+	{
+		return true;
+	}
+
+	int level() const noexcept;
+
+	int get_levels_per_episode() const
+	{
+		return 15;
+	}
+
+	int get_barrier_switches_per_level() const noexcept
+	{
+		return 5;
+	}
+
+	int get_max_barrier_switches_per_level_bits() const noexcept
+	{
+		return 3;
+	}
+
+	bool is_secret_level(
+		const int level_number) const
+	{
+		return level_number <= 0 || level_number >= 10;
+	}
+
+	int secret_floor_get_index(
+		const int level_number) const
+	{
+		if (level_number <= 0)
+		{
+			return 0;
+		}
+
+		if (level_number >= 10)
+		{
+			return level_number - 10 + 1;
+		}
+
+		return -1;
+	}
+}; // AssetsInfo
+
+} // namespace bibendovsky
+
+#endif
+
 #endif
