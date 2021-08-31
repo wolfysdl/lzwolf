@@ -24,6 +24,7 @@ actor AutoChargePistol : BlakeWeapon
 	inventory.icon "STWEAP1"
 	weapon.ammouse1 0
 	weapon.damagetype "SilentDamage"
+	weapon.blakeautochargephase 1
 	+WEAPON.NOAUTOFIRE
 	+WEAPON.NOALERT
 	states
@@ -35,6 +36,8 @@ actor AutoChargePistol : BlakeWeapon
 			ACPG BC 3
 			ACPG D 3 A_GunAttack(GAF_MACDAMAGE, "*", 1.0, 128)
 			ACPG E 3
+			ACPG A 24 A_SetProperty("blakeautochargephase", 2, PRT_READYWEAPON)
+			ACPG A 1 A_SetProperty("blakeautochargephase", 1, PRT_READYWEAPON)
 			goto Ready
 		Spawn:
 			ACPP A -1

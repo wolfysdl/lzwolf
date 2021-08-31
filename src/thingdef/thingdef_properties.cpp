@@ -141,6 +141,13 @@ HANDLE_PROPERTY(backpackmaxamount)
 	((AAmmo*)defaults)->Backpackmaxamount = maxamount;
 }
 
+HANDLE_PROPERTY(blakeautochargephase)
+{
+	INT_PARAM(phase, 0);
+	((AWeapon*)defaults)->DrawAmmoMsg = (phase >= 1);
+	((AWeapon*)defaults)->WeaponWait = (phase == 2);
+}
+
 HANDLE_PROPERTY(bobrangex)
 {
 	FIXED_PARAM(rangex, 0);
@@ -1014,6 +1021,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(backpackamount, Ammo, I),
 	DEFINE_PROP(backpackboostamount, Ammo, I),
 	DEFINE_PROP(backpackmaxamount, Ammo, I),
+	DEFINE_PROP(blakeautochargephase, Weapon, I),
 	DEFINE_PROP(bobrangex, Weapon, F),
 	DEFINE_PROP(bobrangey, Weapon, F),
 	DEFINE_PROP(bobspeed, Weapon, F),

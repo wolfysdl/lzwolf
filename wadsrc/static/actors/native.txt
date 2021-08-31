@@ -71,6 +71,10 @@ const int OWNER_SELF = 0;
 const int OWNER_TARGET = 1;
 const int OWNER_PLAYER = 2;
 
+// A_SetProperty target
+const int PRT_SELF = 1;
+const int PRT_READYWEAPON = 2;
+
 actor Actor native
 {
 	actionns "lz"
@@ -133,8 +137,9 @@ actor Actor native
 	action native A_Scream();
 	action native A_SelectWeapon(int slot);
 	action native A_SetHealth(int health);
+	action native A_SetIntegerProperty(string propName, int value);
 	action native A_SetPicXY(int picX, int picY);
-	action native A_SetProperty(string propName, auto value);
+	action native A_SetProperty(string propName, auto value, int target = PRT_SELF);
 	action native A_SetTics(float duration);
 	action native A_SetVolume(float volume);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);
