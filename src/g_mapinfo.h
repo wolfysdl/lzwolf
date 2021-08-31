@@ -180,6 +180,7 @@ public:
 	unsigned int	Cluster;
 	FString			Translator;
 	FTextureID		TitlePatch;
+	FString			BlakeHeading;
 
 	FTextureID		BorderTexture;
 	FTextureID		DefaultTexture[2];
