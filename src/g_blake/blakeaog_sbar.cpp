@@ -88,6 +88,9 @@ enum
 	STATUSTOPLINES = 16
 };
 
+std::int16_t LoadMsg(char* hint_buffer, const char *block, std::uint16_t
+		MsgNum, std::uint16_t MaxMsgLen);
+
 //CVAR (Bool, aog_heartbeatsnd, false, CVAR_ARCHIVE)
 
 static void VL_Hlin(
@@ -512,6 +515,8 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	if(viewsize == 21 && ingame)
 		return;
 
+	const auto& assets_info = AssetsInfo{};
+
 	static FFont *IndexFont = V_GetFont("INDEXFON");
 	//static FFont *HealthFont = V_GetFont("BlakeHealthFont");
 	static FFont *ScoreFont = V_GetFont("BlakeScoreFont");
@@ -559,16 +564,27 @@ void BlakeAOGStatusBar::DrawStatusBar()
 		VWB_Clear(colors[0], screenWidth-scaleFactorX, topy, screenWidth, static_cast<int>(boty-scaleFactorY));
 	}
 
+	constexpr auto MAX_LOCATION_DESC_LEN = 45;
+
 	// Draw the top information
+	if(levelInfo->BlakeHeading.IsEmpty())
+	{
+		auto LocationText = new char[MAX_LOCATION_DESC_LEN];
+		LoadMsg(LocationText, "LVLDESCS", assets_info.level() + 2, MAX_LOCATION_DESC_LEN);
+		auto temp = strstr(LocationText, "^XX");
+		if (temp)
+		{
+			*temp = 0;
+		}
+		levelInfo->BlakeHeading = LocationText;
+		delete LocationText;
+	}
+
 	FString lives, area;
-	// TODO: Don't depend on LevelNumber for this switch
-	if(levelInfo->LevelNumber > 20)
-		area = "SECRET";
-	else
-		area.Format("FLOOR: %d", levelInfo->LevelNumber);
+	area.Format("FLOOR: %d", assets_info.level());
 	lives.Format("LIVES: %d", players[0].lives);
 	DrawString(IndexFont, area, 18, 5, true, CR_WHITE);
-	DrawString(IndexFont, levelInfo->GetName(map), 160, 5, true, CR_WHITE, true);
+	DrawString(IndexFont, levelInfo->BlakeHeading, 160, 5, true, CR_WHITE, true);
 	DrawString(IndexFont, lives, 267, 5, true, CR_WHITE);
 
 	// Draw bottom information
