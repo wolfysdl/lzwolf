@@ -729,7 +729,7 @@ void BlakeAOGStatusBar::DrawAmmoMsg()
 {
 	const auto& assets_info = AssetsInfo{};
 
-	int x = (assets_info.is_ps() ? 30 : 29);
+	int x = (assets_info.is_ps() ? 30 : 29) * 8;
 
 	if (players[0].ReadyWeapon->WeaponWait)
 	{

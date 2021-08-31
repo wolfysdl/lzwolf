@@ -874,6 +874,19 @@ ACTION_FUNCTION(A_SetHealth)
 	return true;
 }
 
+ACTION_FUNCTION(A_SetIntegerProperty)
+{
+	ACTION_PARAM_STRING(propName, 0);
+	ACTION_PARAM_INT(value, 1);
+
+	FString strvalue;
+	strvalue.Format("%d", value);
+
+	ClassDef::SetProperty(self, self->GetClass(), propName, strvalue.GetChars());
+
+	return true;
+}
+
 ACTION_FUNCTION(A_SetPicXY)
 {
 	ACTION_PARAM_INT(picX, 0);
@@ -887,11 +900,22 @@ ACTION_FUNCTION(A_SetPicXY)
 
 ACTION_FUNCTION(A_SetProperty)
 {
-	ACTION_PARAM_STRING(propName, 0);
-	ACTION_PARAM_STRING(value, 1);
+	enum
+	{
+		PRT_SELF = 1,
+		PRT_READYWEAPON = 2,
+	};
 
-	ClassDef::SetProperty(self, self->GetClass(), propName, value.GetChars());
+ 	ACTION_PARAM_STRING(propName, 0);
+ 	ACTION_PARAM_STRING(value, 1);
+	ACTION_PARAM_INT(target, 2);
 
+	AActor *targ = self;
+	if(target == PRT_READYWEAPON && self->player && self->player->ReadyWeapon)
+		targ = self->player->ReadyWeapon;
+ 
+	ClassDef::SetProperty(targ, targ->GetClass(), propName, value.GetChars());
+ 
 	return true;
 }
 
