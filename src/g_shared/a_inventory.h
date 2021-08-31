@@ -225,6 +225,10 @@ class AWeapon : public AInventory
 		fixed		BobRangeX, BobRangeY;
 		fixed		BobSpeed;
 
+		// Blake AutoCharge pistol
+		bool		DrawAmmoMsg;
+		bool		WeaponWait;
+
 	protected:
 		bool	UseForAmmo(AWeapon *owned);
 };

@@ -673,53 +673,12 @@ const char *GameMap::GetScientistMessage(AActor *ob, FRandom &rng)
 namespace bibendovsky
 {
 
-class AssetsInfo
+int AssetsInfo::level() const noexcept
 {
-public:
-	int level() const noexcept
-	{
-		if(levelInfo->LevelNumber > 0)
-			return levelInfo->LevelNumber - 1;
-		return 0;
-	}
-
-	int get_levels_per_episode() const
-	{
-		return 15;
-	}
-
-	int get_barrier_switches_per_level() const noexcept
-	{
-		return 5;
-	}
-
-	int get_max_barrier_switches_per_level_bits() const noexcept
-	{
-		return 3;
-	}
-
-	bool is_secret_level(
-		const int level_number) const
-	{
-		return level_number <= 0 || level_number >= 10;
-	}
-
-	int secret_floor_get_index(
-		const int level_number) const
-	{
-		if (level_number <= 0)
-		{
-			return 0;
-		}
-
-		if (level_number >= 10)
-		{
-			return level_number - 10 + 1;
-		}
-
-		return -1;
-	}
-}; // AssetsInfo
+	if(levelInfo->LevelNumber > 0)
+		return levelInfo->LevelNumber - 1;
+	return 0;
+}
 
 //
 // General Coord (tile) structure

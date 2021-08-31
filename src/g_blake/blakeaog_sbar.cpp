@@ -49,6 +49,37 @@
 #include "xs_Float.h"
 #include "thingdef/thingdef.h"
 
+#define NUM_AMMO_SEGS (21)
+#define MAX_AMMO (100) // Max amount of ammo for any weapon
+
+#define GD0 (0x55)
+#define YD0 (0x35)
+#define RD0 (0x15)
+
+#define GD1 (0x53)
+#define YD1 (0x33)
+#define RD1 (0x13)
+
+std::int8_t DimAmmo[2][22] = {
+	{GD0, GD0, GD0, GD0, GD0, GD0, GD0, YD0, YD0, YD0, YD0, YD0, YD0, YD0, RD0, RD0, RD0, RD0, RD0, RD0, RD0, RD0},
+	{GD1, GD1, GD1, GD1, GD1, GD1, GD1, YD1, YD1, YD1, YD1, YD1, YD1, YD1, RD1, RD1, RD1, RD1, RD1, RD1, RD1, RD1},
+};
+
+#define GL0 (0x58)
+#define YL0 (0x38)
+#define RL0 (0x18)
+
+#define GL1 (0x56)
+#define YL1 (0x36)
+#define RL1 (0x16)
+
+std::int8_t LitAmmo[2][22] = {
+	{GL0, GL0, GL0, GL0, GL0, GL0, GL0, YL0, YL0, YL0, YL0, YL0, YL0, YL0, RL0, RL0, RL0, RL0, RL0, RL0, RL0, RL0},
+	{GL1, GL1, GL1, GL1, GL1, GL1, GL1, YL1, YL1, YL1, YL1, YL1, YL1, YL1, RL1, RL1, RL1, RL1, RL1, RL1, RL1, RL1},
+};
+
+using namespace bibendovsky;
+
 #define TP_CNVT_CODE(c1, c2) ((c1) | (c2 << 8))
 
 enum
@@ -59,17 +90,58 @@ enum
 
 CVAR (Bool, aog_heartbeatsnd, false, CVAR_ARCHIVE)
 
+static void VL_Hlin(
+	int x,
+	int y,
+	int width,
+	std::uint8_t color)
+{
+	double stx = x;
+	double sty = y;
+	double stw = width;
+	double sth = 1;
+	screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, true, true);
+
+	VWB_Clear(color, stx, sty, stx+stw, sty+sth);
+}
+
+static void VW_Hlin(
+	int x,
+	int z,
+	int y,
+	std::uint8_t color)
+{
+	VL_Hlin(x, y, z - x + 1, color);
+}
+
+static void DrawHUDPic(FTextureID texid, double hx, double hy)
+{
+	auto tex = TexMan(texid);
+
+	double x = hx;
+	double y = 200 - STATUSLINES + hy;
+	double w = tex->GetScaledWidthDouble();
+	double h = tex->GetScaledHeightDouble();
+
+	screen->VirtualToRealCoords(x, y, w, h, 320, 200, true, true);
+
+	screen->DrawTexture(tex, x, y,
+		DTA_DestWidthF, w,
+		DTA_DestHeightF, h,
+		TAG_DONE);
+}
+
+static inline FTextureID TexID(const char *name)
+{
+	return TexMan.GetTexture(name, FTexture::TEX_Any);
+}
+
 class BlakeAOGHealthMonitor
 {
 public:
 	void Draw();
 
 private:
-	static inline FTextureID TexID(const char *name)
-	{
-		return TexMan.GetTexture(name, FTexture::TEX_Any);
-	}
-
 	int GetHp() const
 	{
 		return players[0].health;
@@ -203,28 +275,12 @@ void BlakeAOGHealthMonitor::Draw()
 		ecg_scroll_tics += tics;
 	}
 
-	auto draw_hudpic = []( FTextureID texid, double hx, double hy ) {
-		auto tex = TexMan(texid);
-
-		double x = hx;
-		double y = 200 - STATUSLINES + hy;
-		double w = tex->GetScaledWidthDouble();
-		double h = tex->GetScaledHeightDouble();
-
-		screen->VirtualToRealCoords(x, y, w, h, 320, 200, true, true);
-
-		screen->DrawTexture(tex, x, y,
-			DTA_DestWidthF, w,
-			DTA_DestHeightF, h,
-			TAG_DONE);
-	};
-
 	for (int i = 0; i < 6; ++i)
 	{
 		FString hbstr;
 		hbstr.Format("ECGHBE%02d", ecg_segments[i]);
 		auto texid = TexID(hbstr.GetChars());
-		draw_hudpic(texid, 120 + (i * 8), 8);
+		DrawHUDPic(texid, 120 + (i * 8), 8);
 	}
 
 
@@ -273,7 +329,7 @@ void BlakeAOGHealthMonitor::Draw()
 		heart_sign_tics += 1;
 	}
 
-	draw_hudpic(heart_picture_index, 120, 32);
+	DrawHUDPic(heart_picture_index, 120, 32);
 }
 
 class BlakeAOGInfoArea
@@ -378,6 +434,14 @@ protected:
 	void DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color=CR_UNTRANSLATED, bool center=false, double *pEndX = nullptr) const;
 	void LatchNumber (int x, int y, unsigned width, int32_t number, bool zerofill, bool cap);
 	void LatchString (int x, int y, unsigned width, const FString &str);
+	void DrawAmmoPic ();
+	void DrawAmmoMsg ();
+	void DrawAmmoGuage ();
+	void DrawLedStrip(
+		std::int16_t x,
+		std::int16_t y,
+		std::int16_t frac,
+		std::int16_t max);
 
 	void DrawInfoArea();
 	char* HandleControlCodes(char* first_ch);
@@ -563,7 +627,8 @@ void BlakeAOGStatusBar::DrawStatusBar()
 
 		// TODO: Fix color
 		unsigned int amount = players[0].ReadyWeapon->ammo[AWeapon::PrimaryFire]->amount;
-		DrawLed(static_cast<double>(amount)/static_cast<double>(players[0].ReadyWeapon->ammo[AWeapon::PrimaryFire]->maxamount), 243, 155);
+		//DrawLed(static_cast<double>(amount)/static_cast<double>(players[0].ReadyWeapon->ammo[AWeapon::PrimaryFire]->maxamount), 243, 155);
+		DrawAmmoPic();
 
 		FString ammo;
 		ammo.Format("%3d%%", amount);
@@ -645,6 +710,120 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	InfoArea.y = INFOAREA_Y;
 
 	DrawInfoArea();
+}
+
+void BlakeAOGStatusBar::DrawAmmoPic()
+{
+	const auto ready_weapon = players[0].ReadyWeapon;
+	if (ready_weapon && ready_weapon->DrawAmmoMsg)
+	{
+		DrawAmmoMsg();
+	}
+	else
+	{
+		DrawAmmoGuage();
+	}
+}
+
+void BlakeAOGStatusBar::DrawAmmoMsg()
+{
+	const auto& assets_info = AssetsInfo{};
+
+	int x = (assets_info.is_ps() ? 30 : 29);
+
+	if (players[0].ReadyWeapon->WeaponWait)
+	{
+		DrawHUDPic(TexID("WAIT"), x, 0);
+	}
+	else
+	{
+		DrawHUDPic(TexID("READY"), x, 0);
+	}
+}
+
+void BlakeAOGStatusBar::DrawAmmoGuage()
+{
+	const auto& assets_info = AssetsInfo{};
+
+	auto compute_ammo_leds = []()
+	{
+		std::int16_t temp;
+		std::uint16_t ammo, max_ammo;
+
+		//
+		// Which weapon are we needing a refresh for?
+		//
+
+		const auto ready_weapon = players[0].ReadyWeapon;
+		if (!ready_weapon || ready_weapon->DrawAmmoMsg) // autocharge weapon
+		{
+			ammo = max_ammo = 0;
+		}
+		else
+		{
+			ammo = ready_weapon->ammo[AWeapon::PrimaryFire]->amount;
+			max_ammo = MAX_AMMO;
+		}
+
+		if (ammo)
+		{
+			temp = (ammo * NUM_AMMO_SEGS) / max_ammo;
+			if (!temp)
+			{
+				temp = 1;
+			}
+		}
+		else
+		{
+			temp = 0;
+		}
+
+		return temp;
+	};
+
+	DrawLedStrip(assets_info.is_ps() ? 243 : 234, 155, compute_ammo_leds(), NUM_AMMO_SEGS);
+}
+
+void BlakeAOGStatusBar::DrawLedStrip(
+	std::int16_t x,
+	std::int16_t y,
+	std::int16_t frac,
+	std::int16_t max)
+{
+	std::int16_t ypos;
+	std::uint16_t amount;
+	std::int8_t leds;
+
+	leds = static_cast<std::int8_t>(frac);
+
+	if (leds)
+	{
+		amount = max - leds;
+	}
+	else
+	{
+		amount = max;
+	}
+
+	const auto& assets_info = AssetsInfo{};
+
+	int width = (assets_info.is_ps() ? 5 : 11);
+
+	// Draw dim LEDs.
+	//
+	for (ypos = 0; ypos < amount; ypos++)
+	{
+		VW_Hlin(x, x + (width - 1), y++, DimAmmo[0][amount]);
+		VW_Hlin(x, x + (width - 1), y++, DimAmmo[1][amount]);
+	}
+
+	// Draw lit LEDs.
+	//
+	for (; ypos < NUM_AMMO_SEGS; ypos++)
+	{
+		VW_Hlin(x, x + (width - 1), y++, LitAmmo[0][amount]);
+		VW_Hlin(x, x + (width - 1), y++, LitAmmo[1][amount]);
+	}
 }
 
 void BlakeAOGStatusBar::DrawString(FFont *font, const char* string, double x, double y, bool shadow, EColorRange color, bool center, double *pEndX) const
