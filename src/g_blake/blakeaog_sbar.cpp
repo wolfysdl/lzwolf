@@ -565,7 +565,7 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	if(levelInfo->LevelNumber > 20)
 		area = "SECRET";
 	else
-		area.Format("AREA: %d", levelInfo->LevelNumber);
+		area.Format("FLOOR: %d", levelInfo->LevelNumber);
 	lives.Format("LIVES: %d", players[0].lives);
 	DrawString(IndexFont, area, 18, 5, true, CR_WHITE);
 	DrawString(IndexFont, levelInfo->GetName(map), 160, 5, true, CR_WHITE, true);

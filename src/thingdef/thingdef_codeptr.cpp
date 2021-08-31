@@ -828,8 +828,8 @@ ACTION_FUNCTION(A_ScaleVelocity)
 {
 	ACTION_PARAM_DOUBLE(scale, 0);
 
-	self->velx = FLOAT2FIXED(self->velx*scale);
-	self->vely = FLOAT2FIXED(self->vely*scale);
+	self->velx = fixed_t(self->velx*scale);
+	self->vely = fixed_t(self->vely*scale);
 	return true;
 }
 
