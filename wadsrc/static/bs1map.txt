@@ -351,57 +351,57 @@ sprites
 	"SECGG0",
 	"SECGH0",
 
-	// Tech Warrior
-	"TECWA1", // Stand
-	"TECWA2",
-	"TECWA3",
-	"TECWA4",
-	"TECWA5",
-	"TECWA6",
-	"TECWA7",
-	"TECWA8",
-	"TECWB1", // Walk 1
-	"TECWB2",
-	"TECWB3",
-	"TECWB4",
-	"TECWB5",
-	"TECWB6",
-	"TECWB7",
-	"TECWB8",
-	"TECWC1", // Walk 2
-	"TECWC2",
-	"TECWC3",
-	"TECWC4",
-	"TECWC5",
-	"TECWC6",
-	"TECWC7",
-	"TECWC8",
-	"TECWD1", // Walk 3
-	"TECWD2",
-	"TECWD3",
-	"TECWD4",
-	"TECWD5",
-	"TECWD6",
-	"TECWD7",
-	"TECWD8",
-	"TECWE1", // Walk 4
-	"TECWE2",
-	"TECWE3",
-	"TECWE4",
-	"TECWE5",
-	"TECWE6",
-	"TECWE7",
-	"TECWE8",
-	"TECWI0", // Pain 2
-	"TECWK0", // Death
-	"TECWL0",
-	"TECWM0",
-	"TECWJ0", // Pain
-	"TECWN0", // Death (Last)
-	"TECWO0", // Dead
-	"TECWF0", // Attack
-	"TECWG0",
-	"TECWH0",
+	// Pro Guard
+	"PROGA1", // Stand
+	"PROGA2",
+	"PROGA3",
+	"PROGA4",
+	"PROGA5",
+	"PROGA6",
+	"PROGA7",
+	"PROGA8",
+	"PROGB1", // Walk 1
+	"PROGB2",
+	"PROGB3",
+	"PROGB4",
+	"PROGB5",
+	"PROGB6",
+	"PROGB7",
+	"PROGB8",
+	"PROGC1", // Walk 2
+	"PROGC2",
+	"PROGC3",
+	"PROGC4",
+	"PROGC5",
+	"PROGC6",
+	"PROGC7",
+	"PROGC8",
+	"PROGD1", // Walk 3
+	"PROGD2",
+	"PROGD3",
+	"PROGD4",
+	"PROGD5",
+	"PROGD6",
+	"PROGD7",
+	"PROGD8",
+	"PROGE1", // Walk 4
+	"PROGE2",
+	"PROGE3",
+	"PROGE4",
+	"PROGE5",
+	"PROGE6",
+	"PROGE7",
+	"PROGE8",
+	"PROGI0", // Death
+	"PROGK0",
+	"PROGL0",
+	"PROGM0",
+	"PROGJ0", // Pain
+	"PROGN0", // Death (Last)
+	"PROGO0", // Dead
+	"PROGF0", // Attack
+	"PROGG0",
+	"PROGH0",
 
 	// Alien Protector
 	"PROTA1", // Stand
@@ -1041,10 +1041,10 @@ digitalsounds
 	"DSSECDT1", // PS Guard Death 1
 	"DSEXPLO1", // Explosion 1
 	"DSGENSIT", // Genetic Guard Sight
-	"DSTCWDT1", // PS Sentinel Death 1
+	"DSPRODT1", // Sentinel Death 1
 	"DSMTHSIT", // Brown Mutant Sight
 	"DSSCNSIT", // Critter Sight
-	"DSTCWSIT", // PS Sentinel Sight
+	"DSPROSIT", // Sentinel Sight
 	"DSGENDTH", // Genetic Guard Death
 	"DSBLUDTH", // Boss Death
 	"DSSCISIT", // Scientist Sight (Alerted)
@@ -1070,8 +1070,8 @@ digitalsounds
 	"DSINFDT2", // Informant Death 2
 	"DSINFDT3", // Informant Death 3
 	"DSGRNDTH", // Necro-Guard Death
-	"DSTCWDT2", // PS Sentinel Death 2
-	"DSTCWDT3", // PS Sentinel Death 3
+	"DSPRODT2", // Sentinel Death 2
+	"DSPRODT3", // Sentinel Death 3
 	"DSLCNBRK", // Acid Alien Release
 	"DSSCNBRK", // Critter Release
 	"DSGRENAD", // Fire Plasma Cannon
