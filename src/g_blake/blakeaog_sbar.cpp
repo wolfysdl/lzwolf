@@ -570,7 +570,7 @@ void BlakeAOGStatusBar::DrawStatusBar()
 	if(levelInfo->BlakeHeading.IsEmpty())
 	{
 		auto LocationText = new char[MAX_LOCATION_DESC_LEN];
-		LoadMsg(LocationText, "LVLDESCS", assets_info.level() + 2, MAX_LOCATION_DESC_LEN);
+		LoadMsg(LocationText, "LVLDESCS", assets_info.level() + 1, MAX_LOCATION_DESC_LEN);
 		auto temp = strstr(LocationText, "^XX");
 		if (temp)
 		{
