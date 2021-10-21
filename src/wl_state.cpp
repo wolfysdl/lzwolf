@@ -18,6 +18,7 @@
 #include "wl_state.h"
 #include "wl_draw.h"
 #include "wl_framedata.h"
+#include "am_map.h"
 #include "templates.h"
 
 /*
@@ -1034,7 +1035,7 @@ bool CheckLine (AActor *ob, AActor *ob2)
 
 			MapSpot spot = map->GetSpot(x, y, 0);
 			
-			if (!spot->tile)
+			if (!spot->tile && !(spot->amFlags & AutoMap::AMF_FailCheckLine))
 			{
 				if (CheckAdjacentTileBlockage(x, y, lastx, lasty))
 					return false;
@@ -1100,7 +1101,7 @@ bool CheckLine (AActor *ob, AActor *ob2)
 
 			MapSpot spot = map->GetSpot(x, y, 0);
 
-			if (!spot->tile)
+			if (!spot->tile && !(spot->amFlags & AutoMap::AMF_FailCheckLine))
 			{
 				if (CheckAdjacentTileBlockage(x, y, lastx, lasty))
 					return false;

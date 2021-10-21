@@ -140,6 +140,7 @@ actor Actor native
 	action native A_SetIntegerProperty(string propName, int value);
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetProperty(string propName, auto value, int target = PRT_SELF);
+	action native A_SetSpotVisionByTag(int tag, bool allow);
 	action native A_SetTics(float duration);
 	action native A_SetVolume(float volume);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);

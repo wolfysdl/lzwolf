@@ -55,6 +55,7 @@
 #include "wl_game.h"
 #include "wl_play.h"
 #include "wl_state.h"
+#include "am_map.h"
 
 static ActionTable *actionFunctions = NULL;
 ActionInfo::ActionInfo(ActionPtr func, const FName &name) : func(func), name(name),
@@ -916,6 +917,22 @@ ACTION_FUNCTION(A_SetProperty)
  
 	ClassDef::SetProperty(targ, targ->GetClass(), propName, value.GetChars());
  
+	return true;
+}
+
+ACTION_FUNCTION(A_SetSpotVisionByTag)
+{
+	ACTION_PARAM_INT(tag, 0);
+	ACTION_PARAM_BOOL(allow, 1);
+
+	MapSpot dest = NULL;
+	while((dest = map->GetSpotByTag(tag, dest)))
+	{
+		dest->amFlags &= ~AutoMap::AMF_FailCheckLine;
+		if(!allow)
+			dest->amFlags |= AutoMap::AMF_FailCheckLine;
+	}
+
 	return true;
 }
 
