@@ -76,7 +76,8 @@ public:
 		AMF_Overlay = 0x8,
 		AMF_DispInfo = 0x10,
 		AMF_DispRatios = 0x20,
-		AMF_ShowThings = 0x40
+		AMF_ShowThings = 0x40,
+		AMF_FailCheckLine = 0x80,
 	};
 
 	struct Color
