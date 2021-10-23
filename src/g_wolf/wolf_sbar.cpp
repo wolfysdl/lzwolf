@@ -690,15 +690,15 @@ void WolfStatusBar::SetupStatusbar()
 				extrakey = key.Mid(6);
 				var = &StatusBarConfig.Weapon;
 			}
-			else if(key.IndexOf("armor") == 0)
-			{
-				extrakey = key.Mid(5);
-				var = &StatusBarConfig.Armor;
-			}
 			else if(key.IndexOf("armorpoints") == 0)
 			{
 				extrakey = key.Mid(11);
 				var = &StatusBarConfig.ArmorPoints;
+			}
+			else if(key.IndexOf("armor") == 0)
+			{
+				extrakey = key.Mid(5);
+				var = &StatusBarConfig.Armor;
 			}
 			else
 				sc.ScriptMessage(Scanner::ERROR, "Unknown key '%s'.\n", key.GetChars());
