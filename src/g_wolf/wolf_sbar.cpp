@@ -500,6 +500,9 @@ void WolfStatusBar::DrawArmor (void)
 
 void WolfStatusBar::DrawArmorPoints (void)
 {
+	if((viewsize == 21 && ingame) || !StatusBarConfig.ArmorPoints.Enabled)
+		return;
+
 	int armorPoints = 0;
 	GetArmorIcon(armorPoints); // do not care about icon return
 	//if(armorPoints <= 0)
