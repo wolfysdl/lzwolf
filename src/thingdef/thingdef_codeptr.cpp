@@ -922,15 +922,27 @@ ACTION_FUNCTION(A_SetProperty)
 
 ACTION_FUNCTION(A_SetSpotVisionByTag)
 {
+	enum
+	{
+		SVI_FAILCHECKLINE = 0x01,
+		SVI_FAILCHECKSIDE = 0x02,
+	};
 	ACTION_PARAM_INT(tag, 0);
 	ACTION_PARAM_BOOL(allow, 1);
+	ACTION_PARAM_INT(flags, 2);
+
+	unsigned int amf_flags = 0;
+	if(flags & SVI_FAILCHECKLINE)
+		amf_flags |= AutoMap::AMF_FailCheckLine;
+	if(flags & SVI_FAILCHECKSIDE)
+		amf_flags |= AutoMap::AMF_FailCheckSide;
 
 	MapSpot dest = NULL;
 	while((dest = map->GetSpotByTag(tag, dest)))
 	{
-		dest->amFlags &= ~AutoMap::AMF_FailCheckLine;
+		dest->amFlags &= ~amf_flags;
 		if(!allow)
-			dest->amFlags |= AutoMap::AMF_FailCheckLine;
+			dest->amFlags |= amf_flags;
 	}
 
 	return true;
