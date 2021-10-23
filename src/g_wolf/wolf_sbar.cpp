@@ -507,8 +507,8 @@ void WolfStatusBar::DrawArmorPoints (void)
 
 	int armorPoints = 0;
 	GetArmorIcon(armorPoints); // do not care about icon return
-	if(armorPoints <= 0)
-		return;
+	//if(armorPoints <= 0)
+	//	return;
 
 	LatchNumber (StatusBarConfig.ArmorPoints.X,StatusBarConfig.ArmorPoints.Y,StatusBarConfig.ArmorPoints.Digits,armorPoints,mac);
 }
