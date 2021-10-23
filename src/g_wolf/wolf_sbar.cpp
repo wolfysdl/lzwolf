@@ -500,12 +500,12 @@ void WolfStatusBar::DrawArmor (void)
 
 void WolfStatusBar::DrawArmorPoints (void)
 {
-	int armorPoints = 0;
-	FTextureID armorIcon;
+	if((viewsize == 21 && ingame) || !StatusBarConfig.ArmorPoints.Enabled)
+		return;
 
-	if((viewsize == 21 && ingame) || !StatusBarConfig.Armor.Enabled ||
-		(armorIcon = GetArmorIcon(armorPoints)).isNull()
-	)
+	int armorPoints = 0;
+	GetArmorIcon(armorPoints); // do not care about icon return
+	if(armorPoints <= 0)
 		return;
 
 	LatchNumber (StatusBarConfig.ArmorPoints.X,StatusBarConfig.ArmorPoints.Y,StatusBarConfig.ArmorPoints.Digits,armorPoints,mac);
