@@ -130,7 +130,11 @@ bool TrySpot(AActor *ob, MapSpot spot)
 static inline short CheckSide(AActor *ob, unsigned int x, unsigned int y, MapTrigger::Side dir, bool canuse)
 {
 	MapSpot spot = map->GetSpot(x, y, 0);
-	if(spot->tile)
+	if(spot->amFlags & AutoMap::AMF_FailCheckSide)
+	{
+		return 0;
+	}
+	else if(spot->tile)
 	{
 		if(canuse)
 		{
@@ -1033,7 +1037,11 @@ bool CheckLine (AActor *ob, AActor *ob2)
 
 			MapSpot spot = map->GetSpot(x, y, 0);
 			
-			if (!spot->tile && !(spot->amFlags & AutoMap::AMF_FailCheckLine))
+			if (spot->amFlags & AutoMap::AMF_FailCheckLine)
+			{
+				return false;
+			}
+			else if (!spot->tile)
 			{
 				if (CheckAdjacentTileBlockage(x, y, lastx, lasty))
 					return false;
@@ -1099,7 +1107,11 @@ bool CheckLine (AActor *ob, AActor *ob2)
 
 			MapSpot spot = map->GetSpot(x, y, 0);
 
-			if (!spot->tile && !(spot->amFlags & AutoMap::AMF_FailCheckLine))
+			if (spot->amFlags & AutoMap::AMF_FailCheckLine)
+			{
+				return false;
+			}
+			else if (!spot->tile)
 			{
 				if (CheckAdjacentTileBlockage(x, y, lastx, lasty))
 					return false;

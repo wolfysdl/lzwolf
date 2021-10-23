@@ -75,6 +75,11 @@ const int OWNER_PLAYER = 2;
 const int PRT_SELF = 1;
 const int PRT_READYWEAPON = 2;
 
+// Spot vision flags
+const int SVI_FAILCHECKLINE = 0x01;
+const int SVI_FAILCHECKSIDE = 0x02;
+const int SVI_FAILALL = SVI_FAILCHECKLINE|SVI_FAILCHECKSIDE;
+
 actor Actor native
 {
 	actionns "lz"
@@ -140,7 +145,7 @@ actor Actor native
 	action native A_SetIntegerProperty(string propName, int value);
 	action native A_SetPicXY(int picX, int picY);
 	action native A_SetProperty(string propName, auto value, int target = PRT_SELF);
-	action native A_SetSpotVisionByTag(int tag, bool allow);
+	action native A_SetSpotVisionByTag(int tag, bool allow, int flags = SVI_FAILALL);
 	action native A_SetTics(float duration);
 	action native A_SetVolume(float volume);
 	action native A_SpawnItem(string type, float distance = 0, float zheight = 0);

@@ -78,6 +78,7 @@ public:
 		AMF_DispRatios = 0x20,
 		AMF_ShowThings = 0x40,
 		AMF_FailCheckLine = 0x80,
+		AMF_FailCheckSide = 0x100,
 	};
 
 	struct Color
