@@ -50,7 +50,7 @@ static struct StatusBarConfig_t
 	{1, 1, 112, 16},     // Lives
 	{1, 3, 168, 16},     // Health
 	{1, 3, 208, 16},     // Ammo
-	{1, 3, 280, 16},     // ArmorPoints
+	{0, 3, 280, 16},     // ArmorPoints
 	{0, 2, 280, 16},     // Items
 	{1, 0, 136, 4},      // Mugshot
 	{1, 0, 240, 4},      // Keys
