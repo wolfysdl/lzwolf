@@ -700,6 +700,7 @@ void NewViewSize (int width, unsigned int scrWidth, unsigned int scrHeight)
 #endif
 	}
 
+	I_ShutdownGraphics();
 	exit(0);
 }
 
