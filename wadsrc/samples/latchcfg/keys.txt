@@ -1,0 +1,15 @@
+inventoryenabled = 1
+inventoryx = 240
+inventoryy = 4
+inventoryclassname = "GoldKey"
+inventoryfoundtexture = "STKEYS1"
+inventorymissingtexture = "STKEYS0"
+
+inventoryenabled = 1
+inventoryx = 240
+inventoryy = 20
+inventoryclassname = "SilverKey"
+inventoryfoundtexture = "STKEYS2"
+inventorymissingtexture = "STKEYS0"
+
+keysenabled = 0

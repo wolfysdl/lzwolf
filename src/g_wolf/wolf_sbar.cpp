@@ -1,5 +1,8 @@
+#include <map>
+#include <vector>
 #include <cmath>
 #include <climits>
+#include <cctype>
 
 #include "wl_def.h"
 #include "wl_agent.h"
@@ -37,6 +40,12 @@ struct LatchConfig
 	unsigned int X;
 	unsigned int Y;
 };
+struct InventoryLatchConfig : public LatchConfig
+{
+	FString ClassName;
+	FString FoundTexture;
+	FString MissingTexture;
+};
 static struct StatusBarConfig_t
 {
 	LatchConfig Floor, Score, Lives, Health, Ammo, ArmorPoints;
@@ -44,6 +53,8 @@ static struct StatusBarConfig_t
 
 	// The following don't use the digits
 	LatchConfig Mugshot, Keys, Weapon, Armor;
+
+	std::vector<InventoryLatchConfig> Inventory;
 } StatusBarConfig = {
 	{1, 2, 16, 16},      // Floor
 	{1, 6, 48, 16},      // Score
@@ -120,6 +131,7 @@ private:
 	void DrawHealth();
 	void DrawItems();
 	void DrawKeys();
+	void DrawInventory();
 	void DrawScore();
 	void DrawWeapon();
 	void DrawArmor();
@@ -566,6 +578,38 @@ void WolfStatusBar::DrawKeys (void)
 		StatusDrawPic (x,y,"STKEYS0");
 }
 
+/*
+==================
+=
+= DrawInventory
+=
+==================
+*/
+
+void WolfStatusBar::DrawInventory (void)
+{
+	if((viewsize == 21 && ingame) || StatusBarConfig.Inventory.empty()) return;
+	if(!players[ConsolePlayer].mo) return;
+
+	for(const auto &stInv : StatusBarConfig.Inventory)
+	{
+		if(!stInv.Enabled)
+			continue;
+		auto cls = ClassDef::FindClassTentative(stInv.ClassName, NATIVE_CLASS(Actor));
+		if(!cls)
+			continue;
+
+		const unsigned int x = stInv.X;
+		const unsigned int y = stInv.Y;
+
+		auto inv = players[ConsolePlayer].mo->FindInventory(cls);
+		if(inv)
+			StatusDrawPic (x,y,stInv.FoundTexture);
+		else
+			StatusDrawPic (x,y,stInv.MissingTexture);
+	}
+}
+
 //===========================================================================
 
 /*
@@ -610,6 +654,7 @@ void WolfStatusBar::DrawStatusBar()
 	DrawLevel ();
 	DrawAmmo ();
 	DrawKeys ();
+	DrawInventory ();
 	DrawWeapon ();
 	DrawArmor ();
 	DrawArmorPoints ();
@@ -640,8 +685,6 @@ void WolfStatusBar::SetupStatusbar()
 			FString key = sc->str;
 			key.ToLower();
 			sc.MustGetToken('=');
-			sc.MustGetToken(TK_IntConst);
-			unsigned int value = sc->number;
 
 			LatchConfig *var = NULL;
 			FString extrakey;
@@ -700,8 +743,37 @@ void WolfStatusBar::SetupStatusbar()
 				extrakey = key.Mid(5);
 				var = &StatusBarConfig.Armor;
 			}
+			else if(key.IndexOf("inventory") == 0)
+			{
+				extrakey = key.Mid(9);
+				if(extrakey.Compare("enabled") == 0)
+				{
+					StatusBarConfig.Inventory.resize(StatusBarConfig.Inventory.size() + 1);
+				}
+				var = &StatusBarConfig.Inventory.back();
+
+				auto &invVar = StatusBarConfig.Inventory.back();
+
+				std::map<std::string, FString&> refsByProperty =
+				{
+					{"classname", invVar.ClassName},
+					{"foundtexture", invVar.FoundTexture},
+					{"missingtexture", invVar.MissingTexture},
+				};
+
+				auto refIt = refsByProperty.find(extrakey.GetChars());
+				if(refIt != std::end(refsByProperty))
+				{
+					sc.MustGetToken(TK_StringConst);
+					refIt->second = sc->str;
+					continue;
+				}
+			}
 			else
 				sc.ScriptMessage(Scanner::ERROR, "Unknown key '%s'.\n", key.GetChars());
+
+			sc.MustGetToken(TK_IntConst);
+			unsigned int value = sc->number;
 
 			if(extrakey.Compare("enabled") == 0)
 				var->Enabled = value;
