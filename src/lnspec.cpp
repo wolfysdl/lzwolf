@@ -904,9 +904,16 @@ static int DoPushwall(MapSpot spot, MapTrigger::Side direction, const int *args,
 
 	if(args[0] == 0)
 	{
-		if(spot->thinker || !spot->tile || (spot->GetAdjacent(MapTile::Side(dir))->tile && !nostop))
+		auto moveTo = spot->GetAdjacent(MapTile::Side(dir));
+		if(spot->thinker || !spot->tile || !moveTo || (moveTo->tile && !nostop))
 		{
 			return 0;
+		}
+
+		if(!nostop && !EVPushwall::CheckSpotFree(moveTo))
+		{
+			SD_PlaySound("player/usefail");
+			return 2; // do not clear active flag
 		}
 
 		new EVPushwall(spot, args[1], dir, args[3], nostop);
@@ -917,7 +924,13 @@ static int DoPushwall(MapSpot spot, MapTrigger::Side direction, const int *args,
 		MapSpot pwall = NULL;
 		while((pwall = map->GetSpotByTag(args[0], pwall)))
 		{
-			if(pwall->thinker || !pwall->tile || (pwall->GetAdjacent(MapTile::Side(dir))->tile && !nostop))
+			auto moveTo = pwall->GetAdjacent(MapTile::Side(dir));
+			if(pwall->thinker || !pwall->tile || !moveTo || (moveTo->tile && !nostop))
+			{
+				continue;
+			}
+
+			if(!nostop && !EVPushwall::CheckSpotFree(moveTo))
 			{
 				continue;
 			}

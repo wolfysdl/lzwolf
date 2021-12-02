@@ -760,7 +760,9 @@ void APlayerPawn::Cmd_Use()
 		cmd.buttonheld[bt_use] = true;
 	}
 	else if(doNothing)
+	{
 		SD_PlaySound ("misc/do_nothing", SD_ADLIB);
+	}
 	else
 	{
 		if(!infoMessage.IsEmpty())

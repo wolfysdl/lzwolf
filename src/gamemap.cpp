@@ -207,14 +207,17 @@ bool GameMap::ActivateTrigger(Trigger &trig, Trigger::Side direction, AActor *ac
 	MapSpot spot = GetSpot(trig.x, trig.y, trig.z);
 
 	Specials::LineSpecialFunction func = Specials::LookupFunction(Specials::LineSpecials(trig.action));
-	bool ret = func(spot, trig.arg, direction, activator) != 0;
+	auto ret = func(spot, trig.arg, direction, activator);
 	if(ret)
 	{
 		if(trig.active && trig.isSecret)
 			++gamestate.secretcount;
-		trig.active = false;
+		if(ret != 2)
+		{
+			trig.active = false;
+		}
 	}
-	return ret;
+	return (ret != 0);
 }
 
 void GameMap::ClearVisibility()
