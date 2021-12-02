@@ -773,7 +773,7 @@ class EVPushwall : public Thinker
 			while(iter.Next())
 			{
 				AActor *actor = iter;
-				if((actor->flags&FL_ISMONSTER) || actor->player)
+				if((actor->flags&(FL_ISMONSTER|FL_SOLID)) || actor->player)
 				{
 					if(actor->tilex+dirdeltax[actor->dir] == movex &&
 						actor->tiley+dirdeltay[actor->dir] == movey)
