@@ -291,6 +291,7 @@ int postx;
 int32_t postshadex, postshadey;
 bool postbright, postdecal;
 byte postdecalcolor = 187; // slade will not set the right color for this; its annoying but its true
+bool postneedprec = false;
 
 struct StandardScalePost
 {
@@ -328,6 +329,22 @@ void RunScalePost()
 
 	int ywcount, yoffs, yw, yd, yendoffs;
 	byte col;
+	fixed halftexheight;
+	int wraptexcoord, truncateprec;
+
+	if(postneedprec) // stacked tiles
+	{
+		wraptexcoord = (texyscale>>2)-1;
+		truncateprec = 0;
+	}
+	else // single tile (vanilla case)
+	{
+		wraptexcoord = 0;
+		truncateprec = 3;
+		// texyscale = 256 = 32*8 = (TEXTURESIZE/2)*8
+		// halftexheight works out to (TEXTURESIZE/2) as in vanilla
+	}
+	halftexheight = texyscale>>truncateprec;
 
 	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
 	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx][0]);
@@ -337,7 +354,7 @@ void RunScalePost()
 	else
 		curshades = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 
-	ywcount = yd = wallheight[postx][0];
+	ywcount = yd = wallheight[postx][0]>>truncateprec;
 	if(yd <= 0)
 		yd = 100;
 
@@ -357,7 +374,7 @@ void RunScalePost()
 
 	while(yendoffs >= viewheight)
 	{
-		ywcount -= texyscale;
+		ywcount -= halftexheight;
 		while(ywcount <= 0)
 		{
 			ywcount += yd;
@@ -373,7 +390,7 @@ void RunScalePost()
 	while(yoffs <= yendoffs)
 	{
 		Algo::WritePix(yendoffs, col);
-		ywcount -= texyscale;
+		ywcount -= halftexheight;
 		if(ywcount <= 0)
 		{
 			do
@@ -382,7 +399,7 @@ void RunScalePost()
 				yw--;
 			}
 			while(ywcount <= 0);
-			if(yw < 0) yw = (texyscale>>2)-1;
+			if(yw < 0) yw = wraptexcoord;
 			col = Algo::ReadColor(curshades, yw);
 		}
 		yendoffs -= vbufPitch;
@@ -860,6 +877,9 @@ void AsmRefresh()
 
 	if(gameinfo.walldecalcolor >= 256)
 		postdecalcolor = (byte)(gameinfo.walldecalcolor&0xff);
+
+	// need extra precision when drawing stacked tiles
+	postneedprec = (map->GetPlane(0).depth > 64);
 
 	for(pixx=0;pixx<viewwidth;pixx++)
 	{
