@@ -1002,6 +1002,7 @@ ACTION_FUNCTION(A_SpawnItemEx)
 	{
 		SXF_TRANSFERPOINTERS = 0x1,
 		SXF_PROJHITENEMY = 0x2,
+		SXF_CLIPMAPBOUNDS = 0x4,
 	};
 
 	ACTION_PARAM_STRING(className, 0);
@@ -1027,6 +1028,16 @@ ACTION_FUNCTION(A_SpawnItemEx)
 	fixed x = self->x + fixed(xoffset*finecosine[ang])/64 + fixed(yoffset*finesine[ang])/64;
 	fixed y = self->y - fixed(xoffset*finesine[ang])/64 + fixed(yoffset*finecosine[ang])/64;
 	angle = angle_t((angle*ANGLE_45)/45) + self->angle;
+
+	if(flags & SXF_CLIPMAPBOUNDS)
+	{
+		const unsigned int mapwidth = map->GetHeader().width;
+		const unsigned int mapheight = map->GetHeader().height;
+		if(x < 0 || (x >= FLOAT2FIXED(mapwidth)))
+			x = 0;
+		if(y < 0 || (y >= FLOAT2FIXED(mapheight)))
+			y = 0;
+	}
 
 	AActor *newobj = AActor::Spawn(cls, x, y, 0, SPAWN_AllowReplacement);
 
