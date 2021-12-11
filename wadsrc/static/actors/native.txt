@@ -21,6 +21,7 @@ const int GAF_MACDAMAGE = 4;
 
 const int SXF_TRANSFERPOINTERS = 1;
 const int SXF_PROJHITENEMY = 2;
+const int SXF_CLIPMAPBOUNDS = 4;
 
 const int ASP_CHASE = 3;
 
