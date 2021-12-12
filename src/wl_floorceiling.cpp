@@ -721,9 +721,9 @@ void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallhei
 	const byte skyceilcol = (gameinfo.parallaxskyceilcolor >= 256 ?
 		(byte)(gameinfo.parallaxskyceilcolor&0xff) : 0xff);
 
-	const int numParallax = levelInfo->ParallaxSky.Size();
-	std::pair<bool, byte> floortrans(numParallax > 0, skyfloorcol);
-	std::pair<bool, byte> ceiltrans(numParallax > 0, skyceilcol);
+	const bool skyEnabled = levelInfo->SkyEnabled();
+	std::pair<bool, byte> floortrans(skyEnabled, skyfloorcol);
+	std::pair<bool, byte> ceiltrans(skyEnabled, skyceilcol);
 
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz, floortrans);
 	R_DrawPlane(vbuf, vbufPitch, min_wallheight, halfheight, viewz+(map->GetPlane(0).depth<<FRACBITS), ceiltrans);

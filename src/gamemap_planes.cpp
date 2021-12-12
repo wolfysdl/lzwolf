@@ -1464,7 +1464,7 @@ void GameMap::ReadPlanesData()
 				}
 
 				// Check for parallax sky
-				bool lvlHasParallax = levelInfo->ParallaxSky.Size() > 0;
+				bool lvlHasParallax = levelInfo->SkyEnabled();
 
 				// Build the palette.
 				sectorPalette.Resize(type);

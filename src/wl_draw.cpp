@@ -289,7 +289,7 @@ TWallHeight CalcHeight()
 const byte *postsource;
 int postx;
 int32_t postshadex, postshadey;
-bool postbright, postdecal;
+bool postbright, postdecal, poststarsky;
 byte postdecalcolor = 187; // slade will not set the right color for this; its annoying but its true
 bool postneedprec = false;
 
@@ -408,7 +408,11 @@ void RunScalePost()
 
 void ScalePost()
 {
-	if(postdecal)
+	if(poststarsky)
+	{
+		// draw nothing when showsky is enabled and starsky is enabled
+	}
+	else if(postdecal)
 	{
 		RunScalePost<DecalScalePost>();
 	}
@@ -554,6 +558,7 @@ void HitVertWall (void)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
 		postdecal = tilehit->tile->decal;
+		poststarsky = (tilehit->tile->showSky && levelInfo->StarSkyEnabled());
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -568,6 +573,7 @@ void HitVertWall (void)
 	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
 	postdecal = tilehit->tile->decal;
+	poststarsky = (tilehit->tile->showSky && levelInfo->StarSkyEnabled());
 	postx = pixx;
 	FTexture *source = NULL;
 
@@ -640,6 +646,7 @@ void HitHorizWall (void)
 			postsource+=(texture-lasttexture)*texheight/texxscale;
 		postbright = tilehit->tile->bright;
 		postdecal = tilehit->tile->decal;
+		poststarsky = (tilehit->tile->showSky && levelInfo->StarSkyEnabled());
 		postx=pixx;
 		lasttexture=texture;
 		return;
@@ -654,6 +661,7 @@ void HitHorizWall (void)
 	skywallheight[pixx] = (tilehit->tile->showSky ? TWallHeight{} : wallheight[pixx]);
 	postbright = tilehit->tile->bright;
 	postdecal = tilehit->tile->decal;
+	poststarsky = (tilehit->tile->showSky && levelInfo->StarSkyEnabled());
 	postx = pixx;
 	FTexture *source = NULL;
 
