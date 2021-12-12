@@ -226,6 +226,20 @@ public:
 		Atmos[0] = Atmos[1] = Atmos[2] = Atmos[3] = 0;
 	}
 
+	// Returns true when any star sky is enabled such as Star sky and HQ Star
+	// sky. Returns false otherwise
+	bool StarSkyEnabled() const
+	{
+		return Atmos[0] || Atmos[3];
+	}
+
+	// Returns true when any sky is enabled such as Parallax sky, Star sky, HQ
+	// Star sky. Returns false otherwise
+	bool SkyEnabled() const
+	{
+		return ParallaxSky.Size() > 0 || StarSkyEnabled();
+	}
+
 	static LevelInfo &Find(const char* level);
 	static LevelInfo &FindByNumber(unsigned int num);
 
