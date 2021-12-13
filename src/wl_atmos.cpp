@@ -27,7 +27,8 @@ typedef struct {
     int32_t waveamp, wavefineangle;
 } point3d_t;
 
-#define MAXPOINTS 1800
+#define MAXPOINTS 3600
+#define HALFMAXPOINTS (MAXPOINTS/2)
 point3d_t points[MAXPOINTS];
 
 byte moon[100]={
@@ -74,15 +75,17 @@ void DrawHighQualityStarSky(byte *vbuf, uint32_t vbufPitch)
     const auto halfviewheight = viewheight >> 1;
 	int hvheight = halfviewheight;
 	int hvwidth = viewwidth >> 1;
+	int halves = 2;
 
 	byte *ptr = vbuf;
 	int i;
-	for(i = 0; i < hvheight; i++, ptr += vbufPitch)
+	for(i = 0; i < hvheight * halves; i++, ptr += vbufPitch)
 		memset(ptr, 0, viewwidth);
 
-	for(i = 0; i < MAXPOINTS; i++)
+	for(i = 0; i < HALFMAXPOINTS*halves; i++)
 	{
-		point3d_t *pt = &points[i];
+		const int which_half = (i / HALFMAXPOINTS);
+		point3d_t *pt = &points[i % HALFMAXPOINTS];
 		int32_t x = pt->x * viewcos + pt->z * viewsin;
 		int32_t y = pt->y << 16;
 		int32_t z = (pt->z * viewcos - pt->x * viewsin) >> 8;
@@ -90,8 +93,14 @@ void DrawHighQualityStarSky(byte *vbuf, uint32_t vbufPitch)
 		int shade = z >> 18;
 		if(shade > 15) continue;
 		int32_t xx = x / z + hvwidth;
-		int32_t yy = hvheight - y / z;
-		if(xx >= 1 && xx < viewwidth - 1 && yy >= 1 && yy < hvheight - 1)
+		int32_t yy = hvheight - (y / z) * (which_half ? -1 : 1);
+		int halfy0 = 0, halfy1 = hvheight;
+		if(which_half)
+		{
+			halfy0 = hvheight;
+			halfy1 = viewheight;
+		}
+		if(xx >= 1 && xx < viewwidth - 1 && yy >= halfy0 + 1 && yy < halfy1 - 1)
 		{
 			vbuf[yy * vbufPitch + xx] = shade + 15;
 			if (15 - shade > 1)
@@ -113,7 +122,7 @@ void DrawHighQualityStarSky(byte *vbuf, uint32_t vbufPitch)
 	{
 		int pointInd = levelInfo->Atmos[3];
 		pointInd = (
-			pointInd == 1 || pointInd < 0 || pointInd >= MAXPOINTS) ? 10 : pointInd;
+			pointInd == 1 || pointInd < 0 || pointInd >= HALFMAXPOINTS) ? 10 : pointInd;
 
 		point3d_t *pt = &points[pointInd];
 		int32_t x = pt->x * viewcos + pt->z * viewsin;
@@ -150,15 +159,17 @@ void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 {
 	int hvheight = viewheight >> 1;
 	int hvwidth = viewwidth >> 1;
+	int halves = 2;
 
 	byte *ptr = vbuf;
 	int i;
-	for(i = 0; i < hvheight; i++, ptr += vbufPitch)
+	for(i = 0; i < hvheight * halves; i++, ptr += vbufPitch)
 		memset(ptr, 0, viewwidth);
 
-	for(i = 0; i < MAXPOINTS; i++)
+	for(i = 0; i < HALFMAXPOINTS*halves; i++)
 	{
-		point3d_t *pt = &points[i];
+		const int which_half = (i / HALFMAXPOINTS);
+		point3d_t *pt = &points[(which_half ? HALFMAXPOINTS : 0) + (i % HALFMAXPOINTS)];
 		int32_t x = pt->x * viewcos + pt->z * viewsin;
 		int32_t y = pt->y << 16;
 		int32_t z = (pt->z * viewcos - pt->x * viewsin) >> 8;
@@ -166,9 +177,17 @@ void DrawStarSky(byte *vbuf, uint32_t vbufPitch)
 		int shade = z >> 18;
 		if(shade > 15) continue;
 		int32_t xx = x / z + hvwidth;
-		int32_t yy = hvheight - y / z;
-		if(xx >= 0 && xx < viewwidth && yy >= 0 && yy < hvheight)
+		int32_t yy = hvheight - (y / z) * (which_half ? -1 : 1);
+		int halfy0 = 0, halfy1 = hvheight;
+		if(which_half)
+		{
+			halfy0 = hvheight;
+			halfy1 = viewheight;
+		}
+		if(xx >= 0 && xx < viewwidth && yy >= halfy0 && yy < halfy1)
+		{
 			vbuf[yy * vbufPitch + xx] = shade + 15;
+		}
 	}
 
 	int32_t x = 16384 * viewcos + 16384 * viewsin;
@@ -296,7 +315,7 @@ void DrawRain(byte *vbuf, uint32_t vbufPitch, byte *zbuf, uint32_t zbufPitch)
     const int rainmaxlen = scaleFactorX*5;
 #endif
 
-    for(int i = 0; i < MAXPOINTS; i++)
+    for(int i = 0; i < HALFMAXPOINTS; i++)
     {
         point3d_t *pt = &points[i];
         ax = pt->x + px;
@@ -515,14 +534,14 @@ void DrawSnow(byte *vbuf, uint32_t vbufPitch, byte *zbuf, uint32_t zbufPitch)
     }
 
     rainpos -= (tics * 230);
-    for(int i = 0; i < MAXPOINTS; i++)
+    for(int i = 0; i < HALFMAXPOINTS; i++)
     {
         wavept = points[i];
 
         fixed windamp = 0;
-        if ((int)windtics < 1200 - (i * 200 / MAXPOINTS))
+        if ((int)windtics < 1200 - (i * 200 / HALFMAXPOINTS))
         {
-            windamp = SnowWindAmplitude(windtics - 200 + (i * 200 / MAXPOINTS));
+            windamp = SnowWindAmplitude(windtics - 200 + (i * 200 / HALFMAXPOINTS));
         }
 
         {
