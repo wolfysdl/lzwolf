@@ -62,6 +62,7 @@ public:
 
 	int		TitleTime;
 	FString	BorderFlat;
+	FString	BorderPic;
 	FString ArmorIcon1;
 	FString ArmorIcon2;
 	fixed   Armor2Percent;
@@ -168,6 +169,7 @@ class LevelInfo
 public:
 	LevelInfo();
 	FTextureID GetBorderTexture() const;
+	FTextureID GetBorderPic() const;
 	FString GetMusic(const GameMap *gm) const;
 	FString GetName(const GameMap *gm) const;
 
