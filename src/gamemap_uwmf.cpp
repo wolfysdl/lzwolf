@@ -52,7 +52,34 @@
 		if(sc.CheckToken('=')) {
 #define EndParseBlock \
 			else \
-				sc.GetNextToken(); \
+			{ \
+				if(sc.CheckToken(TK_BoolConst)) \
+				{ \
+					sc.ScriptMessage(Scanner::WARNING, \
+						"Invalid Bool field:%s = %s.\n", key.GetChars(), \
+						sc->boolean ? "true" : "false"); \
+				} \
+				else if(sc.CheckToken(TK_IntConst)) \
+				{ \
+					sc.ScriptMessage(Scanner::WARNING, \
+						"Invalid Int field:%s = %d.\n", key.GetChars(), \
+						sc->number); \
+				} \
+				else if(sc.CheckToken(TK_StringConst)) \
+				{ \
+					sc.ScriptMessage(Scanner::WARNING, \
+						"Invalid String field:%s = \"%s\".\n", key.GetChars(), \
+						sc->str.GetChars()); \
+				} \
+				else if(sc.CheckToken(TK_FloatConst)) \
+				{ \
+					sc.ScriptMessage(Scanner::WARNING, \
+						"Invalid Float field:%s = %.3f.\n", key.GetChars(), \
+						sc->decimal); \
+				} \
+				else \
+					sc.GetNextToken(); \
+			} \
 			sc.MustGetToken(';'); \
 		} else \
 			sc.ScriptMessage(Scanner::ERROR, "Invalid syntax.\n"); \
