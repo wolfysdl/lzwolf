@@ -414,6 +414,34 @@ void DrawPlayBorderSides(void)
 	}
 }
 
+static void FillRegionStretchFit(FTexture *tex, double x, double y, double x2, double y2)
+{
+	int left = static_cast<int>(x);
+	int top = static_cast<int>(y);
+	int right = static_cast<int>(x2);
+	int bottom = static_cast<int>(y2);
+
+	double stx = 0;
+	double sty = 0;
+	double stw = 320;
+	double sth = 200;
+	screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, false, false);
+
+	screen->DrawTexture(tex, stx, sty,
+		DTA_DestWidthF, stw,
+		DTA_DestHeightF, sth,
+		DTA_ClipLeft, left,
+		DTA_ClipRight, right,
+		DTA_ClipTop, top,
+		DTA_ClipBottom, bottom,
+		TAG_DONE);
+}
+
+static void FillRegionTile(FTexture *tex, double x, double y, double x2, double y2)
+{
+	VWB_DrawFill(tex, x, y, x2, y2);
+}
+
 /*
 ===================
 =
@@ -438,37 +466,15 @@ void DBaseStatusBar::RefreshBackground (bool noborder)
 		}
 	}
 
-	std::function<void(
-		FTexture *tex, double x, double y, double x2, double y2)> fill_region;
+	void (*fill_region)(
+		FTexture *tex, double x, double y, double x2, double y2);
 	if(stretchFit)
 	{
-		fill_region = [](FTexture *tex, double x, double y, double x2, double y2) {
-			int left = static_cast<int>(x);
-			int top = static_cast<int>(y);
-			int right = static_cast<int>(x2);
-			int bottom = static_cast<int>(y2);
-
-			double stx = 0;
-			double sty = 0;
-			double stw = 320;
-			double sth = 200;
-			screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, false, false);
-
-			screen->DrawTexture(tex, stx, sty,
-				DTA_DestWidthF, stw,
-				DTA_DestHeightF, sth,
-				DTA_ClipLeft, left,
-				DTA_ClipRight, right,
-				DTA_ClipTop, top,
-				DTA_ClipBottom, bottom,
-				TAG_DONE);
-		};
+		fill_region = FillRegionStretchFit;
 	}
 	else
 	{
-		fill_region = [](FTexture *tex, double x, double y, double x2, double y2) {
-			VWB_DrawFill(tex, x, y, x2, y2);
-		};
+		fill_region = FillRegionTile;
 	}
 
 	if(viewscreeny > statusbary1)
