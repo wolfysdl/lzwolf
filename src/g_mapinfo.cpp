@@ -310,6 +310,12 @@ FTextureID LevelInfo::GetBorderTexture() const
 	return BorderTexture;
 }
 
+FTextureID LevelInfo::GetBorderPic() const
+{
+	static FTextureID BorderPic = TexMan.GetTexture(gameinfo.BorderPic, FTexture::TEX_Flat);
+	return BorderPic;
+}
+
 FString LevelInfo::GetMusic(const GameMap *gm) const
 {
 	if(gm->GetHeader().music.IsNotEmpty())
@@ -683,6 +689,8 @@ protected:
 		}
 		else if(key.CompareNoCase("borderflat") == 0)
 			ParseStringAssignment(gameinfo.BorderFlat);
+		else if(key.CompareNoCase("borderpic") == 0)
+			ParseStringAssignment(gameinfo.BorderPic);
 		else if(key.CompareNoCase("deathtransition") == 0)
 		{
 			sc.MustGetToken('=');
