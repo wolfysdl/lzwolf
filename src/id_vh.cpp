@@ -341,7 +341,32 @@ void VWB_Clear(int color, int x1, int y1, int x2, int y2)
 
 void VWB_DrawFill(FTexture *tex, int ix, int iy, int ix2, int iy2, bool local)
 {
-	screen->FlatFill(ix, iy, ix2, iy2, tex, local);
+	if(!tex->bStretchFill)
+	{
+		screen->FlatFill(ix, iy, ix2, iy2, tex, local);
+	}
+	else
+	{
+		double stx = 0;
+		double sty = 0;
+		double stw = 320;
+		double sth = 200;
+		screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, false, false);
+
+		int left = ix;
+		int top = iy;
+		int right = ix2;
+		int bottom = iy2;
+
+		screen->DrawTexture(tex, stx, sty,
+			DTA_DestWidthF, stw,
+			DTA_DestHeightF, sth,
+			DTA_ClipLeft, left,
+			DTA_ClipRight, right,
+			DTA_ClipTop, top,
+			DTA_ClipBottom, bottom,
+			TAG_DONE);
+	}
 }
 
 void VWB_DrawGraphic(FTexture *tex, int ix, int iy, double wd, double hd, MenuOffset menu, FRemapTable *remap, bool stencil, BYTE stencilcolor)

@@ -174,6 +174,7 @@ public:
 							// doing it per patch.
 	BYTE bMultiPatch:1;		// This is a multipatch texture (we really could use real type info for textures...)
 	BYTE bKeepAround:1; // This texture was used as part of a multi-patch texture. Do not free it.
+	BYTE bStretchFill:1;	// Stretch texture over screen rather than tile
 
 	WORD Rotations;
 	SWORD SkyOffset;
