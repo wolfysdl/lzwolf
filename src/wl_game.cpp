@@ -426,67 +426,22 @@ void DBaseStatusBar::RefreshBackground (bool noborder)
 {
 	FTexture *borderTex = TexMan(levelInfo->GetBorderTexture());
 
-	bool stretchFit = false;
-	auto borderPicTexId = levelInfo->GetBorderPic();
-	if(borderPicTexId.isValid())
-	{
-		auto borderPic = TexMan(borderPicTexId);
-		if(borderPic)
-		{
-			borderTex = borderPic;
-			stretchFit = true;
-		}
-	}
-
-	std::function<void(
-		FTexture *tex, double x, double y, double x2, double y2)> fill_region;
-	if(stretchFit)
-	{
-		fill_region = [](FTexture *tex, double x, double y, double x2, double y2) {
-			int left = static_cast<int>(x);
-			int top = static_cast<int>(y);
-			int right = static_cast<int>(x2);
-			int bottom = static_cast<int>(y2);
-
-			double stx = 0;
-			double sty = 0;
-			double stw = 320;
-			double sth = 200;
-			screen->VirtualToRealCoords(stx, sty, stw, sth, 320, 200, false, false);
-
-			screen->DrawTexture(tex, stx, sty,
-				DTA_DestWidthF, stw,
-				DTA_DestHeightF, sth,
-				DTA_ClipLeft, left,
-				DTA_ClipRight, right,
-				DTA_ClipTop, top,
-				DTA_ClipBottom, bottom,
-				TAG_DONE);
-		};
-	}
-	else
-	{
-		fill_region = [](FTexture *tex, double x, double y, double x2, double y2) {
-			VWB_DrawFill(tex, x, y, x2, y2);
-		};
-	}
-
 	if(viewscreeny > statusbary1)
-		fill_region(borderTex, 0, statusbary1, screenWidth, viewscreeny);
-	fill_region(borderTex, 0, viewscreeny, viewscreenx, viewheight + viewscreeny);
-	fill_region(borderTex, viewwidth + viewscreenx, viewscreeny, screenWidth, viewheight + viewscreeny);
-	fill_region(borderTex, 0, viewscreeny + viewheight, screenWidth, statusbary2);
+		VWB_DrawFill(borderTex, 0, statusbary1, screenWidth, viewscreeny);
+	VWB_DrawFill(borderTex, 0, viewscreeny, viewscreenx, viewheight + viewscreeny);
+	VWB_DrawFill(borderTex, viewwidth + viewscreenx, viewscreeny, screenWidth, viewheight + viewscreeny);
+	VWB_DrawFill(borderTex, 0, viewscreeny + viewheight, screenWidth, statusbary2);
 	if(statusbarx)
 	{
-		fill_region(borderTex, 0, 0, statusbarx, statusbary1);
-		fill_region(borderTex, screenWidth-statusbarx, 0, screenWidth, statusbary1);
-		fill_region(borderTex, 0, statusbary2, statusbarx, screenHeight);
-		fill_region(borderTex, screenWidth-statusbarx, statusbary2, screenWidth, screenHeight);
+		VWB_DrawFill(borderTex, 0, 0, statusbarx, statusbary1);
+		VWB_DrawFill(borderTex, screenWidth-statusbarx, 0, screenWidth, statusbary1);
+		VWB_DrawFill(borderTex, 0, statusbary2, statusbarx, screenHeight);
+		VWB_DrawFill(borderTex, screenWidth-statusbarx, statusbary2, screenWidth, screenHeight);
 	}
 	// Complete border
 	if(statusbary1)
-		fill_region(borderTex, statusbarx, 0, screenWidth-statusbarx, statusbary1);
-	fill_region(borderTex, statusbarx, statusbary2, screenWidth-statusbarx, screenHeight);
+		VWB_DrawFill(borderTex, statusbarx, 0, screenWidth-statusbarx, statusbary1);
+	VWB_DrawFill(borderTex, statusbarx, statusbary2, screenWidth-statusbarx, screenHeight);
 
 	if(noborder)
 		return;

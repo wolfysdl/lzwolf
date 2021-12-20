@@ -169,7 +169,6 @@ class LevelInfo
 public:
 	LevelInfo();
 	FTextureID GetBorderTexture() const;
-	FTextureID GetBorderPic() const;
 	FString GetMusic(const GameMap *gm) const;
 	FString GetName(const GameMap *gm) const;
 

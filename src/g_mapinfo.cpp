@@ -306,14 +306,13 @@ LevelInfo::LevelInfo() : ResetHealth(false), ResetInventory(false),
 FTextureID LevelInfo::GetBorderTexture() const
 {
 	static FTextureID BorderFlat = TexMan.GetTexture(gameinfo.BorderFlat, FTexture::TEX_Flat);
-	if(!BorderTexture.isValid())
-		return BorderFlat;
-	return BorderTexture;
-}
-
-FTextureID LevelInfo::GetBorderPic() const
-{
 	static FTextureID BorderPic = TexMan.GetTexture(gameinfo.BorderPic, FTexture::TEX_Flat);
+	if(!BorderTexture.isValid() && !BorderPic.isValid())
+		return BorderFlat;
+	if(!BorderPic.isValid())
+		return BorderTexture;
+	FTexture *borderPicTex = TexMan(BorderPic);
+	borderPicTex->bStretchFill = true;
 	return BorderPic;
 }
 
