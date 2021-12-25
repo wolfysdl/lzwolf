@@ -646,9 +646,12 @@ void BlakeAOGStatusBar::DrawStatusBar()
 		//DrawLed(static_cast<double>(amount)/static_cast<double>(players[0].ReadyWeapon->ammo[AWeapon::PrimaryFire]->maxamount), 243, 155);
 		DrawAmmoPic();
 
-		FString ammo;
-		ammo.Format("%3d%%", amount);
-		DrawString(IndexFont, ammo, 211, 200 - STATUSLINES + 38, false, CR_LIGHTBLUE);
+		if (!players[0].ReadyWeapon->DrawAmmoMsg)
+		{
+			FString ammo;
+			ammo.Format("%3d%%", amount);
+			DrawString(IndexFont, ammo, 211, 200 - STATUSLINES + 38, false, CR_LIGHTBLUE);
+		}
 	}
 
 	//if(players[0].mo)

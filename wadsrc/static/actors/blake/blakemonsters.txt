@@ -1738,3 +1738,32 @@ actor ElectroAlien : BlakeMonster
 			stop
 	}
 }
+
+actor Electrosphere
+{
+	+SHOOTABLE
+	+COUNTKILL
+	+BRIGHT
+	+TRYTURN180
+	+BLAKEPATROL
+
+	damage (2)
+	points 2055
+	health 1
+	speed 6
+	states
+	{
+		Spawn:
+			ESPR A 7 NOP A_Chase("*", "*", CHF_PATHING|CHF_DONTDODGE)
+		Path:
+			ESPR ABC 7 NOP A_Chase("*", "*", CHF_PATHING|CHF_DONTDODGE)
+			loop
+		Death:
+			ESPR E 7
+			ESPR F 7
+			ESPR G 7
+			ESPR H 7
+			ESPR I 7
+			stop
+	}
+}

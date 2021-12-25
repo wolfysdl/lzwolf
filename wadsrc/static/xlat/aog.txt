@@ -1199,9 +1199,18 @@ things
 	{318, VolatileTransport,        4, PATHING, 0}
 	{322, WhiteOoze,                0, 0, 3}
 	// No 323
-	// TODO: 324 -> Vertical Sphere Easy
-	// TODO: 325 -> Horizonal Sphere Easy
-	// TODO: 326 -> Diagonal Sphere Easy
+	// 324 -> Vertical Sphere Easy
+	{324, Electrosphere,            0, PATHING, 1, minangle=90}
+	{342, Electrosphere,            0, PATHING, 2, minangle=90}
+	{360, Electrosphere,            0, PATHING, 3, minangle=90}
+	// 325 -> Horizonal Sphere Easy
+	{325, Electrosphere,            0, PATHING, 1, minangle=0}
+	{343, Electrosphere,            0, PATHING, 2, minangle=0}
+	{361, Electrosphere,            0, PATHING, 3, minangle=0}
+	// 326 -> Diagonal Sphere Easy
+	{326, Electrosphere,            0, PATHING, 1, minangle=45}
+	{344, Electrosphere,            0, PATHING, 2, minangle=45}
+	{362, Electrosphere,            0, PATHING, 3, minangle=45}
 	// No 327
 	{328, FloatingBomb,             4, 0, 0} // STATIONARY
 	{332, VolatileTransport,        4, 0, 2}
