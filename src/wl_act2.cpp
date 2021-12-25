@@ -547,7 +547,10 @@ void SelectPathDir (AActor *ob)
 		if (ob->trydir & 128)
 		{
 			int8_t dir = ob->dir;
-			dir--; // turn clockwise
+			if (ob->extraflags & FL_TRYTURN180)
+				dir = (dir < 4 ? dir + 4 : dir - 4);
+			else
+				dir--; // turn clockwise
 			if (dir < east)
 			{
 				dir = static_cast<dirtype>(nodir - 1);
@@ -557,7 +560,10 @@ void SelectPathDir (AActor *ob)
 		else
 		{
 			uint8_t dir = ob->dir;
-			dir++; // turn counter-clockwise
+			if (ob->extraflags & FL_TRYTURN180)
+				dir = (dir < 4 ? dir + 4 : dir - 4);
+			else
+				dir++; // turn counter-clockwise
 			if (dir >= nodir)
 			{
 				dir = east;
@@ -589,7 +595,8 @@ ACTION_FUNCTION(A_Chase)
 		CHF_DONTDODGE = 1,
 		CHF_BACKOFF = 2,
 		CHF_NOSIGHTCHECK = 4,
-		CHF_NOPLAYACTIVE = 8
+		CHF_NOPLAYACTIVE = 8,
+		CHF_PATHING = 16,
 	};
 
 	ACTION_PARAM_STATE(melee, 0, self->MeleeState);
@@ -607,7 +614,9 @@ ACTION_FUNCTION(A_Chase)
 	int32_t	move;
 	int		dx,dy,dist = INT_MAX,chance;
 	bool	dodge = !(flags & CHF_DONTDODGE);
-	bool	pathing = (self->flags & FL_PATHING) ? true : false;
+	bool	pathing =
+		((self->flags & FL_PATHING) || (flags & CHF_PATHING)) ?
+			true : false;
 
 	// target as player cannot go stale
 	// target which loses FL_SHOOTABLE will go stale

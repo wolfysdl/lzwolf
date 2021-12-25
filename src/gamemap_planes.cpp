@@ -116,6 +116,7 @@ public:
 		unsigned short	oldnum;
 		unsigned char	angles;
 		unsigned char	minskill;
+		int				minangle;
 	};
 
 	struct ThingSpecialXlat
@@ -344,6 +345,8 @@ public:
 		}
 		else
 			thing.angle = 0;
+		if(type.minangle != 0)
+			thing.angle = (thing.angle + type.minangle)%360;
 
 		thing.patrol = type.flags&Xlat::TF_PATHING;
 		thing.skill[0] = thing.skill[1] = type.minskill <= 1;
@@ -642,6 +645,17 @@ protected:
 				sc.MustGetToken(',');
 				sc.MustGetToken(TK_IntConst);
 				thing.minskill = sc->number;
+				thing.minangle = 0;
+				if(sc.CheckToken(','))
+				{
+					sc.MustGetToken(TK_Identifier);
+					if(sc->str.CompareNoCase("minangle") == 0)
+					{
+						sc.MustGetToken('=');
+						sc.MustGetToken(TK_IntConst);
+						thing.minangle = sc->number;
+					}
+				}
 				sc.MustGetToken('}');
 
 				if(oldTableSize &&
