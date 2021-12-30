@@ -106,6 +106,7 @@ public:
 	FName	DoorSoundSequence;
 	FName	PushwallSoundSequence;
 	fixed	GibFactor;
+	fixed	DropItemTileSize;
 
 	TArray<FName>	PlayerClasses;
 	TArray<FString>	QuitMessages;

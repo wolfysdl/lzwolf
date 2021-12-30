@@ -607,6 +607,7 @@ GameInfo gameinfo;
 
 GameInfo::GameInfo() : PageIndexText("pg %d of %d")
 {
+	DropItemTileSize = FRACUNIT;
 }
 
 class GameInfoBlockParser : public MapInfoBlockParser
@@ -705,6 +706,12 @@ protected:
 			ParseFontColorAssignment(gameinfo.FontColors[GameInfo::DIALOG]);
 		else if(key.CompareNoCase("doorsoundsequence") == 0)
 			ParseNameAssignment(gameinfo.DoorSoundSequence);
+		else if(key.CompareNoCase("dropitemtilesize") == 0)
+		{
+			sc.MustGetToken('=');
+			sc.MustGetToken(TK_FloatConst);
+			gameinfo.DropItemTileSize = static_cast<fixed>(sc->decimal*FRACUNIT);
+		}
 		else if(key.CompareNoCase("drawreadthis") == 0)
 			ParseBoolAssignment(gameinfo.DrawReadThis);
 		else if(key.CompareNoCase("drawgamemessage") == 0)

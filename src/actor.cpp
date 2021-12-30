@@ -303,9 +303,9 @@ void AActor::Die()
 
 					// We can't use tilex/tiley since it's used primiarily by
 					// the AI, so it can be off by one.
-					static const fixed TILEMASK = ~(TILEGLOBAL-1);
+					static const fixed TILEMASK = ~(gameinfo.DropItemTileSize-1);
 
-					AActor * const actor = AActor::Spawn(cls, (x&TILEMASK)+TILEGLOBAL/2, (y&TILEMASK)+TILEGLOBAL/2, 0, SPAWN_AllowReplacement);
+					AActor * const actor = AActor::Spawn(cls, (x&TILEMASK)+(gameinfo.DropItemTileSize/2), (y&TILEMASK)+(gameinfo.DropItemTileSize/2), 0, SPAWN_AllowReplacement);
 					actor->angle = angle;
 					actor->dir = dir;
 					actor->trydir = nodir;
