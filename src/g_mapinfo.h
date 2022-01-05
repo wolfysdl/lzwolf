@@ -78,6 +78,7 @@ public:
 	FString	IntermissionMusic;
 	FString	HighScoresFont;
 	FString	AdvisoryPic;
+	FString	AuthorCreditPic;
 	FString FinaleFlat;
 	FString GameOverPic;
 	FString VictoryPic;

@@ -796,6 +796,33 @@ static void NonShareware (void)
 	IN_Ack ();
 }
 
+/*
+==================
+=
+= AuthorCredit
+=
+==================
+*/
+
+static void AuthorCredit (void)
+{
+	if(gameinfo.AuthorCreditPic.IsEmpty())
+		return;
+
+	//VW_FadeOut ();
+	//
+	VWB_Clear(0, 0, 0, screenWidth, screenHeight);
+
+	FTexture *tex = TexMan(gameinfo.AuthorCreditPic);
+	VWB_DrawGraphic(tex, 0, 0, 320, 200);
+	VW_UpdateScreen ();
+
+	VW_FadeIn ();
+	IN_UserInput (TICRATE * 7);
+
+	VW_FadeOut ();
+}
+
 //===========================================================================
 
 
@@ -829,7 +856,10 @@ static void DemoLoop()
 	StartCPMusic(gameinfo.TitleMusic);
 
 	if (!param_nowait)
+	{
 		PG13 ();
+		AuthorCredit ();
+	}
 
 	IntermissionInfo *demoLoop = IntermissionInfo::Find("DemoLoop");
 	bool gotoMenu = false;
