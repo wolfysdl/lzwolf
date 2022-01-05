@@ -622,6 +622,8 @@ protected:
 			ParseColorAssignment(gameinfo.AdvisoryColor);
 		else if(key.CompareNoCase("advisorypic") == 0)
 			ParseStringAssignment(gameinfo.AdvisoryPic);
+		else if(key.CompareNoCase("authorcreditpic") == 0)
+			ParseStringAssignment(gameinfo.AuthorCreditPic);
 		else if(key.CompareNoCase("armoricons") == 0)
 		{
 			sc.MustGetToken('=');
