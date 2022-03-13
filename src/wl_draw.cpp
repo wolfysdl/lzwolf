@@ -57,7 +57,7 @@ namespace Shading
 {
 	void PopulateHalos (void);
 
-	int LightForIntercept (fixed xintercept, fixed yintercept);
+	int LightForIntercept (fixed xintercept, fixed yintercept, const ClassDef* &littype);
 }
 
 void DrawFloorAndCeiling(byte *vbuf, unsigned vbufPitch, TWallHeight min_wallheight);
@@ -348,7 +348,8 @@ void RunScalePost()
 	}
 	halftexheight = texyscale>>truncateprec;
 
-	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey));
+	const ClassDef *littype = NULL;
+	const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (postshadex, postshadey, littype));
 	const int tz = FixedMul(r_depthvisibility<<8, wallheight[postx][0]);
 	const BYTE *curshades;
 	if(postbright)

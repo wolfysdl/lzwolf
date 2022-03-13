@@ -484,7 +484,7 @@ namespace Shading
 		return curlit;
 	}
 
-	int LightForIntercept (fixed xintercept, fixed yintercept)
+	int LightForIntercept (fixed xintercept, fixed yintercept, const ClassDef* &littype)
 	{
 		unsigned int curx,cury;
 
@@ -542,7 +542,9 @@ namespace Shading
 		if (spot && spot->zone != NULL &&
 				zoneLightMap.find(spot->zone->index) != zoneLightMap.end())
 		{
-			light += zoneLightMap.find(spot->zone->index)->second.light;
+			const auto &zl = zoneLightMap.find(spot->zone->index)->second;
+			light += zl.light;
+			littype = zl.littype;
 		}
 		if (spot && spot->lightsector != NULL)
 			light += spot->lightsector->light;

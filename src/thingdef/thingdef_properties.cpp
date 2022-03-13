@@ -337,6 +337,12 @@ HANDLE_PROPERTY(faction)
 		defaults->faction = ClassDef::FindClassTentative(type, NATIVE_CLASS(Faction));
 }
 
+HANDLE_PROPERTY(fadecmap)
+{
+	STRING_PARAM(str, 0);
+	cls->FadeCMapName = FName(str);
+}
+
 HANDLE_PROPERTY(filterposthrust)
 {
 	INT_PARAM(axis, 0);
@@ -1037,6 +1043,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(dropitem, Actor, S_II),
 	DEFINE_PROP(enemyfaction, Actor, S),
 	DEFINE_PROP(faction, Actor, S),
+	DEFINE_PROP(fadecmap, Actor, S),
 	DEFINE_PROP(filterposthrust, Actor, II),
 	DEFINE_PROP(filterposwave, Actor, IFFI),
 	DEFINE_PROP(filterposwrap, Actor, FFI),

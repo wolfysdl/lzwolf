@@ -383,7 +383,7 @@ extern fixed viewz;
 // from wl_floorceiling.cpp
 namespace Shading
 {
-	int LightForIntercept (fixed xintercept, fixed yintercept);
+	int LightForIntercept (fixed xintercept, fixed yintercept, const ClassDef* &littype);
 
 	void PrepareConstants (int halfheight, fixed planeheight);
 
@@ -444,9 +444,18 @@ void ScaleSprite(AActor *actor, int xcenter, const Frame *frame, unsigned height
 		colormap = NormalLight.Maps;
 	else
 	{
-		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (actor->absx, actor->absy));
+		const ClassDef *littype = NULL;
+		const int shade = LIGHT2SHADE(gLevelLight + r_extralight +
+			Shading::LightForIntercept (actor->absx, actor->absy, littype));
 		const int tz = FixedMul(r_depthvisibility<<8, height);
-		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
+
+		const FName cmapname = (littype && littype->FadeCMapName != FName()) ?
+			littype->FadeCMapName :
+			FName();
+		const BYTE *cmapstart = 
+			&realcolormaps[R_ColormapNumForName(cmapname.GetChars())*256*NUMCOLORMAPS];
+
+		colormap = &cmapstart[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
 
 	const ClassDef * const litfilter = actor->litfilter;
@@ -522,7 +531,8 @@ void Scale3DSpriter(AActor *actor, int x1, int x2, FTexture *tex, bool flip, con
 		colormap = NormalLight.Maps;
 	else
 	{
-		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (actor->x, actor->y));
+		const ClassDef *littype = NULL;
+		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (actor->x, actor->y, littype));
 		const int tz = FixedMul(r_depthvisibility<<8, height);
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}
@@ -688,7 +698,8 @@ void R_DrawPlayerSprite(AActor *actor, const Frame *frame, fixed offsetX, fixed 
 	{
 		fixed nx = TILEGLOBAL*2;
 		unsigned height = (word)((heightnumerator<<8)/nx);
-		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (viewx, viewy));
+		const ClassDef *littype = NULL;
+		const int shade = LIGHT2SHADE(gLevelLight + r_extralight + Shading::LightForIntercept (viewx, viewy, littype));
 		const int tz = FixedMul(r_depthvisibility<<8, height);
 		colormap = &NormalLight.Maps[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 	}

@@ -630,3 +630,8 @@ actor Dust3L2
 			loop
 	}
 }
+
+actor FadeLit : Lit
+{
+	fadecmap "BLAKCMAP"
+}

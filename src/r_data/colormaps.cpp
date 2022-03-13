@@ -77,8 +77,6 @@ TArray<FakeCmap> fakecmaps;
 BYTE *realcolormaps;
 size_t numfakecmaps;
 
-
-
 TArray<FSpecialColormap> SpecialColormaps;
 BYTE DesaturateColormap[31][256];
 
