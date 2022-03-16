@@ -580,6 +580,19 @@ void R_InitColormaps ()
 				}
 				fakecmaps[j].blend = PalEntry (255, r/256, g/256, b/256);
 			}
+			// Raw color map support
+			else if (Wads.LumpLength (fakecmaps[j].lump) == NUMCOLORMAPS*256)
+			{
+				int k;
+				FWadLump lump = Wads.OpenLumpNum (fakecmaps[j].lump);
+				BYTE *const map = realcolormaps + NUMCOLORMAPS*256*j;
+
+				for (k = 0; k < NUMCOLORMAPS; ++k)
+				{
+					lump.Read (mapin, 256);
+					memcpy(&map[k*256], mapin, 256);
+				}
+			}
 		}
 	}
 	NormalLight.Color = PalEntry (255, 255, 255);
