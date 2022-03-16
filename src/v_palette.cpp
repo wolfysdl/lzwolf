@@ -553,7 +553,7 @@ CCMD (savefade)
 		color = V_GetColorFromString (NULL, argv[1]);
 		NormalLight.ChangeFade (color);
 
-		FILE *fp = fopen("TESTCMAP", "wb");
+		FILE *fp = fopen("TESTCMAP.cmp", "wb");
 		if(fp != NULL)
 		{
 			fwrite(NormalLight.Maps, 256, NUMCOLORMAPS, fp);
