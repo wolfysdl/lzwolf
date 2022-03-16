@@ -416,6 +416,12 @@ HANDLE_PROPERTY(forwardmove)
 	}
 }
 
+HANDLE_PROPERTY(fullbrightinhibit)
+{
+	INT_PARAM(inhibit, 0);
+	cls->FullBrightInhibit = !!inhibit;
+}
+
 HANDLE_PROPERTY(gibhealth)
 {
 	INT_PARAM(health, 0);
@@ -1049,6 +1055,7 @@ extern const PropDef properties[] =
 	DEFINE_PROP(filterposwrap, Actor, FFI),
 	DEFINE_PROP(flipsprite, Actor, I),
 	DEFINE_PROP_PREFIX(forwardmove, PlayerPawn, Player, F_F),
+	DEFINE_PROP(fullbrightinhibit, Actor, I),
 	DEFINE_PROP(gibhealth, Actor, I),
 	DEFINE_PROP(halolight, Actor, IFI_S),
 	DEFINE_PROP(health, Actor, I_IIIIIIII),

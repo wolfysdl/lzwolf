@@ -13,6 +13,7 @@
 #include "wl_shade.h"
 #include "r_data/colormaps.h"
 #include "g_mapinfo.h"
+#include "thingdef/thingdef.h"
 
 #include <climits>
 
@@ -21,6 +22,8 @@ extern fixed viewz;
 
 namespace Shading
 {
+	const BYTE *GetCMapStart (const ClassDef *littype);
+
 	class Span
 	{
 	public:
@@ -459,8 +462,10 @@ namespace Shading
 		for (std::vector<Span>::size_type i = 0; i < spans.size(); i++)
 		{
 			Span &span = spans[i];
+
 			const int shade = LIGHT2SHADE(gLevelLight + r_extralight + span.light);
-			span.shades = &NormalLight.Maps[GETPALOOKUP(tz, shade)<<8];
+			const BYTE *cmapstart = GetCMapStart (span.littype);
+			span.shades = &cmapstart[GETPALOOKUP(MAX(tz, MINZ), shade)<<8];
 		}
 
 		curspan = &spans[0];
@@ -550,6 +555,17 @@ namespace Shading
 			light += spot->lightsector->light;
 
 		return light;
+	}
+
+	const BYTE *GetCMapStart (const ClassDef *littype)
+	{
+		const FName cmapname = (littype &&
+			littype->FadeCMapName != FName()) ?
+			littype->FadeCMapName :
+			FName();
+		const BYTE *cmapstart = 
+			&realcolormaps[R_ColormapNumForName(cmapname.GetChars())*256*NUMCOLORMAPS];
+		return cmapstart;
 	}
 }
 
